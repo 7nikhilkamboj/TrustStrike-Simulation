@@ -1,0 +1,57 @@
+{{define "nav"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                {{ if .IsImpersonating }}
+                <li>
+                    <a href="/stop_impersonating" class="btn-danger"
+                        style="color: white !important; font-weight: bold; text-align: center; margin: 10px;">
+                        <i class="fa fa-times-circle"></i> Stop Impersonating
+                    </a>
+                </li>
+                {{ end }}
+                <li {{ if eq .Title "Dashboard" }}class="active" {{ end }}>
+                    <a href="/">Dashboard</a>
+                </li>
+                <li {{ if eq .Title "Email Campaigns" }}class="active" {{ end }}>
+                    <a href="/campaigns">Campaigns</a>
+                </li>
+                <li {{ if eq .Title "Users & Groups" }}class="active" {{ end }}>
+                    <a href="/groups">Users &amp; Groups</a>
+                </li>
+                <li {{ if eq .Title "Email Templates" }}class="active" {{ end }}>
+                    <a href="/templates">Templates</a>
+                </li>
+                <li {{ if eq .Title "Redirectors" }}class="active" {{ end }}>
+                    <a href="/redirectors">Redirectors</a>
+                </li>
+                <li {{ if or (eq .Title "Email Sending Profiles" ) (eq .Title "SMS Sending Profiles" ) }}class="active"
+                    {{ end }}>
+                    <a href="/sending_profiles">Sending Profiles</a>
+                </li>
+                <li {{ if eq .Title "Account Settings" }}class="active" {{ end }}>
+                    <a href="/settings">Account Settings</a>
+                </li>
+                <li {{ if eq .Title "SimulationServer Integration" }}class="active" {{ end }}>
+                    <a href="/simulationserver">Simulation Server</a>
+                </li>
+                <!-- <li {{ if eq .Title "Phishlet Management" }}class="active" {{ end }}>
+                    <a href="/phishlets">Phishlets</a>
+                </li> -->
+                {{if .ModifySystem}}
+                <li {{ if eq .Title "User Management" }}class="active" {{ end }}>
+                    <a href="/users">User Management<span class="nav-badge badge pull-right">Admin</span></a>
+                </li>
+                <li {{ if eq .Title "User Groups" }}class="active" {{ end }}>
+                    <a href="/user_groups">User Groups<span class="nav-badge badge pull-right">Admin</span></a>
+                </li>
+                <li {{ if eq .Title "Webhooks" }}class="active" {{ end }}>
+                    <a href="/webhooks">Webhooks<span class="nav-badge badge pull-right">Admin</span></a>
+                </li>
+                {{end}}
+            </ul>
+        </div>
+    </div>
+</div>
+{{end}}

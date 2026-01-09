@@ -1,0 +1,164 @@
+{{define "body"}}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="page-header" id="pageTitle">
+                New Sending Profile
+            </h1>
+        </div>
+    </div>
+    <div id="flashes" class="row"></div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label class="control-label" for="name">Name:</label>
+                            <input type="text" class="form-control" placeholder="Profile name" id="name" autofocus />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label" for="interface_type">Interface Type:</label>
+                            <select class="form-control" id="interface_type">
+                                <option value="SMTP">SMTP</option>
+                                <option value="SMS">SMS</option>
+                            </select>
+                        </div>
+
+                        <div id="smtp_fields">
+                            <div class="form-group">
+                                <label class="control-label" for="from">SMTP From: <i class="fa fa-question-circle"
+                                        data-toggle="tooltip" data-placement="right"
+                                        title="Set this to an email address from your sending domain to bypass SPF-checks."></i></label>
+                                <input type="text" class="form-control" placeholder="test@example.com" id="from" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="host">Host:</label>
+                                <input type="text" class="form-control" placeholder="smtp.example.com:25" id="host" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="username">Username:</label>
+                                <input type="text" class="form-control" placeholder="Username" id="username"
+                                    autocomplete="off" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="password">Password:</label>
+                                <input type="password" class="form-control" placeholder="Password" id="password"
+                                    autocomplete="new-password" />
+                            </div>
+                            <div class="checkbox checkbox-primary">
+                                <input id="ignore_cert_errors" type="checkbox" checked>
+                                <label for="ignore_cert_errors">Ignore Certificate Errors <i
+                                        class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
+                                        title="Ignore common certificate errors such as self-signed certs."></i></label>
+                            </div>
+
+                            <div id="smtp_headers_section" style="margin-top: 20px;">
+                                <label class="control-label">Email Headers:</label>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <input type="text" class="form-control" name="headerKey" id="headerKey"
+                                            placeholder="X-Custom-Header">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" name="headerValue" id="headerValue"
+                                            placeholder='{{"{{"}}.URL{{"}}"}}-trust_strike'>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button id="addCustomHeader" class="btn btn-danger btn-block" type="button"><i
+                                                class="fa fa-plus"></i> Add</button>
+                                    </div>
+                                </div>
+                                <div class="table-responsive" style="margin-top: 15px;">
+                                    <table id="headersTable" class="table table-hover table-striped table-condensed">
+                                        <thead>
+                                            <tr>
+                                                <th>Header</th>
+                                                <th>Value</th>
+                                                <th class="no-sort"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="sms_fields" style="display:none;">
+                            <div class="form-group">
+                                <label class="control-label" for="account_sid">Account SID:</label>
+                                <input type="text" class="form-control" placeholder="Account SID" id="account_sid" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="auth_token">Auth Token:</label>
+                                <input type="password" class="form-control" placeholder="Auth Token" id="auth_token" />
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label" for="sms_from">Phone Number:</label>
+                                <input type="text" class="form-control" placeholder="+1234567890" id="sms_from" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="panel-footer">
+                    <button type="button" class="btn btn-default"
+                        onclick="location.href='/sending_profiles'">Cancel</button>
+                    <button type="button" class="btn btn-info" id="sendTestButton"><i class="fa fa-envelope"></i> Send
+                        Test Email</button>
+                    <button type="button" class="btn btn-primary pull-right" id="submitButton">Save Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Send Test Email Modal -->
+<div class="modal fade" id="sendTestEmailModal" tabindex="-1" role="dialog" aria-labelledby="sendTestModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="sendTestModalLabel">Send Test Email</h4>
+            </div>
+            <div class="modal-body">
+                <div id="testEmailFlashes"></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="control-label">First Name:</label>
+                            <input type="text" class="form-control" name="to_first_name" placeholder="John">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="control-label">Last Name:</label>
+                            <input type="text" class="form-control" name="to_last_name" placeholder="Doe">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Email:</label>
+                    <input type="email" class="form-control" name="to_email" placeholder="test@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">Position:</label>
+                    <input type="text" class="form-control" name="to_position" placeholder="Manager">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmSendTest"><i class="fa fa-envelope"></i>
+                    Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script src="/js/dist/app/sending_profile_edit.min.js"></script>
+{{end}}

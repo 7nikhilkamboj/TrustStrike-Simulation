@@ -1,0 +1,91 @@
+{{ define "base" }}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Trust Strike">
+    <meta name="author" content="Trust Strike">
+    <link rel="shortcut icon" href="/images/trust_strike_top.png">
+
+    <title>{{ .Title }} - Trust Strike</title>
+
+    <link href="/css/dist/trust_strike.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href='https://fonts.googleapis.com/css?family=Roboto:700,500' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600,700' rel='stylesheet'
+        type='text/css'>
+
+    {{ if .Token }}
+    <script>
+        var csrf_token = "{{ .Token }}";
+        window.page_title = "{{ .Title }}";
+    </script>
+    {{ end }}
+</head>
+
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <img class="navbar-logo" src="/images/trust_strike_top.png" style="width:50px;" />
+                <a class="navbar-brand" href="/">&nbsp;Trust Strike</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav navbar-right">
+                    <li>
+                        {{if .User}}
+                        <div class="btn-group" id="navbar-dropdown">
+                            <a class="btn btn-primary" href="/settings"><i class="fa fa-user"></i>
+                                {{.User.Username}}</a>
+                            <a class="btn btn-primary dropdown-toggle" href="/logout">
+                                <i class="fa fa-sign-out"></i>
+                            </a>
+                        </div>
+                        {{else}}
+                        <a href="/login">
+                            <button type="button" class="btn btn-primary">Login</button>
+                        </a>
+                        {{end}}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {{template "nav" .}}
+    {{template "body" .}}
+    <div id="global-progress-container"
+        style="position: fixed; bottom: 20px; right: 20px; width: 250px; z-index: 9999; background: #2c3e50; border: 1px solid #34495e; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); padding: 12px; color: white; display: none;">
+        <div
+            style="font-weight: bold; margin-bottom: 5px; font-size: 0.9em; display: flex; justify-content: space-between;">
+            <span><i class="fa fa-spinner fa-spin"></i> Background Import</span>
+            <span id="global-job-percent">0%</span>
+        </div>
+        <div class="progress" style="height: 8px; margin-bottom: 8px; background: #34495e;">
+            <div id="global-job-bar" class="progress-bar progress-bar-info" style="width: 0%"></div>
+        </div>
+        <div style="font-size: 0.8em; opacity: 0.8; margin-bottom: 8px;">
+            Processed: <span id="global-job-processed">0</span> / <span id="global-job-total">0</span>
+        </div>
+        <button id="view-import-details" class="btn btn-xs btn-info btn-block"
+            style="background: #3498db; border: none; font-weight: bold;">
+            <i class="fa fa-eye"></i> View Details
+        </button>
+    </div>
+
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/js/dist/vendor.min.js"></script>
+    <script src="/js/dist/app/trust_strike.min.js?v=20260101"></script>
+    {{template "scripts" .}}
+</body>
+
+</html>
+{{ end }}

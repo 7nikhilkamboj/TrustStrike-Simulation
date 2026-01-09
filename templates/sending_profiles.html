@@ -1,0 +1,66 @@
+{{define "body"}}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <h1 class="page-header">
+        {{.Title}}
+    </h1>
+    <div id="flashes" class="row"></div>
+    <div class="row">
+        <div class="col-md-6">
+            <a href="/sending_profile" class="btn btn-primary"><i class="fa fa-plus"></i> New Profile</a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    Bulk Actions <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
+                            Selected</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6 text-right">
+            <div class="btn-group" data-toggle="buttons" id="profileTypeFilter">
+                <label class="btn btn-primary active" onclick="switchProfileType('')">
+                    <input type="radio" name="options" id="type_all" autocomplete="off" checked> All
+                </label>
+                <label class="btn btn-primary" onclick="switchProfileType('email')">
+                    <input type="radio" name="options" id="type_email" autocomplete="off" checked> SMTP
+                </label>
+                <label class="btn btn-primary" onclick="switchProfileType('sms')">
+                    <input type="radio" name="options" id="type_sms" autocomplete="off"> SMS
+                </label>
+            </div>
+        </div>
+    </div>
+    &nbsp;
+    <div id="loading">
+        <i class="fa fa-spinner fa-spin fa-4x"></i>
+    </div>
+    <div id="emptyMessage" class="row" style="display:none;">
+        <div class="alert alert-info">
+            No profiles created yet. Let's create one!
+        </div>
+    </div>
+    <div class="row">
+        <table id="profileTable" class="table" style="display:none;">
+            <thead>
+                <tr>
+                    <th class="no-sort" style="width: 20px;">
+                        <input type="checkbox" id="selectAllProfiles" onclick="toggleSelectAll()">
+                    </th>
+                    <th class="col-md-4">Name</th>
+                    <th>Interface Type</th>
+                    <th>Created By</th>
+                    <th>Last Modified Date</th>
+                    <th class="col-md-2 no-sort"></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{end}} {{define "scripts"}}
+<script src="/js/dist/app/sending_profiles.min.js?v=bulk_delete"></script>
+{{end}}

@@ -1,0 +1,11 @@
+[Unit]
+Description=trust_strike
+After=network.target
+[Service]
+Type=simple
+WorkingDirectory=/home/{{ trust_strike_user }}/trust_strike_deploy/
+ExecStart="/home/{{ trust_strike_user }}/trust_strike_deploy/trust_strike"
+User={{ trust_strike_user }}
+PIDFile="/home/{{ trust_strike_user }}/trust_strike_deploy/trust_strike.pid"
+[Install]
+WantedBy=multi-user.target

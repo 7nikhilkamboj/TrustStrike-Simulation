@@ -1,0 +1,231 @@
+{{define "body"}}
+{{template "nav" .}}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <h1 class="page-header">Redirectors</h1>
+    </div>
+    <div id="flashes" class="row"></div>
+
+    <!-- Create Button -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-12">
+            <button class="btn btn-primary" onclick="openCreateModal()">
+                <i class="fa fa-plus"></i> New Redirector
+            </button>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-4">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchRedirectors" placeholder="Search redirectors...">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="button"><i class="fa fa-search"></i></button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center" style="padding: 40px;">
+        <i class="fa fa-spinner fa-spin fa-4x"></i>
+    </div>
+
+    <!-- Empty Message -->
+    <div id="emptyMessage" class="row" style="display:none;">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                No redirectors created yet. Let's create one!
+            </div>
+        </div>
+    </div>
+
+    <!-- Redirector Cards Grid -->
+    <div class="row" id="redirectorGrid" style="display:none;">
+        <!-- Cards populated by JavaScript -->
+    </div>
+
+    <!-- Pagination -->
+    <div class="row">
+        <div class="col-md-12 text-center" id="redirectorPagination"></div>
+    </div>
+</div>
+
+<!-- Card Styles (copied from campaign_edit.html template cards) -->
+<style>
+    .redirector-card {
+        width: 100%;
+        height: 340px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: #fff;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .redirector-card:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+        border-color: #aaa;
+    }
+
+    .redirector-header {
+        padding: 10px 15px;
+        background: #f9f9f9;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 45px;
+        flex-shrink: 0;
+    }
+
+    .redirector-name {
+        font-weight: 700;
+        font-size: 14px;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60%;
+    }
+
+    .redirector-preview {
+        flex: 1;
+        background: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .redirector-preview iframe {
+        width: 200%;
+        height: 200%;
+        border: 0;
+        transform: scale(0.5);
+        transform-origin: 0 0;
+        pointer-events: none;
+    }
+
+    .redirector-preview .text-preview {
+        padding: 15px;
+        font-family: monospace;
+        font-size: 10px;
+        color: #555;
+        white-space: pre-wrap;
+        overflow: hidden;
+        height: 100%;
+    }
+
+    .redirector-footer {
+        padding: 10px 15px;
+        background: #fff;
+        border-top: 1px solid #eee;
+        flex-shrink: 0;
+        height: 60px;
+    }
+
+    .redirector-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 10px;
+    }
+
+    .btn-action {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        background-color: #5cb85c;
+        border-color: #5cb85c;
+        color: #fff;
+    }
+
+    .btn-action:hover {
+        background-color: #449d44;
+        border-color: #449d44;
+        color: #fff;
+    }
+
+    .btn-action-delete {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+</style>
+
+<!-- Create/Edit Modal -->
+<div class="modal fade" id="redirectorModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <h4 class="modal-title" id="redirectorModalTitle">New Redirector</h4>
+            </div>
+            <div class="modal-body">
+                <div id="redirectorModal.flashes"></div>
+                <input type="hidden" id="editingRedirectorName" value="">
+
+                <div class="form-group">
+                    <label for="redirectorName">Name</label>
+                    <input type="text" class="form-control" id="redirectorName" placeholder="e.g., turnstile">
+                    <small class="help-block">A unique name (no spaces). Use <code>{strike_url_html}</code> in
+                        HTML for the lure URL.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="redirectorHtml">HTML Content</label>
+                    <textarea class="form-control" id="redirectorHtml" rows="15"
+                        placeholder="Enter HTML content..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveRedirectorBtn" onclick="saveRedirector()">
+                    <i class="fa fa-save"></i> Save Redirector
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document" style="width: 90%; max-width: 1200px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <h4 class="modal-title" id="previewModalTitle">Preview</h4>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <iframe id="previewFrame" style="width: 100%; height: 600px; border: none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{end}}
+
+{{define "scripts"}}
+<script src="/js/src/vendor/ckeditor/ckeditor.js"></script>
+<script src="/js/src/vendor/ckeditor/adapters/jquery.js"></script>
+<script src="/js/dist/app/redirectors.min.js"></script>
+{{end}}

@@ -1,0 +1,136 @@
+{{define "body"}}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <h1 class="page-header">
+            {{.Title}}
+        </h1>
+    </div>
+    <div id="flashes" class="row"></div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title" id="templateModalLabel">New Template</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row" id="modal.flashes"></div>
+            <div class="form-group">
+                <label class="control-label" for="name">Name:</label>
+                <input type="text" class="form-control" ng-model="template.name" placeholder="Template name" id="name"
+                    autofocus />
+            </div>
+            <div class="form-group">
+                <label class="control-label" for="template_type">Template Type:</label>
+                <select class="form-control" id="template_type">
+                    <option value="email">Email Template</option>
+                    <option value="qr">QR Template</option>
+                    <option value="sms">SMS Template</option>
+                </select>
+            </div>
+            <div class="form-group email-only">
+                <button class="btn btn-danger" data-toggle="modal" data-backdrop="static"
+                    data-target="#importEmailModal"><i class="fa fa-envelope"></i>
+                    Import Email</button>
+            </div>
+            <label class="control-label email-only" for="envelope-sender">Envelope Sender: <i
+                    class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
+                    title="This sender is shown to the user by most email clients. Defaults to the SMTP From as defined in the Sending Profile."></i></label>
+            <div class="form-group email-only">
+                <input type="text" class="form-control" placeholder="First Last <test@example.com>"
+                    id="envelope-sender" />
+            </div>
+            <label class="control-label email-only" for="subject">Subject:</label>
+            <div class="form-group email-only">
+                <input type="text" class="form-control" placeholder="Email Subject" id="subject" />
+            </div>
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="html" class="email-only active"><a href="#html" aria-controls="html" role="tab"
+                        data-toggle="tab">HTML</a>
+                </li>
+                <li role="plaintext" class="email-only"><a href="#text" aria-controls="text" role="tab"
+                        data-toggle="tab">Plaintext</a>
+                </li>
+                <li class="sms-only" role="sms" style="display:none;"><a href="#sms" aria-controls="sms" role="tab"
+                        data-toggle="tab">SMS Content</a>
+                </li>
+            </ul>
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="html">
+                    <textarea id="html_editor"></textarea>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="text">
+                    <textarea rows="10" id="text_editor" class="trust_strike-editor form-control"
+                        placeholder="Plaintext"></textarea>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="sms">
+                    <textarea rows="10" id="text_template" class="trust_strike-editor form-control"
+                        placeholder="SMS Content"></textarea>
+                </div>
+            </div>
+            <div class="checkbox checkbox-primary email-only">
+                <input id="use_tracker_checkbox" type="checkbox">
+                <label for="use_tracker_checkbox">Add Tracking Image</label>
+            </div>
+            <span class="btn btn-danger btn-file email-only"><i class="fa fa-plus"></i> Add Files
+                <input id="attachmentUpload" type="file" onchange="attach(this.files)" multiple>
+            </span>
+            <br />
+            <br />
+            <table id="attachmentsTable" class="table email-only">
+                <thead>
+                    <tr>
+                        <th class="col-md-1 no-sort"></th>
+                        <th class="col-md-10">Name</th>
+                        <th class="col-md-1 no-sort"></th>
+                        <th class="datatable_hidden no-sort">Content</th>
+                        <th class="datatable_hidden no-sort">Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-footer">
+            <button type="button" class="btn btn-default" onclick="location.href='/templates'">Cancel</button>
+            <button type="button" class="btn btn-primary" id="saveSubmit">Save Template</button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Email Modal -->
+<div class="modal fade" id="importEmailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- New Email Modal -->
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="importEmailModalLabel">Import Email</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="importModal.flashes"></div>
+                <label class="control-label" for="email">Email Content:</label>
+                <div class="form-group">
+                    <textarea rows="10" id="email_content" class="trust_strike-editor form-control"
+                        placeholder="Raw Email Source"></textarea>
+                </div>
+                <div class="checkbox checkbox-primary">
+                    <input id="convert_links_checkbox" type="checkbox" checked>
+                    <label for="convert_links_checkbox">Change Links to Point to Landing Page</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="importSubmit" onclick="importEmail()">Import</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+{{define "scripts"}}
+<script src="/js/src/vendor/ckeditor/ckeditor.js"></script>
+<script src="/js/src/vendor/ckeditor/adapters/jquery.js"></script>
+<script src="/js/dist/app/autocomplete.min.js"></script>
+<script src="/js/dist/app/template_edit.min.js"></script>
+{{end}}

@@ -1,0 +1,19 @@
+enable_ufw_firewall: true
+
+install_packages:
+  - postfix
+  - unzip
+  - libcap2-bin
+  - python-is-python3
+  - python3-pip
+
+hostname: trust_strike
+trust_strike_user: ubuntu
+postfix_hostname: trust_strike
+postfix_inet_interfaces: 127.0.0.1
+trust_strike_domain: trust_strike.local
+trust_strike_ssl_cert_path: /etc/ssl/private/trust_strike.pem
+trust_strike_csr_path: /etc/ssl/csr/trust_strike.csr
+trust_strike_crt_path: /etc/ssl/crt/trust_strike.crt
+# Required if changing /etc/hostname to something different.
+reboot_box: true

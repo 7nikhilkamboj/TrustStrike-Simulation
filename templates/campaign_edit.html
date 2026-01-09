@@ -1,0 +1,2409 @@
+{{define "body"}}
+<style>
+    /* Force input-group to use flexbox for better alignment with Select2 */
+    .input-group {
+        display: flex !important;
+        width: 100% !important;
+    }
+
+    /* Make Select2 container fill the available space */
+    .input-group .select2-container {
+        flex: 1 1 auto !important;
+        /* Width 100% helps Select2 calculate internal dimensions better */
+        width: 100% !important;
+        min-width: 0;
+    }
+
+    /* Ensure multiple select searches don't truncate placeholders */
+    .input-group .select2-search__field {
+        width: 100% !important;
+        /* Add a reasonable min-width for the placeholder */
+        min-width: 250px !important;
+    }
+
+    /* Select2 selection box styling */
+    .input-group .select2-selection {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        height: 42px !important;
+    }
+
+    /* Specific for multiple select heights */
+    .input-group .select2-selection--multiple {
+        min-height: 42px !important;
+        height: auto !important;
+    }
+
+    /* Fix the button height and borders */
+    .input-group-btn {
+        display: flex !important;
+        width: auto !important;
+    }
+
+    .input-group-btn .btn-input-group {
+        height: 42px !important;
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+        margin-left: -1px;
+        /* Overlap borders */
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    /* Modal Add Button alignment */
+    .modal-manual-add {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    /* Table Spacing Improvements */
+    .table>thead>tr>th,
+    .table>tbody>tr>td {
+        padding: 12px 15px !important;
+        vertical-align: middle !important;
+    }
+
+    .table>thead>tr>th {
+        background-color: #fcfcfc;
+        border-bottom: 2px solid #ddd !important;
+        font-weight: bold;
+    }
+
+    /* Action Buttons Spacing */
+    .btn-xs {
+        padding: 4px 8px !important;
+        margin-left: 2px;
+        margin-right: 2px;
+    }
+
+    /* Badge visibility */
+    .label {
+        padding: .3em .7em .4em !important;
+        display: inline-block !important;
+        margin-bottom: 2px;
+    }
+</style>
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <h1 class="page-header">
+            {{.Title}}
+        </h1>
+    </div>
+    <div id="flashes" class="row"></div>
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 class="panel-title" id="campaignTitle">New Campaign <span id="header_campaign_type"
+                    class="pull-right label label-success" style="font-size: 14px; margin-top: -2px;">Email</span></h3>
+        </div>
+        <style>
+            .wizard-step {
+                display: none;
+                padding: 15px 15px 30px 15px;
+            }
+
+            .wizard-step.active {
+                display: block;
+            }
+
+            .page-header {
+                margin-top: 10px;
+                border-bottom: 1px solid #eee;
+                padding-bottom: 15px;
+                margin-bottom: 25px;
+                color: #2c3e50;
+                font-weight: 600;
+            }
+
+            /* Consolidated Flow Diagram Styles */
+            .flow-container,
+            .flow-preview-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                padding: 15px 0;
+                min-width: 800px;
+            }
+
+            .flow-box,
+            .flow-step {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 12px 16px;
+                border-radius: 12px;
+                min-width: 100px;
+                text-align: center;
+                transition: all 0.3s ease;
+            }
+
+            .flow-step.active,
+            .flow-box.active {
+                opacity: 1 !important;
+                transform: scale(1.05);
+                z-index: 10;
+                border: none;
+            }
+
+            .flow-box.active.campaign-type {
+                box-shadow: 0 0 25px rgba(102, 126, 234, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box.active.email-template {
+                box-shadow: 0 0 25px rgba(245, 87, 108, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box.active.redirector {
+                box-shadow: 0 0 25px rgba(56, 239, 125, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box.active.login-page {
+                box-shadow: 0 0 25px rgba(244, 92, 67, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box.active.final-redirect {
+                box-shadow: 0 0 25px rgba(79, 172, 254, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box.active.target-groups {
+                box-shadow: 0 0 25px rgba(56, 239, 125, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box.active.sending-profile {
+                box-shadow: 0 0 25px rgba(253, 160, 133, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box.active.schedule-step {
+                box-shadow: 0 0 25px rgba(48, 207, 208, 0.8), 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-step:not(.active):not(.completed),
+            .flow-box:not(.active):not(.completed) {
+                opacity: 1 !important;
+                background: #dadada !important;
+                color: #676767 !important;
+                filter: grayscale(100%);
+                box-shadow: none !important;
+            }
+
+            .flow-box.completed {
+                opacity: 0.9 !important;
+                filter: grayscale(0%) !important;
+                position: relative;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .flow-box.completed::after {
+                content: '\f058';
+                font-family: 'FontAwesome';
+                position: absolute;
+                top: -10px;
+                right: -10px;
+                background: #fff;
+                color: #5cb85c;
+                border-radius: 50%;
+                font-size: 25px;
+                line-height: 1;
+                z-index: 5;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            }
+
+            .flow-box i,
+            .flow-step i {
+                font-size: 22px;
+                margin-bottom: 7px;
+            }
+
+            .flow-box .flow-label,
+            .flow-step .flow-label {
+                font-size: 9.5px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+                opacity: 0.9;
+            }
+
+            .flow-box .flow-value,
+            .flow-step .flow-value {
+                font-size: 11.5px;
+                font-weight: 700;
+                margin-top: 3px;
+            }
+
+            .campaign-type {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            }
+
+            .email-template {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+            }
+
+            .redirector {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+            }
+
+            .login-page,
+            .target-login {
+                background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(235, 51, 73, 0.3);
+            }
+
+            .final-redirect {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+            }
+
+            .email-flow-completed {
+                background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(137, 247, 254, 0.3);
+            }
+
+            .target-groups {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+            }
+
+            .sending-profile {
+                background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(246, 211, 101, 0.3);
+            }
+
+            .schedule-step {
+                background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+                color: white;
+                box-shadow: 0 4px 15px rgba(48, 207, 208, 0.3);
+            }
+
+            .flow-arrow {
+                display: flex;
+                align-items: center;
+                position: relative;
+                width: 55px;
+                height: 4px;
+                background: linear-gradient(90deg, #5cb85c, #4cae4c);
+                margin: 0 5px;
+            }
+
+            .flow-arrow::after {
+                content: '';
+                position: absolute;
+                right: -8px;
+                border: 6px solid transparent;
+                border-left: 8px solid #4cae4c;
+            }
+
+            .flow-dot {
+                position: absolute;
+                top: -2px;
+                width: 8px;
+                height: 8px;
+                background: #fff;
+                border-radius: 50%;
+                box-shadow: 0 0 8px rgba(92, 184, 92, 0.9);
+                animation: flowMove 1.2s ease-in-out infinite;
+            }
+
+            @keyframes flowMove {
+                0% {
+                    left: 0;
+                    opacity: 0;
+                }
+
+                10% {
+                    opacity: 1;
+                }
+
+                90% {
+                    opacity: 1;
+                }
+
+                100% {
+                    left: calc(100% - 8px);
+                    opacity: 0;
+                }
+            }
+
+            @keyframes pulseBox {
+                0% {
+                    box-shadow: 0 0 0 0px rgba(220, 220, 220, 0.8), 0 10px 30px rgba(0, 0, 0, 0.4);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 15px rgba(220, 220, 220, 0), 0 10px 30px rgba(0, 0, 0, 0.4);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0px rgba(220, 220, 220, 0), 0 10px 30px rgba(0, 0, 0, 0.4);
+                }
+            }
+
+            .flow-redirector-item {
+                display: none;
+            }
+
+            .flow-redirector-item.visible {
+                display: flex;
+            }
+
+            .flow-bypass-arrow {
+                display: flex;
+            }
+
+            .flow-bypass-arrow.hidden {
+                display: none;
+            }
+
+            .flow-box.disabled {
+                opacity: 0.4;
+                filter: grayscale(50%);
+            }
+        </style>
+        <div class="panel-body">
+            <div class="row" id="modal.flashes"></div>
+
+            <!-- STEP 1: Name, Type, Objective -->
+            <div class="wizard-step active" id="step1">
+                <h4 class="page-header">Step 1: Campaign Details</h4>
+                <div class="panel panel-default" style="margin-top: 25px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Campaign -->
+                            <div class="flow-box campaign-type active">
+                                <i class="fa fa-bullhorn"></i>
+                                <span class="flow-label">Campaign</span>
+                                <span class="flow-value">EMAIL</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Template -->
+                            <div class="flow-box email-template">
+                                <i class="fa fa-envelope"></i>
+                                <span class="flow-label">Template</span>
+                                <span class="flow-value">Email</span>
+                            </div>
+
+                            <!-- Stage 3: Redirector (Static in Step 1) -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <div class="flow-box redirector">
+                                <i class="fa fa-random"></i>
+                                <span class="flow-label">Redirector</span>
+                                <span class="flow-value">Page</span>
+                            </div>
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+
+                            <!-- Stage 4: Login -->
+                            <div class="flow-box login-page">
+                                <i class="fa fa-sign-in"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Login</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
+                            </div>
+                            <!-- Stage 5: Final -->
+                            <div class="flow-box final-redirect">
+                                <i class="fa fa-external-link"></i>
+                                <span class="flow-label">Final</span>
+                                <span class="flow-value">Redirect</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" class="form-control" id="name" placeholder="Campaign name" autofocus>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="campaign_type">Campaign Type:</label>
+                    <select class="form-control" id="campaign_type">
+                        <option value="email">Email Campaign</option>
+                        <option value="qr">QR Campaign</option>
+                        <option value="sms">SMS Campaign</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="attack_objective">Attack Objective:</label>
+                    <select class="form-control" id="attack_objective">
+                        <option value="Tracking only">Tracking only</option>
+                        <option value="Session hijacking">Session hijacking</option>
+                    </select>
+                </div>
+
+                <!-- Flow Diagram Preview for Step 1 -->
+
+            </div>
+
+            <!-- STEP 2: Email Template -->
+            <div class="wizard-step" id="step2">
+                <style>
+                    /* Card Styling only - Layout handled by Bootstrap */
+                    .template-card {
+                        width: 100%;
+                        height: 340px;
+                        border: 1px solid #ddd;
+                        border-radius: 6px;
+                        overflow: hidden;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        background: #fff;
+                        position: relative;
+                        display: flex;
+                        flex-direction: column;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                        margin-bottom: 20px;
+                        /* Spacing for multiline */
+                    }
+
+                    .template-card:hover {
+                        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+                        transform: translateY(-2px);
+                        border-color: #aaa;
+                    }
+
+                    .template-card.selected {
+                        border-color: #851414;
+                        box-shadow: 0 0 0 10px rgba(204, 46, 46, 0.62);
+                    }
+
+                    /* Header (Name + Type) */
+                    .template-header {
+                        padding: 10px 15px;
+                        background: #f9f9f9;
+                        border-bottom: 1px solid #eee;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        height: 45px;
+                        flex-shrink: 0;
+                    }
+
+                    .template-name {
+                        font-weight: 700;
+                        font-size: 14px;
+                        color: #333;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        max-width: 70%;
+                    }
+
+
+
+                    .type-badge {
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        color: #fff;
+                        font-weight: 700;
+                        font-size: 12px;
+                        display: inline-block;
+                        line-height: normal;
+                        letter-spacing: 0.5px;
+                    }
+
+                    .badge-email {
+                        background-color: #5cb85c;
+                        /* Green */
+                    }
+
+                    .badge-sms {
+                        background-color: #5bc0de;
+                        /* Cyan/Light Blue */
+                    }
+
+                    .badge-qr {
+                        background-color: #337ab7;
+                        /* Dark Blue */
+                    }
+
+                    /* Preview Area */
+                    .template-preview {
+                        flex: 1;
+                        background: #fff;
+                        position: relative;
+                        overflow: hidden;
+                    }
+
+                    .template-preview iframe {
+                        width: 200%;
+                        height: 200%;
+                        border: 0;
+                        transform: scale(0.5);
+                        transform-origin: 0 0;
+                        pointer-events: auto;
+                        /* Allow interaction/scrolling */
+                    }
+
+                    .template-preview .text-preview {
+                        padding: 15px;
+                        font-family: monospace;
+                        font-size: 10px;
+                        color: #555;
+                        white-space: pre-wrap;
+                        overflow: hidden;
+                        height: 100%;
+                    }
+
+                    /* Footer (Buttons) */
+                    .template-footer {
+                        padding: 10px 15px;
+                        background: #fff;
+                        border-top: 1px solid #eee;
+                        flex-shrink: 0;
+                        height: 60px;
+                        /* Increased height for larger buttons */
+                    }
+
+                    .template-actions {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        /* Center buttons */
+                        height: 100%;
+                        gap: 10px;
+                        /* Space between buttons */
+                    }
+
+                    .btn-action {
+                        width: 40px;
+                        height: 40px;
+                        background-color: #1abc9c;
+                        /* Teal Green */
+                        border: none;
+                        color: #fff;
+                        font-size: 16px;
+                        border-radius: 6px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: background-color 0.2s;
+                        padding: 0;
+                    }
+
+                    .btn-action:hover,
+                    .btn-action:focus,
+                    .btn-action:active {
+                        background-color: #16a085;
+                        /* Darker Teal */
+                        color: #fff;
+                        outline: none;
+                    }
+
+                    .btn-action i {
+                        margin: 0;
+                    }
+
+                    .btn-action-delete {
+                        width: 40px;
+                        height: 40px;
+                        background-color: #e74c3c;
+                        /* Red */
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        font-size: 16px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        transition: background-color 0.2s;
+                        padding: 0;
+                    }
+
+                    .btn-action-delete:hover,
+                    .btn-action-delete:focus,
+                    .btn-action-delete:active {
+                        background-color: #c0392b;
+                        /* Darker Red */
+                        color: #fff;
+                        outline: none;
+                    }
+                </style>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4 class="page-header" id="step2_title" style="margin-top: 0;">Step 2: Template</h4>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <button type="button" class="btn btn-primary" onclick="openCreateTemplateModal()">
+                            <i class="fa fa-plus"></i> New Template
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Flow Diagram Preview for Step 2 -->
+                <div class="panel panel-default" style="margin-bottom: 20px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Campaign -->
+                            <div class="flow-box campaign-type completed">
+                                <i class="fa fa-bullhorn"></i>
+                                <span class="flow-label">Campaign</span>
+                                <span class="flow-value">EMAIL</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Template -->
+                            <div class="flow-box email-template active">
+                                <i class="fa fa-envelope"></i>
+                                <span class="flow-label">Template</span>
+                                <span class="flow-value">Email</span>
+                            </div>
+
+                            <!-- Stage 3: Redirector (Static in Step 2) -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <div class="flow-box redirector">
+                                <i class="fa fa-random"></i>
+                                <span class="flow-label">Redirector</span>
+                                <span class="flow-value">Page</span>
+                            </div>
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+
+                            <!-- Stage 4: Login -->
+                            <div class="flow-box login-page">
+                                <i class="fa fa-sign-in"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Login</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
+                            </div>
+                            <!-- Stage 5: Final -->
+                            <div class="flow-box final-redirect">
+                                <i class="fa fa-external-link"></i>
+                                <span class="flow-label">Final</span>
+                                <span class="flow-value">Redirect</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 20px; display: flex; align-items: center;">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="templateSearch"
+                                placeholder="Search templates..." style="height: 40px;">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button" style="height: 40px; border-left: 0;"><i
+                                        class="fa fa-search"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-7 text-right">
+                        <!-- Pagination Controls here -->
+                        <div id="gridPagination" style="display: inline-block;"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <input type="hidden" id="template" name="template_id">
+                    <input type="hidden" id="template_name" name="template_name">
+
+                    <div id="templateGrid" class="row">
+                        <!-- Populated via JS -->
+                    </div>
+
+                    <div id="noTemplatesMessage" class="alert alert-warning" style="display:none; margin-top: 15px;">
+                        No templates found for this type. Please create one.
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: Redirector Domain -->
+            <div class="wizard-step" id="step3">
+                <h4 class="page-header" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                    <span>Step 3: Redirector Page</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <label class="redirector-switch"
+                            style="position: relative; display: inline-block; width: 52px; height: 28px; margin: 0;">
+                            <input type="checkbox" id="useRedirector" style="opacity: 0; width: 0; height: 0;">
+                            <span id="redirectorSlider"
+                                style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 28px;"></span>
+                        </label>
+                        <span id="redirectorStatus"
+                            style="font-size: 14px; font-weight: 500; color: #999;">Disabled</span>
+                    </div>
+                </h4>
+                <p class="help-block" style="margin-top: 0; margin-bottom: 20px;">When enabled, a redirector page will
+                    be shown before the phishing page.</p>
+
+                <!-- Redirector Flow Preview - Animated -->
+                <div class="panel panel-default" style="margin-bottom: 20px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <div class="flow-container" id="flowDiagram">
+                            <!-- Stage 1: Campaign -->
+                            <div class="flow-box campaign-type completed">
+                                <i class="fa fa-bullhorn"></i>
+                                <span class="flow-label">Campaign</span>
+                                <span class="flow-value" id="flowCampaignType">EMAIL</span>
+                            </div>
+
+                            <!-- Arrow to Template -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+
+                            <!-- Stage 2: Template -->
+                            <div class="flow-box email-template completed">
+                                <i class="fa fa-envelope"></i>
+                                <span class="flow-label">Template</span>
+                                <span class="flow-value" id="flowTemplateName">Select...</span>
+                            </div>
+
+                            <!-- Redirector Bypass Arrow -->
+                            <div class="flow-arrow flow-bypass-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.3s;"></div>
+                            </div>
+
+                            <!-- Stage 3: Redirector (Wrapped in Dynamic Classes) -->
+                            <div class="flow-arrow flow-redirector-item">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <div class="flow-box redirector active flow-redirector-item" id="redirectorBox">
+                                <i class="fa fa-random"></i>
+                                <span class="flow-label">Redirector</span>
+                                <span class="flow-value" id="flowRedirectorName">Page</span>
+                            </div>
+                            <div class="flow-arrow flow-redirector-item">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+
+                            <!-- Stage 4: Login -->
+                            <div class="flow-box login-page">
+                                <i class="fa fa-sign-in"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Login</span>
+                            </div>
+
+                            <!-- Arrow to Final -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.8s;"></div>
+                            </div>
+
+                            <!-- Stage 5: Final -->
+                            <div class="flow-box final-redirect">
+                                <i class="fa fa-external-link"></i>
+                                <span class="flow-label">Final</span>
+                                <span class="flow-value">Redirect</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <style>
+                            .redirector-switch span:before {
+                                position: absolute;
+                                content: "";
+                                height: 22px;
+                                width: 22px;
+                                left: 3px;
+                                bottom: 3px;
+                                background-color: white;
+                                transition: .3s;
+                                border-radius: 50%;
+                                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+                            }
+
+                            .redirector-switch input:checked+span {
+                                background-color: #5cb85c !important;
+                            }
+
+                            .redirector-switch input:checked+span:before {
+                                transform: translateX(24px);
+                            }
+                        </style>
+
+                        <!-- Redirector Options (shown when toggle is ON) -->
+                        <div id="redirectorOptions" style="opacity: 0.4; pointer-events: none;">
+                            <div class="form-group">
+                                <label class="control-label" style="font-weight: bold;">Cloudflare Domain </label>
+
+                                <select class="form-control" id="redirectorDomain">
+                                    <option value="">-- Select Domain --</option>
+                                </select>
+                                <p class="help-block">Select the domain to use for the redirector page.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Redirector Template Selection (Separate Panel - like Step 2) -->
+                <div class="panel panel-default" id="redirectorTemplatePanel"
+                    style="opacity: 0.4; pointer-events: none;">
+                    <div class="panel-heading" style="background-color: #fff; font-weight: bold; font-size: 16px;">
+                        Redirector Template
+                    </div>
+                    <div class="panel-body">
+                        <div class="row" style="margin-bottom: 15px;">
+                            <div class="col-md-8">
+                                <div class="input-group" style="width: 300px;">
+                                    <input type="text" id="redirectorTemplateSearch" class="form-control"
+                                        placeholder="Search templates...">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-success" type="button"><i
+                                                class="fa fa-search"></i></button>
+                                    </span>
+                                </div>
+                                <input type="hidden" id="redirectorTemplate" name="redirector_template">
+                            </div>
+                            <div class="col-md-4 text-right">
+                                <button type="button" class="btn btn-success" onclick="openRedirectorModal('create')">
+                                    <i class="fa fa-plus"></i> New Redirector
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="redirectorTemplateCards" class="row">
+                            <!-- Cards will be populated by JavaScript -->
+                            <div class="col-md-12 text-center" style="padding: 40px;">
+                                <i class="fa fa-spinner fa-spin fa-2x"></i>
+                                <p>Loading redirector templates...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: Select & Configure Phishlet -->
+            <div class="wizard-step" id="step4">
+                <style>
+                    .phishlet-card {
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        padding: 0;
+                        margin-bottom: 25px;
+                        cursor: pointer;
+                        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+                        background: rgba(255, 255, 255, 0.7);
+                        backdrop-filter: blur(12px);
+                        -webkit-backdrop-filter: blur(12px);
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        text-align: center;
+                        position: relative;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                        overflow: hidden;
+                        height: 100%;
+                    }
+
+                    .phishlet-preview-container {
+                        width: 100%;
+                        height: 140px;
+                        overflow: hidden;
+                        position: relative;
+                        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                        background: #f8f9fa;
+                    }
+
+                    .phishlet-preview-img {
+                        width: 50%;
+                        height: 100%;
+                        object-fit: cover;
+                        transition: transform 0.5s ease;
+                    }
+
+                    .phishlet-card:hover .phishlet-preview-img {
+                        transform: scale(1.1);
+                    }
+
+                    .phishlet-badge {
+                        position: absolute;
+                        top: 10px;
+                        left: 10px;
+                        padding: 4px 10px;
+                        background: rgba(17, 153, 142, 0.9);
+                        color: #fff;
+                        font-size: 10px;
+                        font-weight: bold;
+                        border-radius: 4px;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        z-index: 2;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                    }
+
+                    .phishlet-card-content {
+                        padding: 15px;
+                        width: 100%;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                    }
+
+                    .phishlet-card::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(90deg,
+                                transparent,
+                                rgba(255, 255, 255, 0.4),
+                                transparent);
+                        transition: 0.5s;
+                    }
+
+                    .phishlet-card:hover::before {
+                        left: 100%;
+                    }
+
+                    .phishlet-card:hover {
+                        transform: translateY(-8px) scale(1.02);
+                        border-color: rgba(56, 239, 125, 0.5);
+                        box-shadow: 0 15px 30px rgba(56, 239, 125, 0.15);
+                        background: rgba(255, 255, 255, 0.9);
+                    }
+
+                    .phishlet-card.selected {
+                        border-color: #38ef7d;
+                        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 255, 244, 0.9) 100%);
+                        box-shadow: 0 0 25px rgba(56, 239, 125, 0.3), 0 10px 20px rgba(0, 0, 0, 0.05);
+                        transform: scale(1.05);
+                        z-index: 2;
+                    }
+
+                    .phishlet-card .phishlet-icon {
+                        font-size: 32px;
+                        color: #11998e;
+                        margin-bottom: 8px;
+                        transition: all 0.4s;
+                        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+                    }
+
+                    .phishlet-card.selected .phishlet-icon {
+                        color: #38ef7d;
+                        transform: scale(1.1);
+                        filter: drop-shadow(0 0 12px rgba(56, 239, 125, 0.6));
+                    }
+
+                    /* Brand Specific Icon Colors */
+                    .phishlet-icon.brand-google {
+                        color: #4285F4 !important;
+                    }
+
+                    .phishlet-icon.brand-microsoft {
+                        color: #00A4EF !important;
+                    }
+
+                    .phishlet-icon.brand-linkedin {
+                        color: #0077B5 !important;
+                    }
+
+                    .phishlet-icon.brand-github {
+                        color: #181717 !important;
+                    }
+
+                    .phishlet-icon.brand-amazon {
+                        color: #FF9900 !important;
+                    }
+
+                    .phishlet-icon.brand-facebook {
+                        color: #1877F2 !important;
+                    }
+
+                    .phishlet-icon.brand-twitter {
+                        color: #1DA1F2 !important;
+                    }
+
+                    .phishlet-icon.brand-apple {
+                        color: #000000 !important;
+                    }
+
+                    .phishlet-card .phishlet-name {
+                        font-weight: bold;
+                        color: #333;
+                        font-size: 15px;
+                        word-break: break-all;
+                    }
+
+                    .phishlet-card.selected .phishlet-name {
+                        color: #11998e;
+                    }
+
+                    .phishlet-grid-container {
+                        max-height: 500px;
+                        overflow-y: auto;
+                        padding: 25px;
+                        background: linear-gradient(135deg, rgba(246, 248, 251, 0.5) 0%, rgba(252, 252, 252, 0.5) 100%);
+                        border: 1px solid rgba(0, 0, 0, 0.05);
+                        border-radius: 20px;
+                        margin-top: 20px;
+                        margin-bottom: 30px;
+                        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.02);
+                    }
+
+                    .phishlet-search-wrapper {
+                        position: relative;
+                        margin-bottom: 20px;
+                    }
+
+                    .phishlet-search-wrapper i {
+                        position: absolute;
+                        left: 15px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #999;
+                    }
+
+                    #phishletSearch,
+                    #domainSearch {
+                        height: 45px;
+                        font-size: 15px;
+                        border-radius: 25px;
+                        padding-left: 45px;
+                        border: 2px solid #eee;
+                        transition: all 0.3s;
+                        width: 100%;
+                    }
+
+                    #phishletSearch:focus,
+                    #domainSearch:focus {
+                        border-color: #38ef7d;
+                        box-shadow: 0 0 15px rgba(56, 239, 125, 0.15);
+                        outline: none;
+                    }
+
+                    /* Selected checkmark for cards */
+                    .phishlet-card.selected::after {
+                        content: '\f058';
+                        font-family: FontAwesome;
+                        position: absolute;
+                        top: 10px;
+                        right: 10px;
+                        color: #38ef7d;
+                        font-size: 20px;
+                    }
+
+                    /* Domain Selection Styles */
+                    .domain-item {
+                        padding: 15px 25px;
+                        border: 1px solid rgba(0, 0, 0, 0.05);
+                        margin-bottom: 8px;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        background: rgba(255, 255, 255, 0.6);
+                        backdrop-filter: blur(5px);
+                    }
+
+                    .domain-item:hover {
+                        background: rgba(255, 255, 255, 0.9);
+                        border-color: #38ef7d;
+                        transform: translateX(10px);
+                        box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.05);
+                    }
+
+                    .domain-item.active {
+                        border-color: #38ef7d;
+                        background: rgba(240, 255, 244, 0.8);
+                        box-shadow: 0 4px 15px rgba(56, 239, 125, 0.15);
+                        font-weight: 600;
+                        transform: translateX(5px);
+                    }
+
+                    .domain-item .domain-status {
+                        font-size: 11px;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        padding: 2px 8px;
+                        border-radius: 12px;
+                        background: #eee;
+                        color: #666;
+                    }
+
+                    .domain-item.active .domain-status {
+                        background: #38ef7d;
+                        color: #fff;
+                    }
+
+                    .domain-pagination-container {
+                        margin-top: 15px;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 20px;
+                    }
+
+                    .domain-pagination-btn {
+                        padding: 5px 15px;
+                        border-radius: 20px;
+                        border: 1px solid #ddd;
+                        background: #fff;
+                        color: #333;
+                        transition: all 0.2s;
+                    }
+
+                    .domain-pagination-btn:hover:not(:disabled) {
+                        background: #f0f0f0;
+                        border-color: #38ef7d;
+                        color: #38ef7d;
+                    }
+
+                    .domain-pagination-btn:disabled {
+                        opacity: 0.5;
+                        cursor: not-allowed;
+                    }
+
+                    #domainPageInfo {
+                        font-size: 13px;
+                        color: #666;
+                        font-weight: 500;
+                    }
+                </style>
+                <h4 class="page-header">Step 4: Login page</h4>
+
+                <!-- Flow Diagram Preview for Step 4 -->
+                <div class="panel panel-default" style="margin-bottom: 20px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Campaign -->
+                            <div class="flow-box campaign-type completed">
+                                <i class="fa fa-bullhorn"></i>
+                                <span class="flow-label">Campaign</span>
+                                <span class="flow-value">EMAIL</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Template -->
+                            <div class="flow-box email-template completed">
+                                <i class="fa fa-envelope"></i>
+                                <span class="flow-label">Template</span>
+                                <span class="flow-value">Email</span>
+                            </div>
+
+                            <!-- Redirector Bypass Arrow -->
+                            <div class="flow-arrow flow-bypass-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.3s;"></div>
+                            </div>
+
+                            <!-- Stage 3: Redirector (Wrapped in Dynamic Classes) -->
+                            <div class="flow-arrow flow-redirector-item">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <div class="flow-box redirector flow-redirector-item completed">
+                                <i class="fa fa-random"></i>
+                                <span class="flow-label">Redirector</span>
+                                <span class="flow-value">Page</span>
+                            </div>
+                            <div class="flow-arrow flow-redirector-item">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+
+                            <!-- Stage 4: Login -->
+                            <div class="flow-box login-page active">
+                                <i class="fa fa-sign-in"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Login</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
+                            </div>
+                            <!-- Stage 5: Final -->
+                            <div class="flow-box final-redirect">
+                                <i class="fa fa-external-link"></i>
+                                <span class="flow-label">Final</span>
+                                <span class="flow-value">Redirect</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <!-- Phishlet Selection -->
+                        <div class="form-group">
+                            <label class="control-label"
+                                style="font-weight: 600; color: #2c3e50; font-size: 15px; margin-bottom: 15px;">
+                                <i class="fa fa-shield"></i> Select Phishlet
+                            </label>
+
+                            <div class="phishlet-search-wrapper">
+                                <i class="fa fa-search"></i>
+                                <input type="text" id="phishletSearch" class="form-control"
+                                    placeholder="Search for a phishlet (e.g. o365, google)...">
+                            </div>
+
+                            <div class="phishlet-grid-container">
+                                <div id="phishletCards" class="row" style="margin: 0;">
+                                    <div class="col-md-12 text-center text-muted" style="padding: 40px;">
+                                        <i class="fa fa-spinner fa-spin fa-2x"></i>
+                                        <p style="margin-top: 10px;">Loading phishlets...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hidden select to maintain compatibility with existing JS logic -->
+                            <select class="form-control" id="phishletSelect" style="display: none;">
+                                <option value="">-- Select Phishlet --</option>
+                            </select>
+                        </div>
+
+                        <!-- Configuration Panel (Shown after selection) -->
+                        <div id="phishletConfigPanel" style="display:none; margin-top: 20px;">
+                            <legend style="display: flex; justify-content: space-between; align-items: center;">
+                                Configuration
+                                <!-- <span id="phishletStatusBadge" class="label label-default"
+                                    style="font-size: 75%; vertical-align: middle;">Unknown</span> -->
+                            </legend>
+
+                            <!-- Toggle Status removed -->
+
+                            <!-- Hostname -->
+                            <div class="form-group">
+                                <label style="font-weight: 600; color: #2c3e50; font-size: 15px; margin-bottom: 10px;">
+                                    <i class="fa fa-globe"></i> Phishlet Hostname
+                                </label>
+
+                                <div class="phishlet-search-wrapper" style="margin-bottom: 10px;">
+                                    <i class="fa fa-search"></i>
+                                    <input type="text" id="domainSearch" class="form-control"
+                                        placeholder="Search for a domain...">
+                                </div>
+
+                                <div id="domainList" class="domain-list-container" style="min-height: 100px;">
+                                    <div class="text-center text-muted" style="padding: 20px;">
+                                        <p>Select a phishlet above to load available domains.</p>
+                                    </div>
+                                </div>
+
+                                <div id="domainPagination" class="domain-pagination-container" style="display: none;">
+                                    <button class="domain-pagination-btn" id="prevDomainPage">
+                                        <i class="fa fa-chevron-left"></i> Previous
+                                    </button>
+                                    <span id="domainPageInfo">Page 1 of 1</span>
+                                    <button class="domain-pagination-btn" id="nextDomainPage">
+                                        Next <i class="fa fa-chevron-right"></i>
+                                    </button>
+                                </div>
+
+                                <select class="form-control" id="phishletHostname" style="display: none;">
+                                    <option value="">-- Select Domain --</option>
+                                </select>
+                            </div>
+
+                            <!-- Server IP -->
+                            <!-- <div class="form-group">
+                                <label>Server IP (Global)</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="serverIPv4" placeholder="e.g. 1.2.3.4">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-primary" type="button" id="saveIPv4Btn"><i
+                                                class="fa fa-save"></i> Save</button>
+                                    </span>
+                                </div>
+                            </div> -->
+
+                            <!-- Phishlet Hosts -->
+                            <div class="form-group" id="phishletHostsContainer"
+                                style="margin-top: 15px; display: none;">
+                                <label>Authorized Hosts</label>
+                                <div class="well" style="padding: 10px; margin-bottom: 0; background-color: #f9f9f9;">
+                                    <div id="phishletHostsLoading" style="display:none; text-align: center;">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading hosts...
+                                    </div>
+                                    <ul id="phishletHostsList"
+                                        style="padding-left: 20px; list-style-type: circle; margin-bottom: 0;"></ul>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 5: Lure / Redirect -->
+            <div class="wizard-step" id="step5">
+                <h4 class="page-header">Step 5: Final Destination</h4>
+
+                <!-- Flow Diagram Preview for Step 5 -->
+                <div class="panel panel-default" style="margin-bottom: 20px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Campaign -->
+                            <div class="flow-box campaign-type completed">
+                                <i class="fa fa-bullhorn"></i>
+                                <span class="flow-label">Campaign</span>
+                                <span class="flow-value">EMAIL</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Template -->
+                            <div class="flow-box email-template completed">
+                                <i class="fa fa-envelope"></i>
+                                <span class="flow-label">Template</span>
+                                <span class="flow-value">Email</span>
+                            </div>
+
+                            <!-- Redirector Bypass Arrow -->
+                            <div class="flow-arrow flow-bypass-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.3s;"></div>
+                            </div>
+
+                            <!-- Stage 3: Redirector (Wrapped in Dynamic Classes) -->
+                            <div class="flow-arrow flow-redirector-item">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <div class="flow-box redirector flow-redirector-item completed">
+                                <i class="fa fa-random"></i>
+                                <span class="flow-label">Redirector</span>
+                                <span class="flow-value">Page</span>
+                            </div>
+                            <div class="flow-arrow flow-redirector-item">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+
+                            <!-- Stage 4: Login -->
+                            <div class="flow-box login-page completed">
+                                <i class="fa fa-sign-in"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Login</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
+                            </div>
+                            <!-- Stage 5: Final -->
+                            <div class="flow-box final-redirect active">
+                                <i class="fa fa-external-link"></i>
+                                <span class="flow-label">Final</span>
+                                <span class="flow-value">Redirect</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default" style="border-color: #ddd;">
+                    <div class="panel-heading" style="background-color: #fff; font-weight: bold; font-size: 16px;">
+                        Final Destination & Redirection
+                    </div>
+                    <div class="panel-body">
+                        <!-- Current Lure Display -->
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label class="control-label" style="font-weight: bold; color: #555;">Current Lure
+                                URL</label>
+                            <div class="input-group">
+                                <input type="text" id="currentLureDisplay" class="form-control" readonly
+                                    style="background-color: #fcfcfc; border-color: #eee; font-family: monospace; font-size: 13px;">
+
+                            </div>
+                            <p class="help-block" style="font-size: 11px;">This is the URL that will be sent to targets.
+                            </p>
+                        </div>
+
+                        <!-- Final Destination Input -->
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label class="control-label" style="font-weight: bold; color: #555;">Final Destination
+                                (Redirection URL)</label>
+                            <input type="text" id="lureFinalDestination" class="form-control"
+                                placeholder="https://www.google.com" style="border-radius: 4px;">
+                            <p class="help-block" style="font-size: 11px;">Where targets will be sent after they finish
+                                the phishing flow.</p>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-primary" id="btnSaveFinalDestination"
+                                    onclick="saveFinalDestination()">
+                                    <i class="fa fa-save"></i> Set Final Destination
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Hidden input to store selected lure for form submission -->
+                        <input type="hidden" id="manualLureUrl" name="manual_lure_url">
+                        <input type="hidden" id="selectedLureId" name="selected_lure_id">
+                        <input type="hidden" id="selectedLureLandingUrl" name="selected_lure_landing_url">
+                        <!-- Redirect URL Group (Unique ID to prevent collision) -->
+                        <div class="form-group" id="tracking_redirect_url_group" style="margin-top: 20px;">
+                            <label class="control-label" for="tracking_redirect_url" style="display: none;">Redirection
+                                URL:
+                                <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
+                                    title="URL to redirect to after successful capture" style="display: none;"></i>
+                            </label>
+                            <input type="text" class="form-control" id="tracking_redirect_url"
+                                placeholder="https://target.com/login" style="display: none;">
+                        </div>
+                        <div class="form-group qr-only" style="display:none;">
+                            <label class="control-label" for="qr_size">QR Code Size (px):</label>
+                            <input type="number" class="form-control" id="qr_size" value="250" min="100" max="500" />
+                        </div>
+                        <div class="form-group qr-only" style="display:none;">
+                            <label class="control-label">QR Code Preview:</label>
+                            <div id="qrcode"
+                                style="display: flex; justify-content: center; padding: 20px; background: #f5f5f5; border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Close Step 5 -->
+
+            <!-- STEP 6: Groups -->
+            <div class="wizard-step" id="step6">
+                <h4 class="page-header">Step 6: Target Groups</h4>
+
+                <!-- Flow Diagram Preview for Step 6 -->
+                <div class="panel panel-default" style="margin-bottom: 25px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Setting up target groups
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Email Flow (Consolidated) -->
+                            <div class="flow-box email-flow-completed completed">
+                                <i class="fa fa-envelope-open-o"></i>
+                                <span class="flow-label">Email</span>
+                                <span class="flow-value">Flow</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Target Groups -->
+                            <div class="flow-box target-groups active">
+                                <i class="fa fa-users"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Groups</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <!-- Stage 3: Sending Profile -->
+                            <div class="flow-box sending-profile">
+                                <i class="fa fa-paper-plane"></i>
+                                <span class="flow-label">Sending</span>
+                                <span class="flow-value">Profile</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+                            <!-- Stage 4: Launch Date -->
+                            <div class="flow-box schedule-step">
+                                <i class="fa fa-calendar-check-o"></i>
+                                <span class="flow-label">Launch</span>
+                                <span class="flow-value">Date</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-success" data-toggle="modal"
+                            data-target="#createGroupModal">
+                            <i class="fa fa-plus"></i> New Group
+                        </button>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <div class="btn-group" data-toggle="buttons">
+                            <label class="btn btn-default active btn-filter-group" onclick="filterGroups('all')">
+                                <input type="radio" name="group-filter" autocomplete="off" checked> All
+                            </label>
+                            <label class="btn btn-success btn-filter-group" onclick="filterGroups('email')">
+                                <input type="radio" name="group-filter" autocomplete="off"> Email
+                            </label>
+                            <label class="btn btn-info btn-filter-group" onclick="filterGroups('sms')">
+                                <input type="radio" name="group-filter" autocomplete="off"> SMS
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 10px;">
+                    <div class="col-md-6">
+                        <!-- Simplified Page Size for now, logic later -->
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <input type="text" id="groupSearch" class="form-control input-sm" placeholder="Search..."
+                            style="display:inline-block; width: 200px;">
+                    </div>
+                </div>
+
+                <!-- Hidden select for form logic compatibility -->
+                <select id="users" multiple="multiple" style="display:none;"></select>
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="groupTable">
+                        <thead>
+                            <tr>
+                                <th width="40" class="text-center"><i class="fa fa-check-square-o"></i></th>
+                                <th>Name</th>
+                                <th class="text-center">Type</th>
+                                <th>Created By</th>
+                                <th class="text-center">No. of Members</th>
+                                <th>Modified Date</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="groupTableBody">
+                            <tr>
+                                <td colspan="7" class="text-center">Loading groups...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="groupPagination" class="text-right" style="margin-top: 15px;"></div>
+            </div>
+
+            <!-- STEP 7: Sending Profile -->
+            <div class="wizard-step" id="step7">
+                <h4 class="page-header" id="step7_title">Step 7: Sending Profile</h4>
+
+                <!-- Flow Diagram Preview for Step 7 -->
+                <div class="panel panel-default" style="margin-bottom: 25px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Selecting sending profile
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Email Flow (Consolidated) -->
+                            <div class="flow-box email-flow-completed completed">
+                                <i class="fa fa-envelope-open-o"></i>
+                                <span class="flow-label">Email</span>
+                                <span class="flow-value">Flow</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Target Groups -->
+                            <div class="flow-box target-groups completed">
+                                <i class="fa fa-users"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Groups</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <!-- Stage 3: Sending Profile -->
+                            <div class="flow-box sending-profile active">
+                                <i class="fa fa-paper-plane"></i>
+                                <span class="flow-label">Sending</span>
+                                <span class="flow-value">Profile</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+                            <!-- Stage 4: Launch Date -->
+                            <div class="flow-box schedule-step">
+                                <i class="fa fa-calendar-check-o"></i>
+                                <span class="flow-label">Launch</span>
+                                <span class="flow-value">Date</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 20px;">
+                    <div class="col-md-6">
+                        <button type="button" class="btn btn-success" onclick="openCreateProfileModal()">
+                            <i class="fa fa-plus"></i> New Profile
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-bottom: 10px;">
+                    <div class="col-md-6">
+                        <!-- Page size logic placeholder -->
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <input type="text" id="profileSearch" class="form-control input-sm" placeholder="Search..."
+                            style="display:inline-block; width: 200px;">
+                    </div>
+                </div>
+
+                <!-- Hidden inputs for validation logic -->
+                <input type="hidden" id="profile" name="profile_id">
+                <input type="hidden" id="profile_name" name="profile_name">
+
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover" id="profileTable">
+                        <thead>
+                            <tr>
+                                <th width="40" class="text-center"><i class="fa fa-check-circle-o"></i></th>
+                                <th>Name</th>
+                                <th class="text-center">Interface Type</th>
+                                <th>Created By</th>
+                                <th>Last Modified Date</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profileTableBody">
+                            <tr>
+                                <td colspan="6" class="text-center">Loading profiles...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="profilePagination" class="text-right" style="margin-top: 15px;"></div>
+            </div>
+
+            <!-- STEP 8: Schedule -->
+            <div class="wizard-step" id="step8">
+                <h4 class="page-header">Step 8: Schedule</h4>
+
+                <!-- Flow Diagram Preview for Step 8 -->
+                <div class="panel panel-default" style="margin-bottom: 25px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Scheduling campaign launch
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Email Flow (Consolidated) -->
+                            <div class="flow-box email-flow-completed completed">
+                                <i class="fa fa-envelope-open-o"></i>
+                                <span class="flow-label">Email</span>
+                                <span class="flow-value">Flow</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Target Groups -->
+                            <div class="flow-box target-groups completed">
+                                <i class="fa fa-users"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Groups</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <!-- Stage 3: Sending Profile -->
+                            <div class="flow-box sending-profile completed">
+                                <i class="fa fa-paper-plane"></i>
+                                <span class="flow-label">Sending</span>
+                                <span class="flow-value">Profile</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+                            <!-- Stage 4: Launch Date -->
+                            <div class="flow-box schedule-step active">
+                                <i class="fa fa-calendar-check-o"></i>
+                                <span class="flow-label">Launch</span>
+                                <span class="flow-value">Date</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="control-label" for="url">Launch Date </label>
+                        <input type="text" class="form-control" id="launch_date" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="control-label" for="delay" id="delay_label">Send Emails By (Optional)
+                            <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
+                                title="If specified, trust_strike will send emails evenly between the campaign launch and this date."></i>
+                        </label>
+                        <input type="text" class="form-control" id="send_by_date" autocomplete="random-data" />
+                        <!--Chrome ignores autocomplete="off".-->
+                    </div>
+                </div>
+                <!-- Scheduled Stop Date -->
+                <div class="row" style="margin-top: 15px;">
+                    <div class="col-md-6">
+                        <label class="control-label" for="scheduled_stop_date">End Date (Auto Stop) (Optional)
+                            <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
+                                title="If specified, the campaign and EC2 instance will automatically shutdown at this time."></i>
+                        </label>
+                        <input type="text" class="form-control" id="scheduled_stop_date" autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 9: Final Review / Launch -->
+            <div class="wizard-step" id="step9">
+                <h4 class="page-header">Step 9: Launch Campaign</h4>
+
+                <!-- Flow Diagram Preview for Step 9 -->
+                <div class="panel panel-default" style="margin-bottom: 25px;">
+                    <div class="panel-body"
+                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                        <p
+                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fa fa-sitemap"></i> Final review & launch
+                        </p>
+                        <div class="flow-preview-container">
+                            <!-- Stage 1: Email Flow (Consolidated) -->
+                            <div class="flow-box email-flow-completed completed">
+                                <i class="fa fa-envelope-open-o"></i>
+                                <span class="flow-label">Email</span>
+                                <span class="flow-value">Flow</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot"></div>
+                            </div>
+                            <!-- Stage 2: Target Groups -->
+                            <div class="flow-box target-groups completed">
+                                <i class="fa fa-users"></i>
+                                <span class="flow-label">Target</span>
+                                <span class="flow-value">Groups</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                            </div>
+                            <!-- Stage 3: Sending Profile -->
+                            <div class="flow-box sending-profile completed">
+                                <i class="fa fa-paper-plane"></i>
+                                <span class="flow-label">Sending</span>
+                                <span class="flow-value">Profile</span>
+                            </div>
+                            <!-- Arrow -->
+                            <div class="flow-arrow">
+                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                            </div>
+                            <!-- Stage 4: Launch Date -->
+                            <div class="flow-box schedule-step completed">
+                                <i class="fa fa-calendar-check-o"></i>
+                                <span class="flow-label">Launch</span>
+                                <span class="flow-value">Date</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-info">
+                    <strong>Almost there!</strong> Click "Launch Campaign" to schedule your campaign.
+                </div>
+            </div>
+
+        </div>
+        <div class="panel-footer">
+            <button type="button" class="btn btn-default" id="prevBtn" onclick="prevStep()" style="display:none;">
+                <i class="fa fa-arrow-left"></i> Previous
+            </button>
+            <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+                Next <i class="fa fa-arrow-right"></i>
+            </button>
+
+            <!-- Original Launch Button, initially hidden -->
+            <button type="button" id="launchButton" class="btn btn-success" onclick="launch()" style="display:none;">
+                <i class="fa fa-rocket"></i> Launch Campaign</button>
+
+            <button type="button" class="btn btn-default pull-right"
+                onclick="location.href='/campaigns'">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Send Test Email Modal -->
+<div class="modal" id="sendTestEmailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- New Email Modal -->
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="sendTestEmailModalTitle">Send Test Email</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="sendTestEmailModal.flashes"></div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <label class="control-label" for="to">Send Test Email to:</label>
+                    </div>
+                    <br>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" placeholder="First Name" name="to_first_name">
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" placeholder="Last Name" name="to_last_name">
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="email" class="form-control" placeholder="Email" name="to_email" required>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" placeholder="Position" name="to_position">
+                    </div>
+                </div>
+            </div>
+            <!-- <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="sendTestModalSubmit" onclick="sendTestEmail()">
+                    <i class="fa fa-envelope"></i> Send</button>
+            </div> -->
+        </div>
+    </div>
+</div>
+
+<!-- create Template Modal -->
+<div class="modal fade" id="createTemplateModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createTemplateModalLabel">New Template</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="templateModal.flashes"></div>
+                <div class="form-group">
+                    <label class="control-label" for="modal_template_name">Name:</label>
+                    <input type="text" class="form-control" placeholder="Template name" id="modal_template_name"
+                        autofocus />
+                </div>
+                <!-- Template type is usually hidden or matched to campaign type -->
+                <!-- Template Type Visual (Read-only) -->
+                <div class="form-group">
+                    <label class="control-label">Template Type:</label>
+                    <input type="text" class="form-control" id="modal_visual_template_type" readonly
+                        style="background-color: #fff;">
+                </div>
+
+                <!-- Import Email Button -->
+                <div class="form-group modal-email-only">
+                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#importEmailModal"
+                        style="margin-bottom: 10px;">
+                        <i class="fa fa-envelope"></i> Import Email
+                    </button>
+                </div>
+
+                <input type="hidden" id="modal_template_type" value="email">
+
+                <div class="form-group modal-email-only">
+                    <label class="control-label" for="modal_envelope_sender">Envelope Sender: <i
+                            class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
+                            title="This sender is shown to the user by most email clients. Defaults to the SMTP From as defined in the Sending Profile."></i></label>
+                    <input type="text" class="form-control" placeholder="First Last <test@example.com>"
+                        id="modal_envelope_sender" />
+                </div>
+                <div class="form-group modal-email-only">
+                    <label class="control-label" for="modal_subject">Subject:</label>
+                    <input type="text" class="form-control" placeholder="Email Subject" id="modal_subject" />
+                </div>
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="html" class="modal-email-only active"><a href="#modal_html" aria-controls="modal_html"
+                            role="tab" data-toggle="tab">HTML</a>
+                    </li>
+                    <li role="plaintext" class="modal-email-only"><a href="#modal_text" aria-controls="modal_text"
+                            role="tab" data-toggle="tab">Plaintext</a>
+                    </li>
+                    <li class="modal-sms-only" role="sms" style="display:none;"><a href="#modal_sms"
+                            aria-controls="modal_sms" role="tab" data-toggle="tab">SMS Content</a>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="modal_html">
+                        <textarea id="modal_html_editor"></textarea>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="modal_text">
+                        <textarea rows="10" id="modal_text_editor" class="trust_strike-editor form-control"
+                            placeholder="Plaintext"></textarea>
+                    </div>
+                    <div role="tabpanel" class="tab-pane" id="modal_sms">
+                        <textarea rows="10" id="modal_sms_editor" class="trust_strike-editor form-control"
+                            placeholder="SMS Content"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modal_saveTemplateSubmit">
+                    <i class="fa fa-save"></i> Save Template</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Import Email Modal -->
+<div class="modal fade" id="importEmailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel"
+    style="z-index: 1060;">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="importEmailModalLabel">Import Email</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="importModal.flashes"></div>
+                <label class="control-label" for="email">Email Content:</label>
+                <div class="form-group">
+                    <textarea rows="10" id="email_content" class="form-control"
+                        placeholder="Raw Email Source"></textarea>
+                </div>
+                <div class="checkbox checkbox-primary">
+                    <input id="convert_links_checkbox" type="checkbox" checked>
+                    <label for="convert_links_checkbox">Change Links to Point to Landing Page</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="importSubmit" onclick="importEmail()">Import</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- create Group Modal -->
+<div class="modal fade" id="createGroupModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createGroupModalLabel">New Group</h4>
+            </div>
+            <div class="modal-body" id="modal_group_body">
+                <div class="row" id="modal_group_flashes"></div>
+                <div class="row">
+                    <div class="col-sm-8">
+                        <div class="form-group">
+                            <label class="control-label" for="modal_group_name">Name:</label>
+                            <input type="text" class="form-control" placeholder="Group name" id="modal_group_name"
+                                autofocus />
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label class="control-label" for="modal_group_type">Group Type:</label>
+                            <select class="form-control" id="modal_group_type">
+                                <option value="email">Email</option>
+                                <option value="sms">SMS</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <span class="btn btn-danger btn-file" id="modal_fileUpload" title="Supports CSV files"
+                        data-toggle="tooltip" data-placement="right">
+                        <i class="fa fa-plus"></i> Bulk Import Users
+                        <input type="file" id="modal_csvupload" multiple>
+                    </span>
+                    <span id="modal_csv-template" class="text-muted small" style="cursor: pointer; margin-left: 10px;">
+                        <i class="fa fa-file-excel-o"></i> Download CSV Template</span>
+                </div>
+                <hr>
+                <div class="row">
+                    <form id="modal_targetForm">
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label class="control-label visible-xs">First Name</label>
+                                <input type="text" class="form-control" placeholder="First Name" id="modal_firstName">
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label class="control-label visible-xs">Last Name</label>
+                                <input type="text" class="form-control" placeholder="Last Name" id="modal_lastName">
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label class="control-label visible-xs">Email</label>
+                                <input class="form-control" placeholder="Email/Number" id="modal_email" required>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div class="form-group">
+                                <label class="control-label visible-xs">Position</label>
+                                <input type="text" class="form-control" placeholder="Position" id="modal_position">
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label class="control-label visible-xs">&nbsp;</label>
+                                <button type="submit" class="btn btn-danger btn-block" style="height: 42px;">
+                                    <i class="fa fa-plus"></i> Add</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <br />
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table id="modal_targetsTable" class="table table-hover table-striped table-condensed">
+                        <thead>
+                            <tr>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Email</th>
+                                <th>Position</th>
+                                <th class="no-sort"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modal_saveGroupSubmit">
+                    <i class="fa fa-save"></i> Save Group</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Create Lure Modal -->
+<div class="modal fade" id="createLureModal" tabindex="-1" role="dialog" aria-labelledby="createLureModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createLureModalLabel">Create New Lure</h4>
+            </div>
+            <div class="modal-body">
+                <!-- Phishlet is auto-selected (only one enabled at a time) -->
+                <input type="hidden" id="createLureModule" value="">
+                <div class=" form-group">
+                    <label class="control-label" for="createLurePath">Lure Path (optional):</label>
+                    <input type="text" class="form-control" id="createLurePath" placeholder="/login">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="createRedirectUrl">Redirection URL (optional):</label>
+                    <input type="text" class="form-control" id="createRedirectUrl" placeholder="https://www.google.com">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createLure()">
+                    <i class="fa fa-plus"></i> Create Lure</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Lure Modal -->
+<div class="modal fade" id="editLureModal" tabindex="-1" role="dialog" aria-labelledby="editLureModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editLureModalLabel">Edit Lure</h4>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editLureId">
+                <div class="form-group">
+                    <label class="control-label" for="editLurePath">Lure Path:</label>
+                    <input type="text" class="form-control" id="editLurePath" placeholder="/login">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="editRedirectUrl">Redirection URL:</label>
+                    <input type="text" class="form-control" id="editRedirectUrl" placeholder="https://www.google.com">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="editLureRedirector">Landing Page:</label>
+                    <select id="editLureRedirector" class="form-control"
+                        style="background-color: #fff; color: #000; border: 1px solid #ddd;">
+                        <option value="">No Landing Page</option>
+                    </select>
+                    <small class="help-block">Select a redirector landing page for this lure.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveLureEdit()">
+                    <i class="fa fa-save"></i> Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Redirectors Management Modal -->
+<div class="modal fade" id="redirectorsModal" tabindex="-1" role="dialog" aria-labelledby="redirectorsModalLabel">
+    <div class="modal-dialog modal-lg" role="document" style="width: 90%; max-width: 1200px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="redirectorsModalLabel"><i class="fa fa-file-code-o"></i> Redirectors
+                    Management</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Left Side: Existing Redirectors List -->
+                    <div class="col-md-5">
+                        <h5 style="font-weight: bold; margin-bottom: 15px;"><i class="fa fa-list"></i> Existing
+                            Redirectors</h5>
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-striped table-hover" id="redirectorsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th width="80" class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="redirectorsTableBody">
+                                    <tr>
+                                        <td colspan="2" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Create New Redirector -->
+                    <div class="col-md-7">
+                        <h5 style="font-weight: bold; margin-bottom: 15px;"><i class="fa fa-plus"></i> Create New
+                            Redirector</h5>
+                        <div class="form-group">
+                            <label class="control-label" for="newRedirectorName">Name:</label>
+                            <input type="text" class="form-control" id="newRedirectorName"
+                                placeholder="my_landing_page">
+                            <small class="help-block">A unique name (no spaces). Use <code>{strike_url_html}</code>
+                                in
+                                HTML for the lure URL.</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">HTML Content:</label>
+                            <textarea class="form-control" id="newRedirectorHtml" rows="8"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="createNewRedirector()">
+                            <i class="fa fa-plus"></i> Create Redirector
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{end}}
+{{define "scripts"}}
+<!-- Create Profile Modal -->
+<div class="modal fade" id="createProfileModal" tabindex="-1" role="dialog" aria-labelledby="createProfileModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createProfileModalLabel">New Sending Profile</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="modal_profile_flashes"></div>
+
+                <form id="modal_profileForm">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label class="control-label" for="modal_profile_name">Name:</label>
+                                <input type="text" class="form-control" placeholder="Profile name"
+                                    id="modal_profile_name" autofocus />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label" for="modal_profile_interface_type">Interface
+                                    Type:</label>
+                                <!-- This will be auto-set by campaign type but allowed to view -->
+                                <input type="text" class="form-control" id="modal_profile_interface_type" readonly
+                                    style="background-color: #fff;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SMTP Fields -->
+                    <div id="modal_smtp_fields" style="display:none;">
+                        <input type="hidden" id="modal_smtp_id">
+                        <div class="form-group">
+                            <label class="control-label" for="modal_smtp_from">SMTP From: <i
+                                    class="fa fa-question-circle" data-toggle="tooltip"
+                                    title="Set this to an email address from your sending domain to bypass SPF-checks."></i></label>
+                            <input type="text" class="form-control" placeholder="test@example.com"
+                                id="modal_smtp_from" />
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label" for="modal_smtp_host">Host:</label>
+                                    <input type="text" class="form-control" placeholder="smtp.example.com:25"
+                                        id="modal_smtp_host" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label" for="modal_smtp_username">Username:</label>
+                                    <input type="text" class="form-control" placeholder="Username"
+                                        id="modal_smtp_username" autocomplete="off" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="control-label" for="modal_smtp_password">Password:</label>
+                                    <input type="password" class="form-control" placeholder="Password"
+                                        id="modal_smtp_password" autocomplete="new-password" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="checkbox checkbox-primary" style="margin-top: 25px;">
+                                    <input id="modal_smtp_ignore_cert_errors" type="checkbox" checked>
+                                    <label for="modal_smtp_ignore_cert_errors">Ignore Certificate Errors</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SMS Fields -->
+                    <div id="modal_sms_fields" style="display:none;">
+                        <input type="hidden" id="modal_sms_id">
+                        <div class="form-group">
+                            <label class="control-label" for="modal_sms_account_sid">Account SID:</label>
+                            <input type="text" class="form-control" placeholder="Account SID"
+                                id="modal_sms_account_sid" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="modal_sms_auth_token">Auth Token:</label>
+                            <input type="password" class="form-control" placeholder="Auth Token"
+                                id="modal_sms_auth_token" />
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="modal_sms_from">Phone Number:</label>
+                            <input type="text" class="form-control" placeholder="+1234567890" id="modal_sms_from" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" id="modal_saveProfileSubmit">
+                    <i class="fa fa-save"></i> Save Profile</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Redirector Template Create/Edit Modal -->
+<div class="modal" id="redirectorModal" tabindex="-1" role="dialog" aria-labelledby="redirectorModalLabel">
+    <div class="modal-dialog modal-lg" role="document" style="width: 80%; max-width: 1000px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="redirectorModalLabel">New Redirector Template</h4>
+            </div>
+            <div class="modal-body">
+                <form id="redirectorForm">
+                    <input type="hidden" id="redirectorModalMode" value="create">
+                    <input type="hidden" id="redirectorModalOriginalName" value="">
+
+                    <div class="form-group">
+                        <label class="control-label" for="redirectorModalName">Template Name <span
+                                class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="redirectorModalName"
+                            placeholder="e.g., my_landing_page" required>
+                        <p class="help-block">A unique name for this redirector template.</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label" for="redirectorModalHtml">HTML Content <span
+                                class="text-danger">*</span></label>
+                        <textarea class="form-control" id="redirectorModalHtml" rows="15"
+                            style="font-family: monospace; font-size: 12px;"
+                            placeholder="<!DOCTYPE html>..."></textarea>
+                        <p class="help-block">The HTML content for the redirector page. Use
+                            <code>{strike_url_html}</code>
+                            for redirect URL.
+                        </p>
+                    </div>
+
+                    <!-- Assets Section -->
+                    <div class="form-group" id="redirectorAssetsSection" style="display: none;">
+                        <label class="control-label">Assets <small class="text-muted">(Images, Icons,
+                                etc.)</small></label>
+                        <div id="redirectorAssetsContainer"
+                            style="border: 1px solid #ddd; border-radius: 4px; padding: 10px; max-height: 200px; overflow-y: auto; background: #f9f9f9;">
+                            <!-- Assets will be rendered here -->
+                        </div>
+                        <p class="help-block">These assets are associated with this redirector template.</p>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveRedirectorModal()">
+                    <i class="fa fa-save"></i> Save Redirector
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/js/src/vendor/ckeditor/ckeditor.js"></script>
+<script src="/js/src/vendor/ckeditor/adapters/jquery.js"></script>
+<script src="/js/dist/app/autocomplete.min.js"></script>
+<script src="/js/dist/app/campaign_edit.min.js"></script>
+<script src="/js/dist/qrcode.min.js"></script>
+{{end}}

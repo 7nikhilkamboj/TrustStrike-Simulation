@@ -1,0 +1,1723 @@
+{{define "body"}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <h1 class="page-header">Simulation Server</h1>
+    </div>
+    <div id="flashes" class="row">
+        {{template "flashes" .Flashes}}
+    </div>
+
+    <!-- Settings & Modules Section -->
+    <div class="row" style="margin-bottom: 25px;">
+        <div class="col-md-10 col-md-offset-1">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <!-- Phishlet Config -->
+                <div id="phishletCard" class="module-card active-module" onclick="switchModule('phishlet')"
+                    style="flex: 1; min-width: 250px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s ease; cursor: pointer;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <i class="fa fa-plug" style="font-size: 24px;"></i>
+                        <span
+                            style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 20px; font-size: 11px; text-transform: uppercase; font-weight: bold;">Available</span>
+                    </div>
+                    <h4 style="margin: 0; font-size: 18px; font-weight: 600;">Phishlet Configuration</h4>
+                    <p style="margin: 10px 0 0 0; font-size: 13px; opacity: 0.9;">Manage active phishlets, hostnames,
+                        and lures.</p>
+                </div>
+
+                <!-- DNS Config -->
+                <div id="dnsCard" class="module-card" onclick="switchModule('dns')"
+                    style="flex: 1; min-width: 250px; background: #fff; color: #333; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; transition: transform 0.3s ease; cursor: pointer;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <i class="fa fa-globe" style="font-size: 24px; color: #757575;"></i>
+                        <span
+                            style="background: #f5f5f5; color: #616161; padding: 4px 10px; border-radius: 20px; font-size: 11px; text-transform: uppercase; font-weight: bold;">Available</span>
+                    </div>
+                    <h4 style="margin: 0; font-size: 18px; font-weight: 600; color: #424242;">DNS Configuration</h4>
+                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #757575;">Automated DNS records and nameserver
+                        management.</p>
+                </div>
+
+                <!-- Twillio Config -->
+                <div id="twilioCard" class="module-card" onclick="switchModule('twilio')"
+                    style="flex: 1; min-width: 250px; background: #fff; color: #333; padding: 20px; border-radius: 12px; border: 1px solid #e0e0e0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; transition: transform 0.3s ease; cursor: pointer;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <i class="fa fa-commenting" style="font-size: 24px; color: #757575;"></i>
+                        <span
+                            style="background: #f5f5f5; color: #616161; padding: 4px 10px; border-radius: 20px; font-size: 11px; text-transform: uppercase; font-weight: bold;">Soon</span>
+                    </div>
+                    <h4 style="margin: 0; font-size: 18px; font-weight: 600; color: #424242;">Twillio Configuration</h4>
+                    <p style="margin: 10px 0 0 0; font-size: 13px; color: #757575;">Integration for SMS based lures and
+                        notifications.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="phishletView">
+        <!-- Config Panel -->
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-inverse"
+                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
+                    <div class="panel-heading" style="background-color: #fff; border-bottom: 1px solid #cacaca;">
+                        <h3 class="panel-title">Config</h3>
+                    </div>
+                    <div class="panel-body">
+
+                        <!-- Domain -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Domain</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="configDomain"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setConfigDomain()"
+                                    class="btn btn-primary btn-block">Set</button>
+                            </div>
+                        </div>
+
+                        <!-- External IPv4 -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">External IPv4</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="configIPv4"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setConfigIPv4()"
+                                    class="btn btn-primary btn-block">Set</button>
+                            </div>
+                        </div>
+
+                        <!-- Unauth URL -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Unauth URL</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="configUnauthUrl"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setConfigUnauthUrl()"
+                                    class="btn btn-primary btn-block">Set</button>
+                            </div>
+                        </div>
+
+                        <hr style="border-top: 1px solid #cacaca;">
+
+                        <!-- Gophish Admin URL -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Gophish Admin URL</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="gophishAdminUrl"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setGophish()"
+                                    class="btn btn-primary btn-block">Set</button>
+                            </div>
+                        </div>
+
+                        <!-- Gophish API Key -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Gophish API Key</label>
+                            <div class="col-sm-6">
+                                <div style="position: relative;">
+                                    <input type="password" class="form-control" id="gophishApiKey"
+                                        style="background-color:#fff; color:#000; border:1px solid #000; padding-right:60px;">
+                                    <button type="button" onclick="toggleSecret('gophishApiKey', this)"
+                                        style="position:absolute; right:5px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setGophish()"
+                                    class="btn btn-primary btn-block">Set</button>
+                            </div>
+                        </div>
+
+                        <!-- Gophish Insecure -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Insecure (Gophish)</label>
+                            <div class="col-sm-6">
+                                <select id="gophishInsecure" class="form-control"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                                    <option value="false">False</option>
+                                    <option value="true">True</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setGophish()"
+                                    class="btn btn-primary btn-block">Set</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phishlet Panel -->
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-inverse"
+                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
+                    <div class="panel-heading" style="background-color: #fff; border-bottom: 1px solid #cacaca;">
+                        <h3 class="panel-title">Phishlet</h3>
+                    </div>
+                    <div class="panel-body">
+
+                        <!-- Phishlet Select -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Phishlet Select</label>
+                            <div class="col-sm-8">
+                                <select id="phishletSelect" class="form-control"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                                    <option value="">Select a phishlet...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Phishlet Hostname -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Phishlet Hostname</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="phishletHostname"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setPhishletHostname()"
+                                    class="btn btn-primary btn-block">Set</button>
+                            </div>
+                        </div>
+
+                        <!-- Phishlet Landing Domain -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Redirector Domain</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="phishletLandingDomain"
+                                    style="background-color: #fff; color: #000; border: 1px solid #000;"
+                                    placeholder="e.g. aadcdn.localhost.com">
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="button" onclick="setPhishletLandingDomain()"
+                                    class="btn btn-info btn-block">Set</button>
+                            </div>
+                        </div>
+
+                        <!-- Phishlet Enabled -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Phishlet Enabled</label>
+                            <div class="col-sm-8">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <label class="switch">
+                                        <input type="checkbox" id="phishletEnabled" onchange="togglePhishlet()">
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span id="enabledStatusText" style="font-weight:bold; color: #333;">OFF</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lures Panel -->
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-inverse"
+                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
+                    <div class="panel-heading" style="background-color: #fff; border-bottom: 1px solid #cacaca;">
+                        <h3 class="panel-title">Lures List</h3>
+                    </div>
+                    <div class="panel-body">
+
+                        <!-- Create Lures -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+                            <div class="col-sm-8">
+                                <button type="button" onclick="openCreateLureModal()" id="createBtn"
+                                    class="btn btn-primary">
+                                    <i class="fa fa-plus"></i> Create New Lure
+                                </button>
+                                <button type="button" onclick="openRedirectorsModal()" class="btn btn-success"
+                                    style="margin-left: 10px;">
+                                    <i class="fa fa-file-code-o"></i> Show Redirectors
+                                </button>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Lures Table -->
+                        <div class="form-group row" style="margin-bottom: 20px;">
+
+                            <div class="col-sm-12">
+                                <div class="table-responsive">
+                                    <table class="table table-hover"
+                                        style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 15px;">
+                                        <thead>
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>URL</th>
+                                                <th>Redirector</th>
+                                                <th>Final Destination</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="luresListBody">
+                                            <tr>
+                                                <td colspan="4" class="text-center">No lures found.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dnsView" style="display: none;">
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-inverse"
+                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
+                    <!-- Start DNS View -->
+                    <div class="panel panel-default dns-panel">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">DNS Configuration</h3>
+                        </div>
+
+                        <div class="panel-body">
+                            <!-- <div class="form-group row dns-row">
+                                <label class="col-sm-3 control-label">Cloudflare API token</label>
+                                <div class="col-sm-6">
+                                    <input type="password" class="form-control dns-input" id="cloudflare_token"
+                                        style="background-color:#fff; color:#000; border:1px solid #000; padding-right:60px;"
+                                        value="">
+                                    <button type="button" onclick="toggleSecret('cloudflare_token', this)"
+                                        style="position:absolute; right:20px; top:50%; transform:translateY(-50%); background:none; border:none;">
+                                        <i class="fa fa-eye"></i>
+                                    </button>
+                                </div>
+                                <div class="col-sm-3">
+                                    <button class="btn btn-success btn-block" onclick="setCloudflare()">Set</button>
+                                </div>
+
+                            </div> -->
+                            <!-- All Domains -->
+                            <div class="form-group row dns-row">
+                                <label class="col-sm-3 control-label">All Domains</label>
+                                <div class="col-sm-9">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover dns-table"
+                                            style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 17px; ">
+                                            <thead>
+                                                <tr>
+                                                    <th>Domain name</th>
+                                                    <th>Status</th>
+                                                    <th>Name Servers</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="allDomainsListBody">
+                                                <tr>
+                                                    <td colspan="3" class="text-center">Loading domains...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Domain -->
+                            <div class="form-group row dns-row">
+                                <label class="col-sm-3 control-label">Onboard Domain</label>
+                                <div class="col-sm-6">
+                                    <input type="text" id="configDomainCF" class="form-control dns-input" value="">
+                                </div>
+                                <div class="col-sm-3">
+                                    <button class="btn btn-success btn-block" onclick="setupCloudflare()">Set</button>
+                                </div>
+                            </div>
+
+                            <!-- Nameservers -->
+                            <div class="form-group row dns-row">
+                                <label class="col-sm-3 control-label">Nameservers</label>
+
+                                <div class="col-sm-9">
+                                    <div id="nsContainer"></div>
+                                </div>
+                            </div>
+
+                            <!-- Status -->
+                            <div class="form-group row dns-row">
+                                <label class="col-sm-3 control-label">Nameserver Status</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control dns-input" id="nameserverStatus" value=""
+                                        readonly>
+                                </div>
+                            </div>
+
+                            <hr>
+                            <!-- Select Domain Dropdown -->
+                            <div class="form-group row dns-row">
+                                <label class="col-sm-3 control-label">Select Domain</label>
+                                <div class="col-sm-6">
+                                    <select id="domainSelectDropdown" class="form-control dns-input"
+                                        style="background-color: #fff; color: #000; border: 1px solid #000;"
+                                        onchange="loadDNSRecords()">
+                                        <option value="">Select a domain</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- DNS Records Table -->
+                            <div class="form-group row dns-row" id="dnsRecordsSection" style="display: none;">
+                                <label class="col-sm-3 control-label">DNS Records</label>
+                                <div class="col-sm-9">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover dns-table"
+                                            style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 17px;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Type</th>
+                                                    <th>Name</th>
+                                                    <th>Content</th>
+                                                    <th class="text-center">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="dnsRecordsListBody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Create Subdomain -->
+                            <div class="form-group row dns-row">
+                                <label class="col-sm-3 control-label">Create Subdomain</label>
+                                <div class="col-sm-3">
+                                    <input type="text" id="newSubdomainName" class="form-control dns-input"
+                                        placeholder="e.g. admin">
+                                </div>
+                                <div class="col-sm-4">
+                                    <input type="text" id="newSubdomainIP" class="form-control dns-input"
+                                        placeholder="e.g. 1.2.3.4">
+                                </div>
+                                <div class="col-sm-2">
+                                    <button class="btn btn-success btn-block"
+                                        onclick="createDNSRecord()">Create</button>
+                                </div>
+                            </div>
+                            <hr>
+
+                            <button class="btn btn-success btn-lg btn-block dns-revoke">
+                                Revoke all current certificates and setup new
+                            </button>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="twilioView" style="display: none;">
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="panel panel-inverse"
+                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
+                    <div class="panel-heading" style="background-color: #fff; border-bottom: 1px solid #cacaca;">
+                        <h3 class="panel-title">Twillio Configuration</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="text-center" style="padding: 40px;">
+                            <i class="fa fa-commenting" style="font-size: 48px; color: #ccc; margin-bottom: 20px;"></i>
+                            <h4 style="color: #666;">Twillio Service Integration Coming Soon</h4>
+                            <p style="color: #999;">Automated SMS based lures and notifications features are under
+                                development.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Toggle Switch Style */
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+    }
+
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+    }
+
+    input:checked+.slider {
+        background-color: #2196F3;
+    }
+
+    input:focus+.slider {
+        box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked+.slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+        border-radius: 34px;
+    }
+
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .ns-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 350px;
+        padding: 10px 14px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        margin-bottom: 10px;
+    }
+
+    .ns-value {
+        font-family: monospace;
+        font-size: 14px;
+    }
+
+    .ns-copy {
+        font-size: 13px;
+        color: #1a73e8;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .ns-copy:hover {
+        text-decoration: underline;
+    }
+
+    .domain-item {
+        margin-bottom: 15px;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 8px;
+    }
+
+    .domain-name {
+        font-weight: bold;
+        color: #1a73e8;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .domain-meta {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .domain-status-active {
+        color: green;
+    }
+
+    .domain-status-pending {
+        color: orange;
+    }
+
+    .dns-table thead th {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        color: #333;
+        font-weight: 600;
+    }
+
+    .dns-table td {
+        vertical-align: middle;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .ns-cell-list {
+        font-size: 11px;
+        font-family: monospace;
+        color: #555;
+    }
+</style>
+
+<!-- Create Lure Modal -->
+<div class="modal fade" id="createLureModal" tabindex="-1" role="dialog" aria-labelledby="createLureModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createLureModalLabel">Create New Lure</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="control-label" for="createLureModule">Select Phishlet:</label>
+                    <select id="createLureModule" class="form-control"
+                        style="background-color: #fff; color: #000; border: 1px solid #000;">
+                        <option value="">Select Phishlet</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="createLurePath">Lure Path (optional):</label>
+                    <input type="text" class="form-control" id="createLurePath" placeholder="/login">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="createRedirectUrl">Redirection URL (optional):</label>
+                    <input type="text" class="form-control" id="createRedirectUrl" placeholder="https://www.google.com">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="createLureRedirector">Redirector (optional):</label>
+                    <select id="createLureRedirector" class="form-control"
+                        style="background-color: #fff; color: #000; border: 1px solid #000;">
+                        <option value="">No Redirector</option>
+                    </select>
+                    <small class="help-block">Select a redirector landing page for this lure.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createLure()">
+                    <i class="fa fa-plus"></i> Create Lure</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Lure Modal -->
+<div class="modal fade" id="editLureModal" tabindex="-1" role="dialog" aria-labelledby="editLureModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="editLureModalLabel">Edit Lure</h4>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editLureId">
+                <div class="form-group">
+                    <label class="control-label" for="editLurePath">Lure Path:</label>
+                    <input type="text" class="form-control" id="editLurePath" placeholder="/login">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="editRedirectUrl">Redirection URL:</label>
+                    <input type="text" class="form-control" id="editRedirectUrl" placeholder="https://www.google.com">
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="editLureRedirector">Redirector:</label>
+                    <select id="editLureRedirector" class="form-control"
+                        style="background-color: #fff; color: #000; border: 1px solid #000;">
+                        <option value="">No Redirector</option>
+                    </select>
+                    <small class="help-block">Select a redirector landing page for this lure.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveLureEdit()">
+                    <i class="fa fa-save"></i> Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Redirectors Management Modal -->
+<div class="modal fade" id="redirectorsModal" tabindex="-1" role="dialog" aria-labelledby="redirectorsModalLabel">
+    <div class="modal-dialog modal-lg" role="document" style="width: 90%; max-width: 1200px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="redirectorsModalLabel"><i class="fa fa-file-code-o"></i> Redirectors
+                    Management</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Left Side: Existing Redirectors List -->
+                    <div class="col-md-5">
+                        <h5 style="font-weight: bold; margin-bottom: 15px;"><i class="fa fa-list"></i> Existing
+                            Redirectors</h5>
+                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <table class="table table-striped table-hover" id="redirectorsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th width="80" class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="redirectorsTableBody">
+                                    <tr>
+                                        <td colspan="2" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Create New Redirector -->
+                    <div class="col-md-7">
+                        <h5 style="font-weight: bold; margin-bottom: 15px;"><i class="fa fa-plus"></i> Create New
+                            Redirector</h5>
+                        <div class="form-group">
+                            <label class="control-label" for="newRedirectorName">Name:</label>
+                            <input type="text" class="form-control" id="newRedirectorName"
+                                placeholder="my_landing_page">
+                            <small class="help-block">A unique name (no spaces). Use <code>{strike_url_html}</code> in
+                                HTML for the lure URL.</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">HTML Content:</label>
+                            <textarea class="form-control" id="newRedirectorHtml" rows="8"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-success" onclick="createNewRedirector()">
+                            <i class="fa fa-plus"></i> Create Redirector
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{end}}
+
+{{define "scripts"}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/src/vendor/ckeditor/ckeditor.js"></script>
+<script src="/js/src/vendor/ckeditor/adapters/jquery.js"></script>
+<script>
+    let currentStrikes = [];
+    let currentServers = [];
+    let currentConfig = {};
+    let currentCloudflareConfig = {};
+    let currentRedirectors = [];
+
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#fff',
+        color: '#fff', // Default to white text
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    function showToast(icon, title) {
+        let bgColor = '#28a745'; // Default green for success
+        let textColor = '#ffffff'; // Explicitly white
+        if (icon === 'error' || icon === 'warning') {
+            bgColor = '#dc3545'; // Red for error
+        }
+
+        Toast.fire({
+            icon: icon,
+            title: title,
+            background: bgColor,
+            color: textColor,
+            iconColor: textColor
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadStrikes();
+        loadServers();
+        loadConfig();
+        // loadCloudflareConfig();
+        loadAllDomains();
+        loadRedirectors();
+    });
+
+    // async function loadCloudflareConfig() {
+    //     const domainInput = document.getElementById('configDomainCF');
+    //     const domain = domainInput ? domainInput.value : "";
+
+    //     try {
+    //         const response = await fetch(`/api/simulationserver/config/cloudflare_info?domain=${domain}`);
+    //         const data = await response.json();
+    //         if (data.success) {
+    //             currentCloudflareConfig = data.data || {};
+    //             updateUI();
+    //         }
+    //     } catch (err) {
+    //         console.error('Failed to connect to Cloudflare info', err);
+    //     }
+    // }
+
+    async function loadAllDomains() {
+        try {
+            const response = await fetch('/api/simulationserver/config/fetch_alldomains');
+            if (!response.ok) {
+                const text = await response.text();
+                console.error('Failed to fetch all domains:', text);
+                return;
+            }
+            const data = await response.json();
+            if (data.success) {
+                renderAllDomains(data.data || []);
+            }
+        } catch (err) {
+            console.error('Error in loadAllDomains:', err);
+        }
+    }
+
+    function renderAllDomains(domains) {
+        const tbody = document.getElementById('allDomainsListBody');
+        const dropdown = document.getElementById('domainSelectDropdown');
+
+        // Clear previous entries
+        tbody.innerHTML = "";
+        if (dropdown) dropdown.innerHTML = '<option value="">Select a domain</option>';
+
+        if (domains.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center">No domains found.</td></tr>';
+            return;
+        }
+
+        domains.forEach(domain => {
+            // Table row
+            const tr = document.createElement('tr');
+
+            const nsList = domain.name_servers ? domain.name_servers.map(ns => `<div>${ns}</div>`).join('') : 'None';
+            const statusClass = domain.status === 'active' ? 'text-success' : 'text-warning';
+
+            tr.innerHTML = `
+                <td style="font-weight: 600;">${domain.name}</td>
+                <td><span class="${statusClass}" style="text-transform: capitalize;">${domain.status}</span></td>
+                <td class="ns-cell-list">${nsList}</td>
+            `;
+            tbody.appendChild(tr);
+
+            // Dropdown option
+            if (dropdown) {
+                const opt = document.createElement('option');
+                opt.value = domain.id;
+                opt.textContent = domain.name;
+                dropdown.appendChild(opt);
+            }
+        });
+    }
+
+    async function loadRedirectors() {
+        try {
+            const response = await fetch('/api/simulationserver/redirectors');
+            if (!response.ok) {
+                console.error('Failed to fetch redirectors');
+                return;
+            }
+            const data = await response.json();
+            // The simulation server returns {"redirectors": [...], "success": true}
+            if (data.success && Array.isArray(data.redirectors)) {
+                currentRedirectors = data.redirectors;
+            } else if (Array.isArray(data)) {
+                currentRedirectors = data;
+            } else if (data.success && Array.isArray(data.data)) {
+                currentRedirectors = data.data;
+            } else {
+                currentRedirectors = [];
+            }
+        } catch (err) {
+            console.error('Error loading redirectors:', err);
+            currentRedirectors = [];
+        }
+    }
+
+    function populateRedirectorDropdown(selectId, selectedValue = "") {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+
+        // Clear existing options except the first "No Redirector" option
+        select.innerHTML = '<option value="">No Redirector</option>';
+
+        currentRedirectors.forEach(redirector => {
+            const opt = document.createElement('option');
+            opt.value = redirector.name || redirector;
+            opt.textContent = redirector.name || redirector;
+            if (selectedValue && (redirector.name === selectedValue || redirector === selectedValue)) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        });
+    }
+
+    // Redirectors Management Modal Functions
+    var redirectorEditor = null;
+
+    async function openRedirectorsModal() {
+        await loadRedirectors();
+        renderRedirectorsTable();
+        document.getElementById('newRedirectorName').value = '';
+
+        // Initialize CKEditor if not already done
+        if (!redirectorEditor) {
+            $('#newRedirectorHtml').ckeditor(function () {
+                redirectorEditor = this;
+                this.setData('');
+            }, {
+                height: 200,
+                allowedContent: true,
+                extraAllowedContent: '*(*);*{*}',
+                fullPage: true
+            });
+        } else {
+            redirectorEditor.setData('');
+        }
+
+
+        $('#redirectorsModal').modal('show');
+    }
+
+    function renderRedirectorsTable() {
+        const tbody = document.getElementById('redirectorsTableBody');
+        tbody.innerHTML = '';
+
+        if (currentRedirectors.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="text-center">No redirectors found.</td></tr>';
+            return;
+        }
+
+        currentRedirectors.forEach(redirector => {
+            const name = redirector.name || redirector;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><code>${name}</code></td>
+                <td class="text-center">
+                    <button class="btn btn-danger btn-xs" onclick="deleteRedirector('${name}')" title="Delete">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function createNewRedirector() {
+        const name = document.getElementById('newRedirectorName').value.trim();
+        const html = redirectorEditor ? redirectorEditor.getData() : document.getElementById('newRedirectorHtml').value;
+
+        if (!name) { showToast('warning', 'Please enter a name for the redirector'); return; }
+        if (!html) { showToast('warning', 'Please enter HTML content for the redirector'); return; }
+
+        // Validate name (no spaces)
+        if (/\s/.test(name)) { showToast('warning', 'Name cannot contain spaces'); return; }
+
+        showToast('info', 'Creating redirector...');
+
+        try {
+            const response = await fetch('/api/simulationserver/redirectors', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, html: html })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Redirector created successfully!');
+                document.getElementById('newRedirectorName').value = '';
+                if (redirectorEditor) {
+                    redirectorEditor.setData('');
+                }
+
+                // Reload redirectors and update table and dropdowns
+                await loadRedirectors();
+                renderRedirectorsTable();
+                populateRedirectorDropdown('createLureRedirector', name);
+                populateRedirectorDropdown('editLureRedirector');
+            } else {
+                showToast('error', data.message || data.error || 'Failed to create redirector');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function deleteRedirector(name) {
+        if (!confirm(`Are you sure you want to delete redirector "${name}"?`)) return;
+
+        showToast('info', 'Deleting redirector...');
+
+        try {
+            const response = await fetch('/api/simulationserver/redirectors/' + encodeURIComponent(name), {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Redirector deleted successfully!');
+
+                // Reload redirectors and update table and dropdowns
+                await loadRedirectors();
+                renderRedirectorsTable();
+                populateRedirectorDropdown('createLureRedirector');
+                populateRedirectorDropdown('editLureRedirector');
+            } else {
+                showToast('error', data.message || data.error || 'Failed to delete redirector');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function loadDNSRecords() {
+        const zoneID = document.getElementById('domainSelectDropdown').value;
+        const section = document.getElementById('dnsRecordsSection');
+
+        if (!zoneID) {
+            section.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/simulationserver/config/fetch_dns_records?zone_id=${zoneID}`);
+            const data = await response.json();
+            if (data.success) {
+                renderDNSRecords(data.data || []);
+                section.style.display = 'block';
+            } else {
+                showToast('error', data.message || 'Failed to fetch DNS records');
+            }
+        } catch (err) {
+            console.error('Failed to fetch DNS records', err);
+        }
+    }
+
+    function renderDNSRecords(records) {
+        const tbody = document.getElementById('dnsRecordsListBody');
+        tbody.innerHTML = "";
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No records found.</td></tr>';
+            return;
+        }
+
+        records.forEach(record => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${record.type}</strong></td>
+                <td>${record.name}</td>
+                <td style="word-break: break-all; max-width: 250px;">${record.content}</td>
+                <td class="text-center">
+                    <button class="btn btn-danger btn-xs" onclick="deleteDNSRecord('${record.id}')">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function createDNSRecord() {
+        const zoneID = document.getElementById('domainSelectDropdown').value;
+        const name = document.getElementById('newSubdomainName').value;
+        const content = document.getElementById('newSubdomainIP').value;
+
+        if (!zoneID) { showToast('warning', 'Please select a domain first'); return; }
+        if (!name || !content) { showToast('warning', 'Please enter Name and IP'); return; }
+
+        showToast('info', 'Creating DNS record...');
+
+        try {
+            const response = await fetch('/api/simulationserver/config/create_dns_record', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ zone_id: zoneID, name: name, content: content })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'DNS record created');
+                document.getElementById('newSubdomainName').value = "";
+                document.getElementById('newSubdomainIP').value = "";
+                loadDNSRecords(); // Refresh table
+            } else {
+                showToast('error', data.message || 'Failed to create record');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function deleteDNSRecord(recordID) {
+        const zoneID = document.getElementById('domainSelectDropdown').value;
+
+        if (!zoneID || !recordID) {
+            console.error("Missing zoneID or recordID");
+            return;
+        }
+
+        try {
+            const result = await Swal.fire({
+                title: 'Delete DNS Record?',
+                text: "This action cannot be undone!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed || result.value) {
+
+                const response = await fetch(`/api/simulationserver/config/delete_dns_record?zone_id=${zoneID}&record_id=${recordID}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('success', 'DNS record deleted');
+                    loadDNSRecords(); // Refresh table
+                } else {
+                    showToast('error', data.message || 'Failed to delete record');
+                }
+            } else {
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function loadConfig() {
+        try {
+            const response = await fetch('/api/simulationserver/get_config');
+            const data = await response.json();
+            if (data.success) {
+                currentConfig = data.data || {};
+                updateUI();
+            } else {
+                showToast('error', "Server offline");
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function loadStrikes() {
+        try {
+            const response = await fetch('/api/simulationserver/get_strikes');
+            const data = await response.json();
+
+            if (data.success) {
+                currentStrikes = data.data || [];
+                updateUI();
+            } else {
+                showToast('error', "Server offline");
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function loadServers() {
+        try {
+            const response = await fetch('/api/simulationserver/modules');
+            const data = await response.json();
+            if (data) {
+                currentServers = data || [];
+                updateUI();
+            } else {
+                showToast('error', "Server offline");
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    function renderNameservers(nameservers) {
+        const container = document.getElementById("nsContainer");
+        container.innerHTML = "";
+
+        nameservers.forEach(ns => {
+            const box = document.createElement("div");
+            box.className = "ns-box";
+
+            box.innerHTML = `
+            <span class="ns-value">${ns}</span>
+            <a class="ns-copy" onclick="copyToClipboard('${ns}')">Click to copy</a>
+        `;
+
+            container.appendChild(box);
+        });
+    }
+
+    function updateUI() {
+        const nslist = document.getElementById('nslists');
+        const statusInput = document.getElementById('nameserverStatus');
+        // const cloudflareToken = document.getElementById('cloudflare_token');
+
+        if (currentCloudflareConfig && Object.keys(currentCloudflareConfig).length > 0) {
+            // if (cloudflareToken) cloudflareToken.value = currentCloudflareConfig.cloudflare_token || "";
+
+            let nameservers = [];
+
+            if (currentCloudflareConfig.ns1 && currentCloudflareConfig.ns2) {
+                nameservers = [
+                    currentCloudflareConfig.ns1,
+                    currentCloudflareConfig.ns2
+                ];
+            } else if (currentCloudflareConfig.dns_records) {
+                nameservers = currentCloudflareConfig.dns_records;
+            }
+
+            renderNameservers(nameservers);
+
+            if (currentCloudflareConfig.status != "error" && currentCloudflareConfig.status != "") {
+                statusInput.value = currentCloudflareConfig.status == "active" ? "active" : "pending"
+            } else if (currentCloudflareConfig.status == "error") {
+                statusInput.value = "Please contact the domain owner to onboard the domain"
+                showToast('error', "Please contact the domain owner to onboard the domain");
+            } else {
+                statusInput.value = ""
+            }
+        }
+
+        const currentPhishletSelection = document.getElementById('phishletSelect').value;
+
+        const createLureModule = document.getElementById('createLureModule');
+
+        createLureModule.innerHTML = '<option value="">Select Phishlet</option>';
+        phishletSelect.innerHTML = '<option value="">Select a phishlet...</option>';
+
+        currentServers.forEach((server) => {
+            // Populate Create Lure Server Selection
+            if (server.enabled) {
+                const opt1 = document.createElement('option');
+                opt1.value = server.name;
+                opt1.textContent = server.name;
+                createLureModule.appendChild(opt1);
+            }
+
+            // Populate Phishlet Management Selection
+            const opt2 = document.createElement('option');
+            opt2.value = server.name;
+            opt2.textContent = server.name;
+            phishletSelect.appendChild(opt2);
+        });
+
+        const luresListBody = document.getElementById('luresListBody');
+        luresListBody.innerHTML = "";
+
+        if (currentStrikes.length === 0) {
+            luresListBody.innerHTML = '<tr><td colspan="4" class="text-center">No lures found.</td></tr>';
+        }
+
+        currentStrikes.forEach((strike, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td>
+                    <span class="lure-url" style="margin-right: 10px;">${strike.url}</span>
+                    <button class="btn btn-info btn-xs" title="Copy URL" onclick="copyToClipboard('${strike.url}', this)">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </td>
+                ${strike.redirector ? `<td>${strike.landing_url}</td>` : `<td>None</td>`}
+                <td>${strike.redirect_url || "None"}</td>
+                <td class="text-center">
+                    <button class="btn btn-primary btn-xs" onclick="openEditLureModal('${strike.id}')" style="margin-right: 5px;">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger btn-xs" onclick="deleteLure('${strike.id}')">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            luresListBody.appendChild(tr);
+        });
+
+        if (currentServers.find(s => s.name == currentPhishletSelection)) {
+            phishletSelect.value = currentPhishletSelection;
+        }
+
+        // Phishlet Management Selection Change
+        phishletSelect.onchange = function () {
+            const name = this.value;
+            const server = currentServers.find(s => s.name === name);
+            if (server) {
+                document.getElementById('phishletHostname').value = server.domain || "";
+                document.getElementById('phishletLandingDomain').value = server.landing_domain || "";
+                document.getElementById('phishletEnabled').checked = server.enabled;
+                document.getElementById('enabledStatusText').textContent = server.enabled ? "ON" : "OFF";
+                document.getElementById('enabledStatusText').style.color = server.enabled ? "#2196F3" : "#333";
+            } else {
+                document.getElementById('phishletHostname').value = "";
+                document.getElementById('phishletLandingDomain').value = "";
+                document.getElementById('phishletEnabled').checked = false;
+                document.getElementById('enabledStatusText').textContent = "OFF";
+                document.getElementById('enabledStatusText').style.color = "#333";
+            }
+        }
+
+        if (currentConfig && Object.keys(currentConfig).length > 0) {
+            document.getElementById('configDomain').value = currentConfig.domain || "";
+            document.getElementById('configUnauthUrl').value = currentConfig.unauth_url || "";
+            document.getElementById('configIPv4').value = currentConfig.external_ipv4 || "";
+            document.getElementById('gophishAdminUrl').value = currentConfig.gophish_admin_url || "";
+            document.getElementById('gophishApiKey').value = currentConfig.gophish_api_key || "";
+            document.getElementById('gophishInsecure').value = currentConfig.gophish_insecure || false;
+            // document.getElementById('cloudflare_token').value = currentCloudflareConfig.cloudflare_token || "";
+        }
+    }
+
+    async function setPhishletHostname() {
+        const name = document.getElementById('phishletSelect').value;
+        const hostname = document.getElementById('phishletHostname').value;
+
+        if (!name) { showToast('warning', 'Please select a phishlet first'); return; }
+        if (!hostname) { showToast('warning', 'Please enter a hostname'); return; }
+
+        try {
+            const response = await fetch(`/api/simulationserver/modules/${name}/hostname`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hostname: hostname })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Hostname updated');
+                loadServers();
+            } else {
+                showToast('error', data.error || "Server offline" || 'Error updating hostname');
+            }
+        } catch (err) {
+
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function setPhishletLandingDomain() {
+        const name = document.getElementById('phishletSelect').value;
+        const landingDomain = document.getElementById('phishletLandingDomain').value;
+
+        if (!name) { showToast('warning', 'Please select a phishlet first'); return; }
+        // if (!landingDomain) { showToast('warning', 'Please enter a landing domain'); return; }
+
+        const domainRegex = /^(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+        if (!domainRegex.test(landingDomain)) {
+            showToast('warning', 'Please enter a valid domain (example.com)');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/simulationserver/modules/${name}/landing_domain`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ landing_domain: landingDomain })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Landing domain updated');
+                loadServers();
+            } else {
+                showToast('error', data.error || "Server offline" || 'Error updating landing domain');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function togglePhishlet() {
+        const name = document.getElementById('phishletSelect').value;
+        if (!name) {
+            document.getElementById('phishletEnabled').checked = !document.getElementById('phishletEnabled').checked;
+            showToast('warning', 'Please select a phishlet first');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/simulationserver/modules/${name}/toggle`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            if (data.success) {
+                const isEnabled = document.getElementById('phishletEnabled').checked;
+                showToast('success', `Phishlet ${isEnabled ? 'Enabled' : 'Disabled'}`);
+                loadServers();
+            } else {
+                document.getElementById('phishletEnabled').checked = !document.getElementById('phishletEnabled').checked;
+                showToast('error', data.error || "Server offline" || 'Error toggling phishlet');
+            }
+        } catch (err) {
+
+            document.getElementById('phishletEnabled').checked = !document.getElementById('phishletEnabled').checked;
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    function openCreateLureModal() {
+        document.getElementById('createLurePath').value = "";
+        document.getElementById('createRedirectUrl').value = "";
+        document.getElementById('createLureRedirector').value = "";
+        populateRedirectorDropdown('createLureRedirector');
+        $('#createLureModal').modal('show');
+    }
+
+    async function createLure() {
+        const module = document.getElementById('createLureModule').value;
+        const path = document.getElementById('createLurePath').value;
+        const redirectUrl = document.getElementById('createRedirectUrl').value;
+        const redirector = document.getElementById('createLureRedirector').value;
+
+        if (!module) { showToast('warning', 'Please select a phishlet'); return; }
+
+        $('#createLureModal').modal('hide');
+        showToast('info', 'Creating lure...');
+
+        try {
+            // 1. Create the lure
+            const response = await fetch('/api/simulationserver/strikes/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ module: module })
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                // If path or redirectUrl or redirector provided, we need to update the newly created lure
+                // The backend doesn't return the new ID directly in the 'create' response usually,
+                // so we'll fetch all strikes and find the latest one for this module.
+                if (path || redirectUrl || redirector) {
+                    // Slight delay to allow backend to process creation
+                    await new Promise(r => setTimeout(r, 500));
+                    const strikesResp = await fetch('/api/simulationserver/get_strikes');
+                    const strikesData = await strikesResp.json();
+                    if (strikesData.success) {
+                        const strikes = strikesData.data || [];
+                        // Find the lure with the highest ID (assuming sequential)
+                        const latestLure = strikes.sort((a, b) => b.id - a.id)[0];
+                        if (latestLure) {
+                            await fetch(`/api/simulationserver/strikes/${latestLure.id}/edit`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    path: path,
+                                    redirect_url: redirectUrl,
+                                    redirector: redirector
+                                })
+                            });
+                        }
+                    }
+                }
+                showToast('success', 'Lure created successfully');
+                loadStrikes();
+            } else {
+                showToast('error', data.error || "Server offline" || 'Error creating lure');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+
+    async function deleteLure(id) {
+        if (!id) { showToast('warning', 'Please select a lure to delete'); return; }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.value) {
+                try {
+                    const response = await fetch(`/api/simulationserver/strikes/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        showToast('success', 'Lure deleted');
+                        loadStrikes();
+                    } else {
+                        const text = await response.text();
+                        showToast('error', text || 'Error deleting lure');
+                    }
+                } catch (err) {
+
+                    showToast('error', 'Failed to connect');
+                }
+            }
+        });
+    }
+
+    function openEditLureModal(id) {
+        const strike = currentStrikes.find(s => s.id == id);
+        if (!strike) {
+            showToast('error', 'Lure not found');
+            return;
+        }
+
+        document.getElementById('editLureId').value = id;
+        document.getElementById('editLurePath').value = strike.lure_path || "";
+        document.getElementById('editRedirectUrl').value = strike.redirect_url || "";
+
+        populateRedirectorDropdown('editLureRedirector', strike.redirector || "");
+
+        $('#editLureModal').modal('show');
+    }
+
+    async function saveLureEdit() {
+        const id = document.getElementById('editLureId').value;
+        const path = document.getElementById('editLurePath').value;
+        const redirectUrl = document.getElementById('editRedirectUrl').value;
+        const redirector = document.getElementById('editLureRedirector').value;
+
+        if (!id) {
+            showToast('error', 'Missing lure ID');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/simulationserver/strikes/${id}/edit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    path: path,
+                    redirect_url: redirectUrl,
+                    redirector: redirector
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Lure updated successfully');
+                $('#editLureModal').modal('hide');
+                loadStrikes();
+            } else {
+                showToast('error', data.error || 'Error updating lure');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('success', 'URL copied');
+            if (btn) {
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    const original = icon.className;
+                    icon.className = "fa fa-check";
+                    setTimeout(() => {
+                        icon.className = original;
+                    }, 2000);
+                }
+            }
+        }).catch(() => {
+            showToast('error', 'Failed to copy');
+        });
+    }
+
+    async function setConfigDomain() {
+        const domain = document.getElementById('configDomain').value;
+        if (!domain) { showToast('warning', 'Please enter a domain'); return; }
+        await sendConfig('/api/simulationserver/config/domain', { domain: domain });
+        loadCloudflareConfig();
+    }
+
+    async function setupCloudflare() {
+        const domain = document.getElementById('configDomainCF').value;
+        if (!domain) { showToast('warning', 'Please enter a domain'); return; }
+
+        showToast('info', 'Setting up Cloudflare domain...');
+
+        try {
+            const response = await fetch('/api/simulationserver/config/cloudflare_setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain: domain })
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                showToast('error', `Setup failed: ${text}`);
+                return;
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Cloudflare setup completed');
+                currentCloudflareConfig = data.data || {};
+                updateUI();
+            } else {
+                showToast('error', data.message || 'Error setting up Cloudflare');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect for setup');
+        }
+    }
+
+    async function setConfigIPv4() {
+        const ipv4 = document.getElementById('configIPv4').value;
+        if (!ipv4) { showToast('warning', 'Please enter an IPv4 address'); return; }
+        await sendConfig('/api/simulationserver/config/ipv4', { external: ipv4 });
+    }
+
+    async function setConfigUnauthUrl() {
+        const url = document.getElementById('configUnauthUrl').value;
+        if (!url) { showToast('warning', 'Please enter a URL'); return; }
+        await sendConfig('/api/simulationserver/config/unauth_url', { url: url });
+    }
+
+    // async function setCloudflare() {
+    //     const token = document.getElementById('cloudflare_token').value;
+    //     if (!token) { showToast('warning', 'Please enter a Cloudflare token'); return; }
+    //     const success = await sendConfig('/api/simulationserver/config/cloudflare', { token: token });
+    //     if (success) {
+    //         loadAllDomains();
+    //     }
+    // }
+
+    async function setGophish() {
+        const adminUrl = document.getElementById('gophishAdminUrl').value;
+        const apiKey = document.getElementById('gophishApiKey').value;
+        const insecure = document.getElementById('gophishInsecure').value;
+
+        const body = {
+            admin_url: adminUrl,
+            api_key: apiKey,
+            insecure: JSON.parse(insecure)
+        };
+
+        await sendConfig('/api/simulationserver/config/gophish', body);
+    }
+
+    async function sendConfig(url, body) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Configuration updated');
+            } else {
+                showToast('error', "Server offline" || 'Error updating configuration');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    function toggleSecret(id, btn) {
+        const input = document.getElementById(id);
+        const icon = btn.querySelector('i');
+        if (input.type === "password") {
+            input.type = "text";
+            icon.className = "fa fa-eye-slash";
+        } else {
+            input.type = "password";
+            icon.className = "fa fa-eye";
+        }
+    }
+    function switchModule(module) {
+        const views = ['phishletView', 'dnsView', 'twilioView'];
+        const cards = {
+            'phishlet': { id: 'phishletCard', gradient: 'linear-gradient(135deg, #2196F3 0%, #1976D2 100%)' },
+            'dns': { id: 'dnsCard', gradient: 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)' },
+            'twilio': { id: 'twilioCard', gradient: 'linear-gradient(135deg, #FF5722 0%, #E64A19 100%)' }
+        };
+
+        // Hide all views and reset all cards
+        views.forEach(v => {
+            const view = document.getElementById(v);
+            if (view) view.style.display = 'none';
+        });
+
+        Object.keys(cards).forEach(key => {
+            const card = document.getElementById(cards[key].id);
+            if (card) {
+                card.style.background = '#fff';
+                card.style.color = '#333';
+                card.style.border = '1px solid #e0e0e0';
+                card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.05)';
+                card.style.opacity = '0.8';
+                const icon = card.querySelector('.fa');
+                if (icon) icon.style.color = '#757575';
+                const tag = card.querySelector('span');
+                if (tag) {
+                    tag.style.background = '#f5f5f5';
+                    tag.style.color = '#616161';
+                }
+            }
+        });
+
+        // Show active view and style active card
+        const activeView = document.getElementById(module + 'View');
+        if (activeView) activeView.style.display = 'block';
+
+        const activeCard = document.getElementById(cards[module].id);
+        if (activeCard) {
+            activeCard.style.background = cards[module].gradient;
+            activeCard.style.color = '#fff';
+            activeCard.style.border = 'none';
+            activeCard.style.boxShadow = '0 4px 15px rgba(0,0,0,0.1)';
+            activeCard.style.opacity = '1';
+            const activeIcon = activeCard.querySelector('.fa');
+            if (activeIcon) activeIcon.style.color = '#fff';
+            const activeTag = activeCard.querySelector('span');
+            if (activeTag) {
+                activeTag.style.background = 'rgba(255,255,255,0.2)';
+                activeTag.style.color = '#fff';
+            }
+        }
+    }
+</script>
+{{end}}

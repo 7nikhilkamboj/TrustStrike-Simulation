@@ -1,0 +1,122 @@
+{{define "body"}}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <h1 class="page-header" id="page-header">
+            Campaigns
+        </h1>
+    </div>
+    <div id="flashes" class="row"></div>
+    <div class="row">
+        <div class="col-md-6">
+            <button type="button" class="btn btn-primary" onclick="startNewCampaign()">
+                <i class="fa fa-plus"></i> New Campaign</button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    Bulk Actions <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
+                            Selected</a></li>
+                    <li><a href="#" onclick="bulkCompleteSelected()"><i class="fa fa-check text-success"></i> Complete
+                            Selected</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#" onclick="bulkActionAll('In progress', 'delete')">Delete All Ongoing</a></li>
+                    <li><a href="#" onclick="bulkActionAll('In progress', 'complete')">Complete All Ongoing</a></li>
+                    <li role="separator" class="divider"></li>
+                    <li><a href="#" onclick="bulkActionAll('Completed', 'delete')">Delete All Completed</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6 text-right">
+            <div class="btn-group" data-toggle="buttons" id="campaignTypeFilter">
+                <label class="btn btn-primary active" onclick="switchCampaignType('')">
+                    <input type="radio" name="options" id="type_all" autocomplete="off" checked> All
+                </label>
+                <label class="btn btn-primary" onclick="switchCampaignType('email')">
+                    <input type="radio" name="options" id="type_email" autocomplete="off"> Email
+                </label>
+                <label class="btn btn-primary" onclick="switchCampaignType('qr')">
+                    <input type="radio" name="options" id="type_qr" autocomplete="off"> QR
+                </label>
+                <label class="btn btn-primary" onclick="switchCampaignType('sms')">
+                    <input type="radio" name="options" id="type_sms" autocomplete="off"> SMS
+                </label>
+            </div>
+        </div>
+    </div>
+    &nbsp;
+
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="active" role="activeCampaigns"><a href="#activeCampaigns" aria-controls="activeCampaigns" role="tab"
+                data-toggle="tab">Active Campaigns</a></li>
+        <li role="archivedCampaigns"><a href="#archivedCampaigns" aria-controls="archivedCampaigns" role="tab"
+                data-toggle="tab">Completed Campaigns</a></li>
+    </ul>
+    </br>
+    <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="activeCampaigns">
+            <div id="flashes" class="row"></div>
+            &nbsp;
+            <div id="loading">
+                <i class="fa fa-spinner fa-spin fa-4x"></i>
+            </div>
+            <div id="emptyMessage" class="row" style="display:none;">
+                <div class="alert alert-info" id="emptyMessageText">
+                    No campaigns created yet. Let's create one!
+                </div>
+            </div>
+            <div class="row">
+                <table id="campaignTable" class="table" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th class="no-sort" style="width: 20px;">
+                                <input type="checkbox" id="selectAllActive" onclick="toggleSelectAll('active')">
+                            </th>
+                            <th class="col-md-3">Name</th>
+                            <th>Type</th>
+                            <th class="col-md-3">Created By</th>
+                            <th class="col-md-4">Created Date</th>
+                            <th class="col-md-2">Status</th>
+                            <th class="no-sort"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="archivedCampaigns">
+            </br>
+            <div id="emptyMessage" class="row" style="display:none;">
+                </br>
+                <div class="alert alert-info">
+                    No completed campaigns.
+                </div>
+            </div>
+            <div class="row">
+                <table id="campaignTableArchive" class="table" style="display:none;">
+                    <thead>
+                        <tr>
+                            <th class="no-sort" style="width: 20px;">
+                                <input type="checkbox" id="selectAllArchived" onclick="toggleSelectAll('archived')">
+                            </th>
+                            <th class="col-md-3">Name</th>
+                            <th class="col-md-3">Created By</th>
+                            <th class="col-md-4">Created Date</th>
+                            <th class="col-md-2">Status</th>
+                            <th class="col-md-3 no-sort"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{end}} {{define "scripts"}}
+<script src="/js/dist/app/campaigns.min.js?v=bulk_actions"></script>
+<script src="/js/dist/qrcode.min.js"></script>
+{{end}}
