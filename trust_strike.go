@@ -7,7 +7,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/alecthomas/kingpin.v2"
+	"github.com/alecthomas/kingpin/v2"
 
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/controllers"
