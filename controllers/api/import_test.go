@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/trust_strike/trust_strike/dialer"
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/dialer"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 func makeImportRequest(ctx *testContext, allowedHosts []string, url string) *httptest.ResponseRecorder {

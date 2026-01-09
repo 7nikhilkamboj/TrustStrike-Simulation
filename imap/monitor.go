@@ -15,10 +15,10 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/jordan-wright/email"
-	log "github.com/trust_strike/trust_strike/logger"
 
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 // Pattern for trust_strike emails e.g ?rid=AbC1234

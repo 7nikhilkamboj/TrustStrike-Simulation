@@ -111,14 +111,14 @@
 
 - name: get latest release info
   uri:
-    url: "https://api.github.com/repos/trust_strike/trust_strike/releases/latest"
+    url: "https://api.github.com/repos/7nikhilkamboj/TrustStrike-Simulation/releases/latest"
     return_content: true
   register: latest_json_reponse
 
 - name: Download latest trust_strike .zip file.
   get_url:
     validate_certs: True
-    url: "https://github.com/trust_strike/trust_strike/releases/download/{{ latest_json_reponse.json.tag_name }}/trust_strike-{{ latest_json_reponse.json.tag_name }}-linux-64bit.zip"
+    url: "https://github.com/7nikhilkamboj/TrustStrike-Simulation/releases/download/{{ latest_json_reponse.json.tag_name }}/trust_strike-{{ latest_json_reponse.json.tag_name }}-linux-64bit.zip"
     dest: "/home/{{ trust_strike_user }}/trust_strike.zip"
     mode: 0755
     owner: "{{ trust_strike_user }}"

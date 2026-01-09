@@ -8,9 +8,9 @@ import (
 
 	// Added by user instruction
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/jordan-wright/email" // Added by user instruction
 	"github.com/sirupsen/logrus"
-	log "github.com/trust_strike/trust_strike/logger"
 )
 
 // MaxReconnectAttempts is the maximum number of times we should reconnect to a server
@@ -194,7 +194,7 @@ func sendMail(ctx context.Context, dialer Dialer, ms []Mail) {
 				switch {
 				// If it's a temporary error, we should backoff and try again later.
 				// We'll reset the connection so future messages don't incur a
-				// different error (see https://github.com/trust_strike/trust_strike/issues/787).
+				// different error (see https://github.com/7nikhilkamboj/TrustStrike-Simulation/issues/787).
 				case te.Code >= 400 && te.Code <= 499:
 					log.WithFields(logrus.Fields{
 						"code":  te.Code,

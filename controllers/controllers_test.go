@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/trust_strike/trust_strike/auth"
-	"github.com/trust_strike/trust_strike/config"
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 // testContext is the data required to test API related functions

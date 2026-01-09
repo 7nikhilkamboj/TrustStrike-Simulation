@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/mux"
-	"github.com/trust_strike/trust_strike/auth"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 const (

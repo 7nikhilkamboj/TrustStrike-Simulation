@@ -3,7 +3,7 @@ package middleware
 import (
 	"encoding/gob"
 
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 )

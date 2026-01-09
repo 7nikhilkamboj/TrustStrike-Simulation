@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/trust_strike/trust_strike/auth"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 type LoginRequest struct {

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/PuerkitoBio/goquery"
-	log "github.com/trust_strike/trust_strike/logger"
 )
 
 // Page contains the fields used for a Page model

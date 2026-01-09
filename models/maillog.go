@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/mailer"
 	"github.com/jordan-wright/email"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/mailer"
 )
 
 // MaxSendAttempts set to 8 since we exponentially backoff after each failed send

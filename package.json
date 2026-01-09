@@ -3,12 +3,12 @@
   "version": "0.4.0-dev",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/trust_strike/trust_strike.git"
+    "url": "git+https://github.com/7nikhilkamboj/TrustStrike-Simulation.git"
   },
   "author": "Trust Strike",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/trust_strike/trust_strike/issues"
+    "url": "https://github.com/7nikhilkamboj/TrustStrike-Simulation/issues"
   },
   "homepage": "https://truststrikelabs.com",
   "devDependencies": {

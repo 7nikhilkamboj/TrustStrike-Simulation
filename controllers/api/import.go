@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/dialer"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/util"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jordan-wright/email"
-	"github.com/trust_strike/trust_strike/dialer"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
-	"github.com/trust_strike/trust_strike/util"
 )
 
 type cloneRequest struct {

@@ -3,7 +3,7 @@ package models
 import (
 	"testing"
 
-	"github.com/trust_strike/trust_strike/config"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
 	"gopkg.in/check.v1"
 )
 

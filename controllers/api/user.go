@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"github.com/trust_strike/trust_strike/auth"
-	ctx "github.com/trust_strike/trust_strike/context"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 // ErrUsernameTaken is thrown when a user attempts to register a username that is taken.

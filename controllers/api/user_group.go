@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/mux"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 // UserGroups returns a list of user groups.

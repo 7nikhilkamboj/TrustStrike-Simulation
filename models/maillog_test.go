@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/trust_strike/trust_strike/config"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
 
 	"github.com/jordan-wright/email"
 	"gopkg.in/check.v1"

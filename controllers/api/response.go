@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	log "github.com/trust_strike/trust_strike/logger"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 )
 
 // JSONResponse attempts to set the status code, c, and marshal the given interface, d, into a response that

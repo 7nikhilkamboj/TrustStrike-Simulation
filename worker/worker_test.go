@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/trust_strike/trust_strike/config"
-	"github.com/trust_strike/trust_strike/mailer"
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/mailer"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 type logMailer struct {

@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/webhook"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/webhook"
 )
 
 // Campaign is a struct representing a created campaign

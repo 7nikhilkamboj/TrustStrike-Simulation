@@ -3,12 +3,12 @@ package api
 import (
 	"net/http"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
+	mid "github.com/7nikhilkamboj/TrustStrike-Simulation/middleware"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/middleware/ratelimit"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/worker"
 	"github.com/gorilla/mux"
-	"github.com/trust_strike/trust_strike/config"
-	mid "github.com/trust_strike/trust_strike/middleware"
-	"github.com/trust_strike/trust_strike/middleware/ratelimit"
-	"github.com/trust_strike/trust_strike/models"
-	"github.com/trust_strike/trust_strike/worker"
 )
 
 // ServerOption is an option to apply to the API server.

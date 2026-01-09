@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/dialer"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/emersion/go-imap"
 	"github.com/emersion/go-imap/client"
 	"github.com/emersion/go-message/charset"
-	"github.com/trust_strike/trust_strike/dialer"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
 
 	"github.com/jordan-wright/email"
 )

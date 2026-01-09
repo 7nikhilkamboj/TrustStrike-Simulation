@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/csrf"
-	"github.com/trust_strike/trust_strike/auth"
-	ctx "github.com/trust_strike/trust_strike/context"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 // CSRFExemptPrefixes are a list of routes that are exempt from CSRF protection

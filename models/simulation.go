@@ -1,8 +1,8 @@
 package models
 
 import (
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/jinzhu/gorm"
-	log "github.com/trust_strike/trust_strike/logger"
 )
 
 // SimulationConfig represents a configuration setting for the simulation server

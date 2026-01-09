@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	log "github.com/trust_strike/trust_strike/logger"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 )
 
 // UserGroup represents a group of users that share access to objects.

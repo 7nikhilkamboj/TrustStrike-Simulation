@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"testing"
 
-	log "github.com/trust_strike/trust_strike/logger"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 )
 
 var validConfig = []byte(`{

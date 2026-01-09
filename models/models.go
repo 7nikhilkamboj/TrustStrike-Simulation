@@ -12,13 +12,13 @@ import (
 
 	"bitbucket.org/liamstask/goose/lib/goose"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
 	mysql "github.com/go-sql-driver/mysql"
-	"github.com/trust_strike/trust_strike/auth"
-	"github.com/trust_strike/trust_strike/config"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/jinzhu/gorm"
 	_ "github.com/mattn/go-sqlite3" // Blank import needed to import sqlite3
-	log "github.com/trust_strike/trust_strike/logger"
 )
 
 var db *gorm.DB

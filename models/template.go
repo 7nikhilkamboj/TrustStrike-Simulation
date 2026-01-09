@@ -5,8 +5,8 @@ import (
 	"net/mail"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/jinzhu/gorm"
-	log "github.com/trust_strike/trust_strike/logger"
 )
 
 // Template models hold the attributes for an email template to be sent to targets

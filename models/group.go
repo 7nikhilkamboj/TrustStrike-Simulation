@@ -6,9 +6,9 @@ import (
 	"net/mail"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
-	log "github.com/trust_strike/trust_strike/logger"
 )
 
 // Group contains the fields needed for a user -> group mapping

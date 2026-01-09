@@ -10,8 +10,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/simulation"
 	"github.com/skip2/go-qrcode"
-	"github.com/trust_strike/trust_strike/simulation"
 )
 
 // TemplateContext is an interface that allows both campaigns and email

@@ -7,9 +7,9 @@ import (
 	"net/mail"
 	"strconv"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/mailer"
 	"github.com/jordan-wright/email"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/mailer"
 )
 
 // PreviewPrefix is the standard prefix added to the rid parameter when sending

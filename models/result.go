@@ -7,9 +7,9 @@ import (
 	"net"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/jinzhu/gorm"
 	"github.com/oschwald/maxminddb-golang"
-	log "github.com/trust_strike/trust_strike/logger"
 )
 
 type mmCity struct {

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"strconv"
 
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
-	"github.com/trust_strike/trust_strike/webhook"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/webhook"
 	"github.com/gorilla/mux"
 )
 

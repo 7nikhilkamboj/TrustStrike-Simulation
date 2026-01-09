@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/mailer"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/sirupsen/logrus"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/mailer"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 // Worker is an interface that defines the operations needed for a background worker

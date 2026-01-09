@@ -3,9 +3,9 @@ package api
 import (
 	"net/http"
 
-	"github.com/trust_strike/trust_strike/auth"
-	ctx "github.com/trust_strike/trust_strike/context"
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 // Reset (/api/reset) resets the currently authenticated user's API key

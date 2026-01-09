@@ -10,8 +10,8 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	ctx "github.com/trust_strike/trust_strike/context"
-	"github.com/trust_strike/trust_strike/models"
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 func createUnpriviledgedUser(t *testing.T, slug string) *models.User {

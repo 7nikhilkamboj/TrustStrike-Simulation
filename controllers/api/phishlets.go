@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/trust_strike/trust_strike/auth"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
 )
 
 // PhishletsProxy proxies requests to the underlying simulation server

@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/trust_strike/trust_strike/config"
-	ctx "github.com/trust_strike/trust_strike/context"
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 var successHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

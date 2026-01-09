@@ -10,16 +10,16 @@ import (
 	"strings"
 	"time"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/controllers/api"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/util"
 	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/jordan-wright/unindexed"
-	"github.com/trust_strike/trust_strike/config"
-	ctx "github.com/trust_strike/trust_strike/context"
-	"github.com/trust_strike/trust_strike/controllers/api"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
-	"github.com/trust_strike/trust_strike/util"
 )
 
 // ErrInvalidRequest is thrown when a request with an invalid structure is

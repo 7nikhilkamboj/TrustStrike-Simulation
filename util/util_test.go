@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 func buildCSVRequest(csvPayload string) (*http.Request, error) {

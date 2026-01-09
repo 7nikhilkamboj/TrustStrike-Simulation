@@ -10,8 +10,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/trust_strike/trust_strike/config"
-	"github.com/trust_strike/trust_strike/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 func getFirstCampaign(t *testing.T) models.Campaign {

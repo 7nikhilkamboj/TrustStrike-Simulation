@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 // EC2StatusResponse represents the response from EC2 status endpoint

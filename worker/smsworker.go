@@ -3,9 +3,9 @@ package worker
 import (
 	"time"
 
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
-	"github.com/trust_strike/trust_strike/smser"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/smser"
 )
 
 // SMSWorker handles the background processing of SMS campaigns.

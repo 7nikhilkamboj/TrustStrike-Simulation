@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
 	"github.com/jordan-wright/email"
-	"github.com/trust_strike/trust_strike/config"
 	check "gopkg.in/check.v1"
 )
 

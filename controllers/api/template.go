@@ -6,11 +6,11 @@ import (
 	"strconv"
 	"time"
 
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	ctx "github.com/trust_strike/trust_strike/context"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 // Templates handles the functionality for the /api/templates endpoint

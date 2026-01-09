@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"net/mail"
 
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/jinzhu/gorm"
 	"github.com/sirupsen/logrus"
-	ctx "github.com/trust_strike/trust_strike/context"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/models"
 )
 
 // SendTestEmail sends a test email using the template name

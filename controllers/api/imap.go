@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	ctx "github.com/trust_strike/trust_strike/context"
-	"github.com/trust_strike/trust_strike/imap"
-	"github.com/trust_strike/trust_strike/models"
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/imap"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 // IMAPServerValidate handles requests for the /api/imapserver/validate endpoint

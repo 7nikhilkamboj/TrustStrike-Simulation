@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/mailer"
 	"github.com/go-gomail/gomail"
 	"github.com/jinzhu/gorm"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/mailer"
 )
 
 // Dialer is a wrapper around a standard gomail.Dialer in order

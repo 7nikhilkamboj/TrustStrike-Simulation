@@ -12,7 +12,7 @@ RUN gulp
 # Build Golang binary
 FROM golang:1.15.2 AS build-golang
 
-WORKDIR /go/src/github.com/trust_strike/trust_strike
+WORKDIR /go/src/github.com/7nikhilkamboj/TrustStrike-Simulation
 COPY . .
 RUN go get -v && go build -v
 
@@ -28,13 +28,13 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/trust_strike
-COPY --from=build-golang /go/src/github.com/trust_strike/trust_strike/ ./
+COPY --from=build-golang /go/src/github.com/7nikhilkamboj/TrustStrike-Simulation/ ./
 COPY --from=build-js /build/static/js/dist/ ./static/js/dist/
 COPY --from=build-js /build/static/css/dist/ ./static/css/dist/
-COPY --from=build-golang /go/src/github.com/trust_strike/trust_strike/config.json ./
+COPY --from=build-golang /go/src/github.com/7nikhilkamboj/TrustStrike-Simulation/config.json ./
 RUN chown app. config.json
 
-RUN setcap 'cap_net_bind_service=+ep' /opt/trust_strike/trust_strike
+RUN setcap 'cap_net_bind_service=+ep' /opt/7nikhilkamboj/TrustStrike-Simulation
 
 USER app
 RUN sed -i 's/127.0.0.1/0.0.0.0/g' config.json

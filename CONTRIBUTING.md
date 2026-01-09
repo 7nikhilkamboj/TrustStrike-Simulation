@@ -41,4 +41,4 @@ will be of reasonable size and challenge, as well as not requiring a ton of inte
 ## Have Questions?
 If you ever have questions, please don't hesitate to reach out to us directly at `support@gettrust_strike.com`
 
-[contributor-friendly]: https://github.com/trust_strike/trust_strike/labels/contributor-friendly
+[contributor-friendly]: https://github.com/7nikhilkamboj/TrustStrike-Simulation/labels/contributor-friendly

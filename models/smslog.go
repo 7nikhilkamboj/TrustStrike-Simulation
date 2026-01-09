@@ -5,8 +5,8 @@ import (
 	"math"
 	"time"
 
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/smser"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/smser"
 	"github.com/twilio/twilio-go"
 	openapi "github.com/twilio/twilio-go/rest/api/v2010"
 )

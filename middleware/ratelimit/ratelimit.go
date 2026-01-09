@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/trust_strike/trust_strike/logger"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"golang.org/x/time/rate"
 )
 
