@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	"gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alecthomas/kingpin/v2"
 
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/controllers"
