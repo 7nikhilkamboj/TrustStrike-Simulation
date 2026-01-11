@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
@@ -949,6 +950,56 @@ func (as *Server) SetCloudflare(w http.ResponseWriter, r *http.Request) {
 
 	// token, _ := models.GetSimulationConfig("cloudflare_token")
 	// config.CloudflareToken = token
+}
+
+// UpdateRemoteIPv4 updates the IPv4 config on the simulation server
+func (as *Server) UpdateRemoteIPv4(ip string) error {
+	url := as.config.SimulationServerURL + "config/ipv4"
+
+	// Create payload
+	data := map[string]string{"ipv4": ip}
+	jsonBody, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	// Retry loop
+	maxRetries := 10
+	for i := 0; i < maxRetries; i++ {
+		// Generate JWT
+		tokenString, err := auth.GenerateToken(1, "system_admin", "admin")
+		if err != nil {
+			return err
+		}
+
+		req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+		if err != nil {
+			return err
+		}
+
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+		req.Header.Set("Content-Type", "application/json")
+
+		client := &http.Client{Timeout: 5 * time.Second}
+		resp, err := client.Do(req)
+
+		if err == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				return nil
+			}
+			// If server responds but not 200, maybe it's not fully ready or auth failed?
+			// But if auth fails, retrying won't help unless token generation is time sensitive.
+			// Let's assume transient error or starting up.
+			fmt.Printf("UpdateRemoteIPv4 attempt %d failed with status: %s\n", i+1, resp.Status)
+		} else {
+			fmt.Printf("UpdateRemoteIPv4 attempt %d failed: %v\n", i+1, err)
+		}
+
+		time.Sleep(5 * time.Second)
+	}
+
+	return fmt.Errorf("failed to update remote IPv4 after %d attempts", maxRetries)
 }
 
 // Helper function to proxy requests
