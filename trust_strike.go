@@ -6,17 +6,18 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
 
-	"github.com/alecthomas/kingpin/v2"
+	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/controllers"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/dialer"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/imap"
-	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/middleware"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/webhook"
+	"github.com/trust_strike/trust_strike/config"
+	"github.com/trust_strike/trust_strike/controllers"
+	"github.com/trust_strike/trust_strike/dialer"
+	"github.com/trust_strike/trust_strike/imap"
+	log "github.com/trust_strike/trust_strike/logger"
+	"github.com/trust_strike/trust_strike/middleware"
+	"github.com/trust_strike/trust_strike/models"
+	"github.com/trust_strike/trust_strike/webhook"
 )
 
 const (
@@ -83,29 +84,69 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Create our servers
-	adminOptions := []controllers.AdminServerOption{}
-	if *disableMailer {
-		adminOptions = append(adminOptions, controllers.WithWorker(nil))
+	// Start the server
+	startServer := func(currentConf *config.Config) (*controllers.AdminServer, *imap.Monitor) {
+		adminOptions := []controllers.AdminServerOption{}
+		if *disableMailer {
+			adminOptions = append(adminOptions, controllers.WithWorker(nil))
+		}
+		adminOptions = append(adminOptions, controllers.WithGlobalConfig(currentConf))
+
+		adminConfig := currentConf.AdminConf
+		server := controllers.NewAdminServer(adminConfig, currentConf.Keycloak, adminOptions...)
+		middleware.Store.Options.Secure = false
+		middleware.Store.Options.SameSite = http.SameSiteLaxMode
+
+		monitor := imap.NewMonitor()
+		if *mode == "admin" || *mode == "all" {
+			go server.Start()
+			go monitor.Start()
+		}
+		return server, monitor
 	}
-	adminOptions = append(adminOptions, controllers.WithGlobalConfig(conf))
 
-	adminConfig := conf.AdminConf
-	adminServer := controllers.NewAdminServer(adminConfig, conf.Keycloak, adminOptions...)
-	middleware.Store.Options.Secure = false
-	middleware.Store.Options.SameSite = http.SameSiteLaxMode
+	adminServer, imapMonitor := startServer(conf)
 
-	//phishConfig := conf.PhishConf
-	//phishServer := controllers.NewPhishingServer(phishConfig)
+	// Start the config watcher
+	go func() {
+		lastModTime := time.Now()
+		if stat, err := os.Stat(*configPath); err == nil {
+			lastModTime = stat.ModTime()
+		}
 
-	imapMonitor := imap.NewMonitor()
-	if *mode == "admin" || *mode == "all" {
-		go adminServer.Start()
-		go imapMonitor.Start()
-	}
-	//if *mode == "phish" || *mode == "all" {
-	//	go phishServer.Start()
-	//}
+		for {
+			time.Sleep(5 * time.Second)
+			stat, err := os.Stat(*configPath)
+			if err != nil {
+				log.Error("Failed to stat config file: ", err)
+				continue
+			}
+
+			if stat.ModTime().After(lastModTime) {
+				lastModTime = stat.ModTime()
+				log.Info("Config file changed, restarting server...")
+
+				newConf, err := config.LoadConfig(*configPath)
+				if err != nil {
+					log.Error("Failed to reload config: ", err)
+					continue
+				}
+
+				// Update configuration in place safely
+				*conf = *newConf
+
+				// Shutdown old server
+				if *mode == modeAdmin || *mode == modeAll {
+					adminServer.Shutdown()
+					imapMonitor.Shutdown()
+				}
+
+				// Start new server
+				adminServer, imapMonitor = startServer(conf)
+				log.Info("Server restarted with new configuration")
+			}
+		}
+	}()
 
 	// Handle graceful shutdown
 	c := make(chan os.Signal, 1)
@@ -116,8 +157,4 @@ func main() {
 		adminServer.Shutdown()
 		imapMonitor.Shutdown()
 	}
-	//if *mode == modePhish || *mode == modeAll {
-	//	phishServer.Shutdown()
-	//}
-
 }
