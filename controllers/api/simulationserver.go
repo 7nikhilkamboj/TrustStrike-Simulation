@@ -957,7 +957,7 @@ func (as *Server) UpdateRemoteIPv4(ip string) error {
 	url := as.config.SimulationServerURL + "config/ipv4"
 
 	// Create payload
-	data := map[string]string{"ipv4": ip}
+	data := map[string]string{"external": ip}
 	jsonBody, err := json.Marshal(data)
 	if err != nil {
 		return err
