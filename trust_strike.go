@@ -10,14 +10,14 @@ import (
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/trust_strike/trust_strike/config"
-	"github.com/trust_strike/trust_strike/controllers"
-	"github.com/trust_strike/trust_strike/dialer"
-	"github.com/trust_strike/trust_strike/imap"
-	log "github.com/trust_strike/trust_strike/logger"
-	"github.com/trust_strike/trust_strike/middleware"
-	"github.com/trust_strike/trust_strike/models"
-	"github.com/trust_strike/trust_strike/webhook"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/controllers"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/dialer"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/imap"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/middleware"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/webhook"
 )
 
 const (
