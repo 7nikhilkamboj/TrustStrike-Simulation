@@ -7,10 +7,12 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/mux"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 )
 
 const (
@@ -800,6 +802,110 @@ func (as *Server) SetPhishletHostname(w http.ResponseWriter, r *http.Request) {
 	name := vars["name"]
 	url := fmt.Sprintf("%smodules/%s/hostname", as.config.SimulationServerURL, name)
 	proxyRequest(w, "POST", url, r.Body)
+}
+
+// SyncCloudflareDNS ensures the A record for the domain points to the given IP
+func (as *Server) SyncCloudflareDNS(domain, ip, token string) error {
+	// 1. Find the Zone ID
+	// Strategy: List zones, find the one that the domain ends with (longest match)
+	zones, err := as.GetDomainsList(token)
+	if err != nil {
+		return fmt.Errorf("failed to list zones: %v", err)
+	}
+
+	var bestZone CloudflareZone
+	var maxLen int
+
+	for _, z := range zones {
+		if strings.HasSuffix(domain, z.Name) {
+			if len(z.Name) > maxLen {
+				maxLen = len(z.Name)
+				bestZone = z
+			}
+		}
+	}
+
+	if bestZone.ID == "" {
+		return fmt.Errorf("no matching zone found for domain %s", domain)
+	}
+
+	// 2. Find existing A record for the exact domain
+	records, err := as.GetCloudflareDNSRecords(bestZone.ID, token)
+	if err != nil {
+		return fmt.Errorf("failed to get DNS records: %v", err)
+	}
+
+	var existingRecord *CloudflareDNSRecord
+	for i := range records {
+		if records[i].Name == domain && records[i].Type == "A" {
+			existingRecord = &records[i]
+			break
+		}
+	}
+
+	// 3. Update or Create
+	if existingRecord != nil {
+		if existingRecord.Content != ip {
+			// Update
+			log.Info(fmt.Sprintf("Updating DNS record for %s: %s -> %s", domain, existingRecord.Content, ip))
+			return as.UpdateCloudflareDNSRecord(bestZone.ID, existingRecord.ID, domain, ip, token)
+		} else {
+			log.Info(fmt.Sprintf("DNS record for %s already points to %s", domain, ip))
+			return nil
+		}
+	} else {
+		// Create
+		log.Info(fmt.Sprintf("Creating new DNS record for %s -> %s", domain, ip))
+		return as.CreateCloudflareDNSRecord(bestZone.ID, domain, ip, token)
+	}
+}
+
+// UpdateCloudflareDNSRecord updates an existing DNS record
+func (as *Server) UpdateCloudflareDNSRecord(zoneID, recordID, name, content, token string) error {
+	url := fmt.Sprintf("%s/client/v4/zones/%s/dns_records/%s", CLOUDFLARE_URL, zoneID, recordID)
+	client := &http.Client{}
+
+	data := map[string]interface{}{
+		"type":    "A",
+		"name":    name,
+		"content": content,
+		"ttl":     1, // 1 for automatic
+		"proxied": true,
+	}
+	payload, _ := json.Marshal(data)
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(payload))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Success bool `json:"success"`
+		Errors  []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return err
+	}
+
+	if !result.Success {
+		if len(result.Errors) > 0 {
+			return fmt.Errorf(result.Errors[0].Message)
+		}
+		return fmt.Errorf("Cloudflare API error")
+	}
+
+	return nil
 }
 
 // TogglePhishlet proxies the request to toggle a phishlet
