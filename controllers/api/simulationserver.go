@@ -775,7 +775,7 @@ func (as *Server) SetDomain(w http.ResponseWriter, r *http.Request) {
 
 // SetIPv4 proxies the request to set the external IPv4
 func (as *Server) SetIPv4(w http.ResponseWriter, r *http.Request) {
-	url := as.config.SimulationServerURL + "simulationserver/config/ipv4"
+	url := as.config.SimulationServerURL + "config/ipv4"
 	proxyRequest(w, "POST", url, r.Body)
 }
 
