@@ -27,7 +27,7 @@
 		"discovery_url": "http://localhost:8080/realms/truststrike",
 		"redirect_url": "https://127.0.0.1:3334/login/keycloak/callback"
 	},
-	"simulation_server_url": "http://localhost:4455/api/",
+	"simulation_server_url": "https://domain.com/api/",
 	"ec2": {
 		"aws_access_key_id": "",
 		"aws_secret_access_key": "",
