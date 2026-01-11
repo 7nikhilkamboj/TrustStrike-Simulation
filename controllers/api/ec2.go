@@ -151,7 +151,18 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 				domain = u.Hostname()
 			}
 		}
-		sshMessage = as.startEvilginxViaSSH(publicIP, domain)
+
+		// Sync Cloudflare DNS
+		if token := as.config.CloudflareToken; token != "" && domain != "" {
+			// User asked to "wait until request got completed". So we should NOT run in goroutine or wait for it.
+			if err := as.SyncCloudflareDNS(domain, publicIP, token); err != nil {
+				sshMessage += fmt.Sprintf(" | DNS Sync Error: %v", err)
+			} else {
+				sshMessage += " | DNS Synced"
+			}
+		}
+
+		sshMessage += " | " + as.startEvilginxViaSSH(publicIP, domain)
 	}
 
 	response := map[string]interface{}{
