@@ -11,16 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
-	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/controllers/api"
-	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
-	mid "github.com/7nikhilkamboj/TrustStrike-Simulation/middleware"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/middleware/ratelimit"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/util"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/worker"
 	"github.com/NYTimes/gziphandler"
 	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/gorilla/csrf"
@@ -28,6 +18,16 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 	"github.com/jordan-wright/unindexed"
+	"github.com/trust_strike/trust_strike/auth"
+	"github.com/trust_strike/trust_strike/config"
+	ctx "github.com/trust_strike/trust_strike/context"
+	"github.com/trust_strike/trust_strike/controllers/api"
+	log "github.com/trust_strike/trust_strike/logger"
+	mid "github.com/trust_strike/trust_strike/middleware"
+	"github.com/trust_strike/trust_strike/middleware/ratelimit"
+	"github.com/trust_strike/trust_strike/models"
+	"github.com/trust_strike/trust_strike/util"
+	"github.com/trust_strike/trust_strike/worker"
 	"golang.org/x/oauth2"
 )
 
@@ -117,11 +117,18 @@ func (as *AdminServer) Start() {
 			log.Fatal(err)
 		}
 		log.Infof("Starting admin server at https://%s", as.config.ListenURL)
-		log.Fatal(as.server.ListenAndServeTLS(as.config.CertPath, as.config.KeyPath))
+		err = as.server.ListenAndServeTLS(as.config.CertPath, as.config.KeyPath)
+		if err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
+		}
+		return
 	}
 	// If TLS isn't configured, just listen on HTTP
 	log.Infof("Starting admin server at http://%s", as.config.ListenURL)
-	log.Fatal(as.server.ListenAndServe())
+	err := as.server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
 }
 
 // Shutdown attempts to gracefully shutdown the server.
