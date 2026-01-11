@@ -33,7 +33,7 @@
 		"aws_access_key_id": "",
 		"aws_secret_access_key": "",
 		"aws_region": "eu-north-1",
-		"instance_id": "i-029c8639275709678",
+		"instance_id": "i-asdasdss",
 		"ssh_user": "ubuntu",
 		"ssh_key_path": "key.pem",
 		"remote_dir": "/home/ubuntu/TrustStrike-Evil",
