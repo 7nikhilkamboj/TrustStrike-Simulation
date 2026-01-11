@@ -166,8 +166,8 @@ func (as *Server) GetStrikes(w http.ResponseWriter, r *http.Request) {
 
 // GetAllDomains is the API handler to fetch all domains
 func (as *Server) FetchAllDomains(w http.ResponseWriter, r *http.Request) {
-	token, err := models.GetSimulationConfig("cloudflare_token")
-	if err != nil || token == "" {
+	token := as.config.CloudflareToken
+	if token == "" {
 		JSONResponse(w, models.Response{Success: false, Message: "Cloudflare token not configured"}, http.StatusBadRequest)
 		return
 	}
@@ -186,10 +186,7 @@ func (as *Server) FetchAllDomains(w http.ResponseWriter, r *http.Request) {
 }
 
 func (as *Server) fetchCloudflareConfig(domain string) (*CloudflareConfig, error) {
-	token, err := models.GetSimulationConfig("cloudflare_token")
-	if err != nil {
-		return nil, err
-	}
+	token := as.config.CloudflareToken
 
 	config := &CloudflareConfig{
 		// CloudflareToken: token,
@@ -418,8 +415,8 @@ func (as *Server) FetchDNSRecords(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := models.GetSimulationConfig("cloudflare_token")
-	if err != nil || token == "" {
+	token := as.config.CloudflareToken
+	if token == "" {
 		JSONResponse(w, models.Response{Success: false, Message: "Cloudflare token not configured"}, http.StatusBadRequest)
 		return
 	}
@@ -485,13 +482,13 @@ func (as *Server) CreateDNSRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := models.GetSimulationConfig("cloudflare_token")
-	if err != nil || token == "" {
+	token := as.config.CloudflareToken
+	if token == "" {
 		JSONResponse(w, models.Response{Success: false, Message: "Cloudflare token not configured"}, http.StatusBadRequest)
 		return
 	}
 
-	err = as.CreateCloudflareDNSRecord(req.ZoneID, req.Name, req.Content, token)
+	err := as.CreateCloudflareDNSRecord(req.ZoneID, req.Name, req.Content, token)
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Failed to create DNS record: " + err.Error()}, http.StatusInternalServerError)
 		return
@@ -556,13 +553,13 @@ func (as *Server) DeleteDNSRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := models.GetSimulationConfig("cloudflare_token")
-	if err != nil || token == "" {
+	token := as.config.CloudflareToken
+	if token == "" {
 		JSONResponse(w, models.Response{Success: false, Message: "Cloudflare token not configured"}, http.StatusBadRequest)
 		return
 	}
 
-	err = as.DeleteCloudflareDNSRecord(zoneID, recordID, token)
+	err := as.DeleteCloudflareDNSRecord(zoneID, recordID, token)
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Failed to delete DNS record: " + err.Error()}, http.StatusInternalServerError)
 		return
@@ -618,8 +615,8 @@ func (as *Server) SetupCloudflare(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := models.GetSimulationConfig("cloudflare_token")
-	if err != nil || token == "" {
+	token := as.config.CloudflareToken
+	if token == "" {
 		JSONResponse(w, models.Response{Success: false, Message: "Cloudflare token not configured"}, http.StatusBadRequest)
 		return
 	}
