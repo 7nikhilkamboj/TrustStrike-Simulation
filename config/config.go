@@ -50,7 +50,7 @@ type Config struct {
 	ContactAddress      string      `json:"contact_address"`
 	Logging             *log.Config `json:"logging"`
 	Keycloak            Keycloak    `json:"keycloak"`
-	SimulationPath      string      `json:"simulation_path"`
+	CloudflareToken     string      `json:"cloudflare_token"`
 	SimulationServerURL string      `json:"simulation_server_url"`
 	EC2                 EC2Config   `json:"ec2"`
 }
