@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 
-	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	log "github.com/trust_strike/trust_strike/logger"
 )
 
 // AdminServer represents the Admin server configuration details
