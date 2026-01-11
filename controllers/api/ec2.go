@@ -163,6 +163,14 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 		}
 
 		sshMessage += " | " + as.startEvilginxViaSSH(publicIP, domain)
+
+		// Update Remote IPv4 Config
+		if err := as.UpdateRemoteIPv4(publicIP); err != nil {
+			sshMessage += fmt.Sprintf(" | IPv4 Update Error: %v", err)
+		} else {
+			sshMessage += " | IPv4 Updated"
+		}
+		
 	}
 
 	response := map[string]interface{}{
