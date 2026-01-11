@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os/exec"
 	"strings"
 	"time"
 
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 // EC2StatusResponse represents the response from EC2 status endpoint
@@ -143,7 +144,14 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	// Optionally start evil via SSH
 	sshMessage := ""
 	if req.StartEvilginx && publicIP != "" {
-		sshMessage = as.startEvilginxViaSSH(publicIP, req.Domain)
+		// Use request domain or fallback to config
+		domain := req.Domain
+		if domain == "" {
+			if u, err := url.Parse(as.config.SimulationServerURL); err == nil {
+				domain = u.Hostname()
+			}
+		}
+		sshMessage = as.startEvilginxViaSSH(publicIP, domain)
 	}
 
 	response := map[string]interface{}{
@@ -250,3 +258,4 @@ func (as *Server) StopEC2Instance(w http.ResponseWriter, r *http.Request) {
 		},
 	}, http.StatusOK)
 }
+
