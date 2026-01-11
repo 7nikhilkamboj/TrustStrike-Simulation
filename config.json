@@ -1,9 +1,9 @@
 {
 	"admin_server": {
-		"listen_url": "127.0.0.1:3334",
-		"use_tls": true,
-		"cert_path": "trust_strike_admin.crt",
-		"key_path": "trust_strike_admin.key",
+		"listen_url": "0.0.0.0:443",
+        "use_tls": true,
+        "cert_path": "ca.crt",
+        "key_path": "ca.key",
 		"trusted_origins": []
 	},
 	"phish_server": {
