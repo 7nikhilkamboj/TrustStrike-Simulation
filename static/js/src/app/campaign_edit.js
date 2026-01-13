@@ -2464,9 +2464,23 @@ $(document).ready(function () {
         if (objective == "Tracking only") {
             $("#url").parent().show();
             $("#tracking_redirect_url_group").show();
+
+            // Flow Diagram Update: Hide Redirector node, Rename Login node
+            $("#flow_box_redirector").hide();
+            $("#flow_arrow_2").hide();
+            $("#flow_box_login .flow-label").text("Redirector");
+            $("#flow_box_login .flow-value").text("Page");
+            $("#flow_box_login i").attr("class", "fa fa-random");
         } else {
             $("#url").parent().show();
             $("#tracking_redirect_url_group").hide();
+
+            // Flow Diagram Update: Show Redirector node, Restore Login node
+            $("#flow_box_redirector").show();
+            $("#flow_arrow_2").show();
+            $("#flow_box_login .flow-label").text("Target");
+            $("#flow_box_login .flow-value").text("Login");
+            $("#flow_box_login i").attr("class", "fa fa-sign-in");
         }
     });
 
@@ -2505,6 +2519,7 @@ $(document).ready(function () {
 
     // Initial state set
     toggleRedirectorOptions();
+    $("#attack_objective").trigger("change");
 });
 
 // --- Template Creation From Modal Logic ---
