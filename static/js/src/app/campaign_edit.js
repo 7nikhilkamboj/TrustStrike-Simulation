@@ -2053,8 +2053,86 @@ function getZoneIdForDomain(hostname) {
 
 // Update phishlet landing domain when redirector domain changes
 $(document).on("change", "#redirectorDomain", function () {
+    var domain = $(this).val();
+
+    // Show/hide subdomain option based on domain selection
+    if (domain) {
+        $("#subdomainOption").show();
+        // Reset subdomain fields when domain changes
+        $("#useSubdomain").prop("checked", false);
+        $("#subdomainInput").val("").hide();
+        $("#setSubdomainBtn").hide();
+        $("#subdomainHelp").hide();
+        // Store the base domain for subdomain logic
+        $(this).data("baseDomain", domain);
+    } else {
+        $("#subdomainOption").hide();
+    }
+
     updatePhishletLandingDomain();
 });
+
+// Toggle subdomain input visibility when checkbox changes
+$(document).on("change", "#useSubdomain", function () {
+    if ($(this).is(":checked")) {
+        $("#subdomainInput").show();
+        $("#setSubdomainBtn").show();
+        $("#subdomainHelp").show();
+    } else {
+        // Uncheck - revert to main domain
+        $("#subdomainInput").val("").hide();
+        $("#setSubdomainBtn").hide();
+        $("#subdomainHelp").hide();
+
+        // Restore base domain
+        var baseDomain = $("#redirectorDomain").data("baseDomain");
+        if (baseDomain) {
+            // Update the select to show base domain
+            $("#redirectorDomain").val(baseDomain);
+            updatePhishletLandingDomain();
+        }
+    }
+});
+
+// Set the subdomain and update the effective redirector domain
+function setRedirectorSubdomain() {
+    var baseDomain = $("#redirectorDomain").data("baseDomain") || $("#redirectorDomain").val();
+    var subdomain = $("#subdomainInput").val().trim();
+
+    if (!subdomain) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please enter a subdomain',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+
+    // Build full subdomain domain
+    var fullDomain = subdomain + "." + baseDomain;
+
+    // Update the dropdown to show the full subdomain (add as option if needed)
+    var select = $("#redirectorDomain");
+    if (select.find("option[value='" + fullDomain + "']").length === 0) {
+        select.append($("<option>").val(fullDomain).text(fullDomain + " (subdomain)"));
+    }
+    select.val(fullDomain);
+
+    // Update phishlet landing domain
+    updatePhishletLandingDomain();
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Subdomain set: ' + fullDomain,
+        showConfirmButton: false,
+        timer: 3000
+    });
+}
 
 // Function to update phishlet landing domain
 function updatePhishletLandingDomain() {
