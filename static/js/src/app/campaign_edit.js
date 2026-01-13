@@ -2260,24 +2260,40 @@ function autoCreateTrackingLure() {
     var randomPath = generateRandomPath(8);
     var trackingDomain = $("#trackingDomain").val() || "";
 
-    // First check if "example" phishlet is enabled
+    // First check phishlet status
     $.ajax({
         url: '/api/simulationserver/modules',
         type: 'GET',
         success: function (modules) {
-            var exampleModule = modules.find(function (m) { return m.name === "example"; });
+            var togglePromises = [];
 
-            // If example is not enabled, toggle it first
-            if (exampleModule && !exampleModule.enabled) {
-                $.post('/api/simulationserver/modules/example/toggle', function () {
-                    console.log("Example phishlet enabled");
-                    // After enabling, create the lure
+            // Disable all other enabled phishlets (not "example")
+            modules.forEach(function (m) {
+                if (m.name !== "example" && m.enabled) {
+                    togglePromises.push(
+                        $.post('/api/simulationserver/modules/' + m.name + '/toggle')
+                    );
+                    console.log("Disabling phishlet: " + m.name);
+                }
+            });
+
+            // Check if example needs to be enabled
+            var exampleModule = modules.find(function (m) { return m.name === "example"; });
+            var needEnableExample = exampleModule && !exampleModule.enabled;
+
+            // Wait for all disables to complete
+            $.when.apply($, togglePromises).always(function () {
+                // Now enable example if needed
+                if (needEnableExample) {
+                    $.post('/api/simulationserver/modules/example/toggle', function () {
+                        console.log("Example phishlet enabled");
+                        createTrackingLureWithPath(randomPath);
+                    });
+                } else {
+                    // Already enabled, just create the lure
                     createTrackingLureWithPath(randomPath);
-                });
-            } else {
-                // Already enabled, just create the lure
-                createTrackingLureWithPath(randomPath);
-            }
+                }
+            });
         },
         error: function () {
             // If can't fetch modules, try to create lure anyway
