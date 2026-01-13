@@ -745,6 +745,26 @@
                                 </select>
                                 <p class="help-block">Select the domain to use for the redirector page.</p>
                             </div>
+
+                            <!-- Subdomain Option (shown after domain is selected) -->
+                            <div class="form-group" id="subdomainOption" style="display: none;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <label class="checkbox-inline"
+                                        style="font-weight: bold; margin-right: 10px; font-size: 17px;">
+                                        <input type="checkbox" id="useSubdomain"
+                                            style="margin-left: -19px; margin-top: 13px;"> Use Subdomain
+                                    </label>
+                                    <input type="text" class="form-control" id="subdomainInput"
+                                        placeholder="e.g. landing" style="width: 200px; display: none;">
+                                    <button type="button" class="btn btn-primary btn-sm" id="setSubdomainBtn"
+                                        style="display: none;" onclick="setRedirectorSubdomain()">
+                                        Set
+                                    </button>
+                                </div>
+                                <p class="help-block" id="subdomainHelp" style="display: none;">
+                                    Enter a subdomain (e.g., "landing" will become landing.domain.com)
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
