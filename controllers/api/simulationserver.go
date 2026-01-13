@@ -491,13 +491,16 @@ func (as *Server) CreateDNSRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := as.CreateCloudflareDNSRecord(req.ZoneID, req.Name, req.Content, token)
+	// Use SyncCloudflareDNS for idempotent Create/Update/Skip logic
+	// 'Name' is expected to be the full hostname (e.g., login.prprzo.com)
+	// 'Content' is the IP address
+	err := as.SyncCloudflareDNS(req.Name, req.Content, token)
 	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: "Failed to create DNS record: " + err.Error()}, http.StatusInternalServerError)
+		JSONResponse(w, models.Response{Success: false, Message: "Failed to sync DNS record: " + err.Error()}, http.StatusInternalServerError)
 		return
 	}
 
-	JSONResponse(w, models.Response{Success: true, Message: "DNS record created successfully"}, http.StatusOK)
+	JSONResponse(w, models.Response{Success: true, Message: "DNS record synced successfully"}, http.StatusOK)
 }
 
 func (as *Server) CreateCloudflareDNSRecord(zoneID, name, content, token string) error {
@@ -808,7 +811,6 @@ func (as *Server) SetPhishletHostname(w http.ResponseWriter, r *http.Request) {
 // SyncCloudflareDNS ensures the A record for the domain points to the given IP
 func (as *Server) SyncCloudflareDNS(domain, ip, token string) error {
 	// 1. Find the Zone ID
-	// Strategy: List zones, find the one that the domain ends with (longest match)
 	zones, err := as.GetDomainsList(token)
 	if err != nil {
 		return fmt.Errorf("failed to list zones: %v", err)
@@ -830,35 +832,72 @@ func (as *Server) SyncCloudflareDNS(domain, ip, token string) error {
 		return fmt.Errorf("no matching zone found for domain %s", domain)
 	}
 
-	// 2. Find existing A record for the exact domain
-	records, err := as.GetCloudflareDNSRecords(bestZone.ID, token)
+	fmt.Printf("DEBUG: Found Zone ID %s for domain %s\n", bestZone.ID, domain)
+
+	// 2. Find existing A record for the exact domain using server-side filter
+	records, err := as.getCloudflareARecordsByName(bestZone.ID, domain, token)
 	if err != nil {
 		return fmt.Errorf("failed to get DNS records: %v", err)
 	}
 
 	var existingRecord *CloudflareDNSRecord
-	for i := range records {
-		if records[i].Name == domain && records[i].Type == "A" {
-			existingRecord = &records[i]
-			break
+	if len(records) > 0 {
+		existingRecord = &records[0]
+		// Determine if there are duplicates
+		if len(records) > 1 {
+			log.Info(fmt.Sprintf("Found %d records for %s, updating the first one.", len(records), domain))
 		}
 	}
 
 	// 3. Update or Create
 	if existingRecord != nil {
 		if existingRecord.Content != ip {
-			// Update
+			// Update (Req 2)
 			log.Info(fmt.Sprintf("Updating DNS record for %s: %s -> %s", domain, existingRecord.Content, ip))
 			return as.UpdateCloudflareDNSRecord(bestZone.ID, existingRecord.ID, domain, ip, token)
 		} else {
+			// Skip (Req 3)
 			log.Info(fmt.Sprintf("DNS record for %s already points to %s", domain, ip))
 			return nil
 		}
 	} else {
-		// Create
+		// Create (Req 1)
 		log.Info(fmt.Sprintf("Creating new DNS record for %s -> %s", domain, ip))
 		return as.CreateCloudflareDNSRecord(bestZone.ID, domain, ip, token)
 	}
+}
+
+func (as *Server) getCloudflareARecordsByName(zoneID, name, token string) ([]CloudflareDNSRecord, error) {
+	url := fmt.Sprintf("%s/client/v4/zones/%s/dns_records?type=A&name=%s", CLOUDFLARE_URL, zoneID, name)
+	fmt.Println("DEBUG: Querying Cloudflare:", url) 
+
+	client := &http.Client{}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var recordsResp CloudflareDNSRecordsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&recordsResp); err != nil {
+		return nil, err
+	}
+
+	if !recordsResp.Success {
+		return nil, fmt.Errorf("Cloudflare API error")
+	}
+
+	fmt.Printf("DEBUG: Found %d records for %s in zone %s\n", len(recordsResp.Result), name, zoneID)
+	return recordsResp.Result, nil
 }
 
 // UpdateCloudflareDNSRecord updates an existing DNS record
