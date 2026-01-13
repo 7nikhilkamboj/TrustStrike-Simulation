@@ -168,6 +168,9 @@ func (c *Campaign) Validate() error {
 	if !c.SendByDate.IsZero() && !c.LaunchDate.IsZero() && c.SendByDate.Before(c.LaunchDate) {
 		return ErrInvalidSendByDate
 	}
+	if c.ScheduledStopDate.IsZero() {
+		return errors.New("End date not specified")
+	}
 	return nil
 }
 
