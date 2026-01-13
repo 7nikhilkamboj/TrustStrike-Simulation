@@ -2278,13 +2278,34 @@ function setTrackingSubdomain() {
     }
     select.val(fullDomain);
 
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'Tracking subdomain set: ' + fullDomain,
-        showConfirmButton: false,
-        timer: 3000
+    // Call backend API to update phish_sub on the simulation server
+    $.ajax({
+        url: "/api/simulationserver/phishlets/example",
+        method: "PUT",
+        contentType: "application/json",
+        data: JSON.stringify({
+            phish_sub: subdomain
+        }),
+        success: function (response) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Tracking subdomain set: ' + fullDomain,
+                showConfirmButton: false,
+                timer: 3000
+            });
+        },
+        error: function () {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'Failed to update phishlet subdomain',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        }
     });
 }
 
