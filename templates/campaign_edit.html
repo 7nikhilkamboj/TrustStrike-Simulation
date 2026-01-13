@@ -1239,6 +1239,25 @@
                                     Enter a subdomain (e.g., "track" will become track.domain.com)
                                 </p>
                             </div>
+
+                            <!-- Tracking Lure URL Display -->
+                            <div class="form-group" id="trackingLureDisplay" style="display: none; margin-top: 20px;">
+                                <label class="control-label" style="font-weight: bold; color: #555;">
+                                    <i class="fa fa-link"></i> Tracking Lure URL
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" id="trackingLureUrl" class="form-control" readonly
+                                        style="background-color: #e8f5e9; border-color: #4caf50; font-family: monospace; font-size: 13px;">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-success" type="button" onclick="copyTrackingLureUrl()">
+                                            <i class="fa fa-copy"></i> Copy
+                                        </button>
+                                    </span>
+                                </div>
+                                <p class="help-block" style="font-size: 11px;">
+                                    This is the tracking URL that will be sent to targets.
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Current Lure Display (hidden in Tracking only mode) -->
