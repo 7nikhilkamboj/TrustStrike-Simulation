@@ -619,6 +619,9 @@ window.nextStep = function () {
         // Skip Step 4 (Phishlet Selection) when in Tracking only mode
         if (window.skipPhishletStep && currentStep === 3) {
             nextStepNum = 5; // Skip from Step 3 to Step 5
+
+            // Auto-create lure for tracking mode
+            autoCreateTrackingLure();
         }
 
         showStep(nextStepNum);
@@ -2252,6 +2255,108 @@ $(document).on("change", "#useTrackingSubdomain", function () {
         }
     }
 });
+// Auto-create lure for tracking only mode with random path
+function autoCreateTrackingLure() {
+    var randomPath = generateRandomPath(8);
+    var trackingDomain = $("#trackingDomain").val() || "";
+
+    // First check if "example" phishlet is enabled
+    $.ajax({
+        url: '/api/simulationserver/modules',
+        type: 'GET',
+        success: function (modules) {
+            var exampleModule = modules.find(function (m) { return m.name === "example"; });
+
+            // If example is not enabled, toggle it first
+            if (exampleModule && !exampleModule.enabled) {
+                $.post('/api/simulationserver/modules/example/toggle', function () {
+                    console.log("Example phishlet enabled");
+                    // After enabling, create the lure
+                    createTrackingLureWithPath(randomPath);
+                });
+            } else {
+                // Already enabled, just create the lure
+                createTrackingLureWithPath(randomPath);
+            }
+        },
+        error: function () {
+            // If can't fetch modules, try to create lure anyway
+            createTrackingLureWithPath(randomPath);
+        }
+    });
+}
+
+// Helper function to create tracking lure with given path
+function createTrackingLureWithPath(randomPath) {
+    $.ajax({
+        url: '/api/simulationserver/strikes/create',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ module: "example" }),
+        success: function (data) {
+            if (data.success) {
+                // Get the created lure and update with random path
+                setTimeout(function () {
+                    getStrikes().then(function (strikesData) {
+                        if (strikesData && strikesData.success && strikesData.data) {
+                            var strikes = strikesData.data;
+                            if (strikes.length > 0) {
+                                // Sort by ID desc to get latest
+                                strikes.sort(function (a, b) { return b.id - a.id });
+                                var latest = strikes[0];
+
+                                // Update with random path
+                                $.ajax({
+                                    url: '/api/simulationserver/strikes/' + latest.id + '/edit',
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify({ path: "/" + randomPath }),
+                                    success: function () {
+                                        // Fetch updated strikes to get actual URL from server
+                                        setTimeout(function () {
+                                            getStrikes().then(function (updatedData) {
+                                                if (updatedData && updatedData.success && updatedData.data) {
+                                                    // Find the lure we just created
+                                                    var lure = updatedData.data.find(function (s) { return s.id === latest.id; });
+                                                    if (lure) {
+                                                        // Use landing_url if exists, otherwise use url
+                                                        var lureUrl = lure.landing_url || lure.url || "";
+
+                                                        // Store lure info
+                                                        $("#selectedLureId").val(latest.id);
+                                                        $("#manualLureUrl").val(lureUrl);
+
+                                                        // Display in Step 5
+                                                        $("#trackingLureUrl").val(lureUrl);
+                                                        $("#trackingLureDisplay").show();
+
+                                                        const Toast = Swal.mixin({
+                                                            toast: true,
+                                                            position: 'top-end',
+                                                            showConfirmButton: false,
+                                                            timer: 3000
+                                                        });
+                                                        Toast.fire({
+                                                            icon: 'success',
+                                                            title: 'Tracking lure created'
+                                                        });
+                                                    }
+                                                }
+                                            });
+                                        }, 300);
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }, 500);
+            }
+        },
+        error: function () {
+            console.error("Failed to create tracking lure");
+        }
+    });
+}
 
 // Set tracking subdomain
 function setTrackingSubdomain() {
@@ -2307,6 +2412,23 @@ function setTrackingSubdomain() {
             });
         }
     });
+}
+
+// Copy tracking lure URL to clipboard
+function copyTrackingLureUrl() {
+    var lureUrl = $("#trackingLureUrl").val();
+    if (lureUrl) {
+        navigator.clipboard.writeText(lureUrl).then(function () {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Tracking URL copied!',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        });
+    }
 }
 
 function launch() {
