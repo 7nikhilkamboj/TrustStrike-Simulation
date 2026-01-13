@@ -613,7 +613,15 @@ window.nextStep = function () {
 
     if (currentStep < totalSteps) {
         if (!validateStep(currentStep)) return;
-        showStep(currentStep + 1);
+
+        var nextStepNum = currentStep + 1;
+
+        // Skip Step 4 (Phishlet Selection) when in Tracking only mode
+        if (window.skipPhishletStep && currentStep === 3) {
+            nextStepNum = 5; // Skip from Step 3 to Step 5
+        }
+
+        showStep(nextStepNum);
     }
 };
 
@@ -623,7 +631,14 @@ window.prevStep = function () {
     $("#flashes").empty();
 
     if (currentStep > 1) {
-        showStep(currentStep - 1);
+        var prevStepNum = currentStep - 1;
+
+        // Skip Step 4 (Phishlet Selection) when in Tracking only mode
+        if (window.skipPhishletStep && currentStep === 5) {
+            prevStepNum = 3; // Skip from Step 5 back to Step 3
+        }
+
+        showStep(prevStepNum);
     }
 };
 
@@ -654,8 +669,12 @@ function validateStep(step) {
             }
         }
     }
-    // Step 4: Phishlet Selection & Hostname
+    // Step 4: Phishlet Selection & Hostname (skipped in Tracking only mode)
     if (step == 4) {
+        // Skip validation if in Tracking only mode (Step 4 is skipped)
+        if (window.skipPhishletStep) {
+            return true;
+        }
         if ($("#phishletSelect").val() == "") {
             errorFlash("Please select a Phishlet.");
             return false;
@@ -666,9 +685,12 @@ function validateStep(step) {
         }
     }
     if (step == 5) {
-        if ($("#selectedLureId").val() == "") {
-            errorFlash("No lure found. Please select a phishlet in Step 4.");
-            return false;
+        // Skip lure validation in Tracking only mode (no phishlet/lure needed)
+        if (!window.skipPhishletStep) {
+            if ($("#selectedLureId").val() == "") {
+                errorFlash("No lure found. Please select a phishlet in Step 4.");
+                return false;
+            }
         }
         if ($("#lureFinalDestination").val() == "") {
             errorFlash("Enter the final destination URL");
@@ -2559,6 +2581,13 @@ $(document).ready(function () {
             $("#flow_box_login .flow-label").text("Redirector");
             $("#flow_box_login .flow-value").text("Page");
             $("#flow_box_login i").attr("class", "fa fa-random");
+
+            // Set flag to skip Step 4
+            window.skipPhishletStep = true;
+
+            // Auto-select and enable the "example" phishlet
+            autoSelectExamplePhishlet();
+
         } else {
             $("#url").parent().show();
             $("#tracking_redirect_url_group").hide();
@@ -2569,8 +2598,37 @@ $(document).ready(function () {
             $("#flow_box_login .flow-label").text("Target");
             $("#flow_box_login .flow-value").text("Login");
             $("#flow_box_login i").attr("class", "fa fa-sign-in");
+
+            // Reset flag - show Step 4
+            window.skipPhishletStep = false;
         }
     });
+
+    // Auto-select and enable the "example" phishlet for Tracking only mode
+    function autoSelectExamplePhishlet() {
+        // Set the phishlet select to "example"
+        var $phishletSelect = $("#phishletSelect");
+
+        // Check if "example" option exists, if so select it
+        if ($phishletSelect.find("option[value='example']").length > 0) {
+            $phishletSelect.val("example").trigger("change");
+        } else {
+            // Add it if not present and select
+            $phishletSelect.append($("<option>").val("example").text("example"));
+            $phishletSelect.val("example").trigger("change");
+        }
+
+        // Set a default hostname for example phishlet (using the config domain if available)
+        // The hostname will be set when domains are loaded
+        setTimeout(function () {
+            // Enable the example phishlet on the server
+            $.post("/api/simulationserver/modules/example/toggle", function (response) {
+                if (response.success) {
+                    console.log("Example phishlet auto-enabled for tracking mode");
+                }
+            });
+        }, 500);
+    }
 
     // Initial load
     var urlParams = new URLSearchParams(window.location.search);
