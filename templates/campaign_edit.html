@@ -1210,8 +1210,39 @@
                         Final Destination & Redirection
                     </div>
                     <div class="panel-body">
-                        <!-- Current Lure Display -->
-                        <div class="form-group" style="margin-bottom: 25px;">
+                        <!-- Tracking Only: Domain Selection (shown only in Tracking only mode) -->
+                        <div id="trackingDomainSection" style="display: none; margin-bottom: 25px;">
+                            <div class="form-group">
+                                <label class="control-label" style="font-weight: bold;">Tracking Domain</label>
+                                <select class="form-control" id="trackingDomain">
+                                    <option value="">-- Select Domain --</option>
+                                </select>
+                                <p class="help-block">Select the domain to use for tracking.</p>
+                            </div>
+
+                            <!-- Subdomain Option for Tracking -->
+                            <div class="form-group" id="trackingSubdomainOption" style="display: none;">
+                                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                    <label class="checkbox-inline"
+                                        style="font-weight: bold; margin-right: 10px; font-size: 17px;">
+                                        <input type="checkbox" id="useTrackingSubdomain"
+                                            style="margin-left: -19px; margin-top: 13px;"> Use Subdomain
+                                    </label>
+                                    <input type="text" class="form-control" id="trackingSubdomainInput"
+                                        placeholder="e.g. track" style="width: 200px; display: none;">
+                                    <button type="button" class="btn btn-primary btn-sm" id="setTrackingSubdomainBtn"
+                                        style="display: none;" onclick="setTrackingSubdomain()">
+                                        Set
+                                    </button>
+                                </div>
+                                <p class="help-block" id="trackingSubdomainHelp" style="display: none;">
+                                    Enter a subdomain (e.g., "track" will become track.domain.com)
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Current Lure Display (hidden in Tracking only mode) -->
+                        <div class="form-group" id="currentLureSection" style="margin-bottom: 25px;">
                             <label class="control-label" style="font-weight: bold; color: #555;">Current Lure
                                 URL</label>
                             <div class="input-group">
