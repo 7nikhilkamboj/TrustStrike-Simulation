@@ -688,7 +688,13 @@ function validateStep(step) {
             return false;
         }
     }
-    // Step 8: Schedule - optional
+    // Step 8: Schedule
+    if (step == 8) {
+        if ($("#scheduled_stop_date").val() == "") {
+            errorFlash("Please select an End Date.");
+            return false;
+        }
+    }
     // Step 9: Launch - no validation
     return true;
 }
@@ -2278,8 +2284,12 @@ function populateCampaignData(campaign) {
         $("#users").val(groupIds).trigger("change");
     }
 
-    if (campaign.scheduled_stop_date && campaign.scheduled_stop_date != "0001-01-01T00:00:00Z") {
-        $("#scheduled_stop_date").data("DateTimePicker").date(moment(campaign.scheduled_stop_date));
+    if (campaign.scheduled_stop_date && !campaign.scheduled_stop_date.startsWith("0001-01-01")) {
+        // Ensure parsing handles timezone correctly or defaults to local
+        var stopDate = moment(campaign.scheduled_stop_date);
+        if (stopDate.isValid()) {
+            $("#scheduled_stop_date").data("DateTimePicker").date(stopDate);
+        }
     }
 
     // Dates?
