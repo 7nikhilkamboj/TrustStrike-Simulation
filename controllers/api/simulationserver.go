@@ -964,6 +964,23 @@ func (as *Server) GetPhishletHosts(w http.ResponseWriter, r *http.Request) {
 	proxyRequest(w, "GET", url, nil)
 }
 
+// UpdatePhishletSubdomain proxies the request to update phish_sub and orig_sub on the simulation server
+func (as *Server) UpdatePhishletSubdomain(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	name := vars["name"]
+	
+	// Read the request body
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Failed to read request body"}, http.StatusBadRequest)
+		return
+	}
+	
+	// Proxy to the simulation server
+	url := fmt.Sprintf("%sphishlets/%s", as.config.SimulationServerURL, name)
+	proxyRequest(w, "PUT", url, bytes.NewReader(body))
+}
+
 // Cloudflare API's -------
 func (as *Server) SetCloudflare(w http.ResponseWriter, r *http.Request) {
 	var req struct {
