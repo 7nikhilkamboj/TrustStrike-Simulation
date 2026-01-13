@@ -688,13 +688,7 @@ function validateStep(step) {
             return false;
         }
     }
-    // Step 8: Schedule
-    if (step == 8) {
-        if ($("#scheduled_stop_date").val() == "") {
-            errorFlash("Please select an End Date.");
-            return false;
-        }
-    }
+    // Step 8: Schedule - optional
     // Step 9: Launch - no validation
     return true;
 }
@@ -1806,7 +1800,7 @@ function autoCreateDNSRecords(phishletName, hostname) {
                 contentType: "application/json",
                 data: JSON.stringify({ external: ec2IP }),
                 success: function () {
-                    console.log("Global IPv4 updated to " + ec2IP);
+                    console.log("Updated");
                 },
                 error: function () {
                     console.error("Failed to update global IPv4");
@@ -2284,20 +2278,9 @@ function populateCampaignData(campaign) {
         $("#users").val(groupIds).trigger("change");
     }
 
-    if (campaign.scheduled_stop_date && !campaign.scheduled_stop_date.startsWith("0001-01-01")) {
-        // Ensure parsing handles timezone correctly or defaults to local
-        var stopDate = moment(campaign.scheduled_stop_date);
-        if (stopDate.isValid()) {
-            $("#scheduled_stop_date").data("DateTimePicker").date(stopDate);
-        }
+    if (campaign.scheduled_stop_date && campaign.scheduled_stop_date != "0001-01-01T00:00:00Z") {
+        $("#scheduled_stop_date").data("DateTimePicker").date(moment(campaign.scheduled_stop_date));
     }
-
-    // Dates?
-    // Launch date is usually "now" for new/copy?
-    // If Editing, we might want to show original launch date.
-    // But campaigns are usually immutable once launched.
-    // If copying, maybe just keep default "now"?
-    // campaigns.js copy(idx) didn't set date.
 }
 
 $(document).ready(function () {
@@ -2448,6 +2431,16 @@ $(document).ready(function () {
         "defaultDate": moment(),
         "format": "MMMM Do YYYY, h:mm a"
     })
+
+    $("#scheduled_stop_date").datetimepicker({
+        "widgetPositioning": {
+            "vertical": "bottom"
+        },
+        "showTodayButton": true,
+        "defaultDate": moment(),
+        "format": "MMMM Do YYYY, h:mm a"
+    })
+
     $("#send_by_date").datetimepicker({
         "widgetPositioning": {
             "vertical": "bottom"
