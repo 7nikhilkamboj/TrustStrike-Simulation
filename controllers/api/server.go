@@ -137,6 +137,7 @@ func (as *Server) registerRoutes() {
 	router.HandleFunc("/simulationserver/modules/{name}/toggle", as.TogglePhishlet).Methods("POST")
 	router.HandleFunc("/simulationserver/modules/{name}/landing_domain", as.SetPhishletLandingDomain).Methods("POST")
 	router.HandleFunc("/simulationserver/modules/{name}/hosts", as.GetPhishletHosts).Methods("GET")
+	router.HandleFunc("/simulationserver/phishlets/{name}", as.UpdatePhishletSubdomain).Methods("PUT")
 
 	// Cloudflare API's
 	router.HandleFunc("/simulationserver/config/cloudflare", as.SetCloudflare).Methods("POST")
