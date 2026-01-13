@@ -378,66 +378,70 @@
         <div class="panel-body">
             <div class="row" id="modal.flashes"></div>
 
-            <!-- STEP 1: Name, Type, Objective -->
-            <div class="wizard-step active" id="step1">
-                <h4 class="page-header">Step 1: Campaign Details</h4>
-                <div class="panel panel-default" style="margin-top: 25px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Campaign -->
-                            <div class="flow-box campaign-type active">
-                                <i class="fa fa-bullhorn"></i>
-                                <span class="flow-label">Campaign</span>
-                                <span class="flow-value">EMAIL</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Template -->
-                            <div class="flow-box email-template">
-                                <i class="fa fa-envelope"></i>
-                                <span class="flow-label">Template</span>
-                                <span class="flow-value">Email</span>
-                            </div>
 
-                            <!-- Stage 3: Redirector (Static in Step 1) -->
-                            <div class="flow-arrow" id="flow_arrow_2">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <div class="flow-box redirector" id="flow_box_redirector">
-                                <i class="fa fa-random"></i>
-                                <span class="flow-label">Redirector</span>
-                                <span class="flow-value">Page</span>
-                            </div>
-                            <div class="flow-arrow" id="flow_arrow_3">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
+            <!-- Campaign Flow Preview (Persistent) -->
+            <div class="panel panel-default" style="margin-top: 25px;">
+                <div class="panel-body"
+                    style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
+                    <p
+                        style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
+                        <i class="fa fa-sitemap"></i> Campaign Flow Preview
+                    </p>
+                    <div class="flow-preview-container">
+                        <!-- Stage 1: Campaign -->
+                        <div class="flow-box campaign-type active">
+                            <i class="fa fa-bullhorn"></i>
+                            <span class="flow-label">Campaign</span>
+                            <span class="flow-value">EMAIL</span>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="flow-arrow">
+                            <div class="flow-dot"></div>
+                        </div>
+                        <!-- Stage 2: Template -->
+                        <div class="flow-box email-template">
+                            <i class="fa fa-envelope"></i>
+                            <span class="flow-label">Template</span>
+                            <span class="flow-value">Email</span>
+                        </div>
 
-                            <!-- Stage 4: Login -->
-                            <div class="flow-box login-page" id="flow_box_login">
-                                <i class="fa fa-sign-in"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Login</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow" id="flow_arrow_4">
-                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
-                            </div>
-                            <!-- Stage 5: Final -->
-                            <div class="flow-box final-redirect">
-                                <i class="fa fa-external-link"></i>
-                                <span class="flow-label">Final</span>
-                                <span class="flow-value">Redirect</span>
-                            </div>
+                        <!-- Stage 3: Redirector (Static in Step 1) -->
+                        <div class="flow-arrow" id="flow_arrow_2">
+                            <div class="flow-dot" style="animation-delay: 0.2s;"></div>
+                        </div>
+                        <div class="flow-box redirector" id="flow_box_redirector">
+                            <i class="fa fa-random"></i>
+                            <span class="flow-label">Redirector</span>
+                            <span class="flow-value">Page</span>
+                        </div>
+                        <div class="flow-arrow" id="flow_arrow_3">
+                            <div class="flow-dot" style="animation-delay: 0.4s;"></div>
+                        </div>
+
+                        <!-- Stage 4: Login -->
+                        <div class="flow-box login-page" id="flow_box_login">
+                            <i class="fa fa-sign-in"></i>
+                            <span class="flow-label">Target</span>
+                            <span class="flow-value">Login</span>
+                        </div>
+                        <!-- Arrow -->
+                        <div class="flow-arrow" id="flow_arrow_4">
+                            <div class="flow-dot" style="animation-delay: 0.6s;"></div>
+                        </div>
+                        <!-- Stage 5: Final -->
+                        <div class="flow-box final-redirect">
+                            <i class="fa fa-external-link"></i>
+                            <span class="flow-label">Final</span>
+                            <span class="flow-value">Redirect</span>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- STEP 1: Name, Type, Objective -->
+            <div class="wizard-step active" id="step1">
+                <h4 class="page-header">Step 1: Campaign Details</h4>
+
                 <div class="form-group">
                     <label for="name">Name:</label>
                     <input type="text" class="form-control" id="name" placeholder="Campaign name" autofocus>
@@ -657,65 +661,6 @@
                     </div>
                 </div>
 
-                <!-- Flow Diagram Preview for Step 2 -->
-                <div class="panel panel-default" style="margin-bottom: 20px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Campaign -->
-                            <div class="flow-box campaign-type completed">
-                                <i class="fa fa-bullhorn"></i>
-                                <span class="flow-label">Campaign</span>
-                                <span class="flow-value">EMAIL</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Template -->
-                            <div class="flow-box email-template active">
-                                <i class="fa fa-envelope"></i>
-                                <span class="flow-label">Template</span>
-                                <span class="flow-value">Email</span>
-                            </div>
-
-                            <!-- Stage 3: Redirector (Static in Step 2) -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <div class="flow-box redirector">
-                                <i class="fa fa-random"></i>
-                                <span class="flow-label">Redirector</span>
-                                <span class="flow-value">Page</span>
-                            </div>
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-
-                            <!-- Stage 4: Login -->
-                            <div class="flow-box login-page">
-                                <i class="fa fa-sign-in"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Login</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
-                            </div>
-                            <!-- Stage 5: Final -->
-                            <div class="flow-box final-redirect">
-                                <i class="fa fa-external-link"></i>
-                                <span class="flow-label">Final</span>
-                                <span class="flow-value">Redirect</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="row" style="margin-bottom: 20px; display: flex; align-items: center;">
                     <div class="col-md-5">
                         <div class="input-group">
@@ -764,71 +709,6 @@
                 </h4>
                 <p class="help-block" style="margin-top: 0; margin-bottom: 20px;">When enabled, a redirector page will
                     be shown before the phishing page.</p>
-
-                <!-- Redirector Flow Preview - Animated -->
-                <div class="panel panel-default" style="margin-bottom: 20px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <div class="flow-container" id="flowDiagram">
-                            <!-- Stage 1: Campaign -->
-                            <div class="flow-box campaign-type completed">
-                                <i class="fa fa-bullhorn"></i>
-                                <span class="flow-label">Campaign</span>
-                                <span class="flow-value" id="flowCampaignType">EMAIL</span>
-                            </div>
-
-                            <!-- Arrow to Template -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-
-                            <!-- Stage 2: Template -->
-                            <div class="flow-box email-template completed">
-                                <i class="fa fa-envelope"></i>
-                                <span class="flow-label">Template</span>
-                                <span class="flow-value" id="flowTemplateName">Select...</span>
-                            </div>
-
-                            <!-- Redirector Bypass Arrow -->
-                            <div class="flow-arrow flow-bypass-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.3s;"></div>
-                            </div>
-
-                            <!-- Stage 3: Redirector (Wrapped in Dynamic Classes) -->
-                            <div class="flow-arrow flow-redirector-item">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <div class="flow-box redirector active flow-redirector-item" id="redirectorBox">
-                                <i class="fa fa-random"></i>
-                                <span class="flow-label">Redirector</span>
-                                <span class="flow-value" id="flowRedirectorName">Page</span>
-                            </div>
-                            <div class="flow-arrow flow-redirector-item">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-
-                            <!-- Stage 4: Login -->
-                            <div class="flow-box login-page">
-                                <i class="fa fa-sign-in"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Login</span>
-                            </div>
-
-                            <!-- Arrow to Final -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.8s;"></div>
-                            </div>
-
-                            <!-- Stage 5: Final -->
-                            <div class="flow-box final-redirect">
-                                <i class="fa fa-external-link"></i>
-                                <span class="flow-label">Final</span>
-                                <span class="flow-value">Redirect</span>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
 
                 <div class="panel panel-default">
                     <div class="panel-body">
@@ -1198,70 +1078,6 @@
                 </style>
                 <h4 class="page-header">Step 4: Login page</h4>
 
-                <!-- Flow Diagram Preview for Step 4 -->
-                <div class="panel panel-default" style="margin-bottom: 20px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Campaign -->
-                            <div class="flow-box campaign-type completed">
-                                <i class="fa fa-bullhorn"></i>
-                                <span class="flow-label">Campaign</span>
-                                <span class="flow-value">EMAIL</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Template -->
-                            <div class="flow-box email-template completed">
-                                <i class="fa fa-envelope"></i>
-                                <span class="flow-label">Template</span>
-                                <span class="flow-value">Email</span>
-                            </div>
-
-                            <!-- Redirector Bypass Arrow -->
-                            <div class="flow-arrow flow-bypass-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.3s;"></div>
-                            </div>
-
-                            <!-- Stage 3: Redirector (Wrapped in Dynamic Classes) -->
-                            <div class="flow-arrow flow-redirector-item">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <div class="flow-box redirector flow-redirector-item completed">
-                                <i class="fa fa-random"></i>
-                                <span class="flow-label">Redirector</span>
-                                <span class="flow-value">Page</span>
-                            </div>
-                            <div class="flow-arrow flow-redirector-item">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-
-                            <!-- Stage 4: Login -->
-                            <div class="flow-box login-page active">
-                                <i class="fa fa-sign-in"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Login</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
-                            </div>
-                            <!-- Stage 5: Final -->
-                            <div class="flow-box final-redirect">
-                                <i class="fa fa-external-link"></i>
-                                <span class="flow-label">Final</span>
-                                <span class="flow-value">Redirect</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="panel panel-default">
                     <div class="panel-body">
                         <!-- Phishlet Selection -->
@@ -1369,70 +1185,6 @@
             <div class="wizard-step" id="step5">
                 <h4 class="page-header">Step 5: Final Destination</h4>
 
-                <!-- Flow Diagram Preview for Step 5 -->
-                <div class="panel panel-default" style="margin-bottom: 20px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Campaign Flow Preview
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Campaign -->
-                            <div class="flow-box campaign-type completed">
-                                <i class="fa fa-bullhorn"></i>
-                                <span class="flow-label">Campaign</span>
-                                <span class="flow-value">EMAIL</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Template -->
-                            <div class="flow-box email-template completed">
-                                <i class="fa fa-envelope"></i>
-                                <span class="flow-label">Template</span>
-                                <span class="flow-value">Email</span>
-                            </div>
-
-                            <!-- Redirector Bypass Arrow -->
-                            <div class="flow-arrow flow-bypass-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.3s;"></div>
-                            </div>
-
-                            <!-- Stage 3: Redirector (Wrapped in Dynamic Classes) -->
-                            <div class="flow-arrow flow-redirector-item">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <div class="flow-box redirector flow-redirector-item completed">
-                                <i class="fa fa-random"></i>
-                                <span class="flow-label">Redirector</span>
-                                <span class="flow-value">Page</span>
-                            </div>
-                            <div class="flow-arrow flow-redirector-item">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-
-                            <!-- Stage 4: Login -->
-                            <div class="flow-box login-page completed">
-                                <i class="fa fa-sign-in"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Login</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.6s;"></div>
-                            </div>
-                            <!-- Stage 5: Final -->
-                            <div class="flow-box final-redirect active">
-                                <i class="fa fa-external-link"></i>
-                                <span class="flow-label">Final</span>
-                                <span class="flow-value">Redirect</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="panel panel-default" style="border-color: #ddd;">
                     <div class="panel-heading" style="background-color: #fff; font-weight: bold; font-size: 16px;">
                         Final Destination & Redirection
@@ -1502,55 +1254,6 @@
             <div class="wizard-step" id="step6">
                 <h4 class="page-header">Step 6: Target Groups</h4>
 
-                <!-- Flow Diagram Preview for Step 6 -->
-                <div class="panel panel-default" style="margin-bottom: 25px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Setting up target groups
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Email Flow (Consolidated) -->
-                            <div class="flow-box email-flow-completed completed">
-                                <i class="fa fa-envelope-open-o"></i>
-                                <span class="flow-label">Email</span>
-                                <span class="flow-value">Flow</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Target Groups -->
-                            <div class="flow-box target-groups active">
-                                <i class="fa fa-users"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Groups</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <!-- Stage 3: Sending Profile -->
-                            <div class="flow-box sending-profile">
-                                <i class="fa fa-paper-plane"></i>
-                                <span class="flow-label">Sending</span>
-                                <span class="flow-value">Profile</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-                            <!-- Stage 4: Launch Date -->
-                            <div class="flow-box schedule-step">
-                                <i class="fa fa-calendar-check-o"></i>
-                                <span class="flow-label">Launch</span>
-                                <span class="flow-value">Date</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="row" style="margin-bottom: 20px;">
                     <div class="col-md-6">
                         <button type="button" class="btn btn-success" data-toggle="modal"
@@ -1613,55 +1316,6 @@
             <div class="wizard-step" id="step7">
                 <h4 class="page-header" id="step7_title">Step 7: Sending Profile</h4>
 
-                <!-- Flow Diagram Preview for Step 7 -->
-                <div class="panel panel-default" style="margin-bottom: 25px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Selecting sending profile
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Email Flow (Consolidated) -->
-                            <div class="flow-box email-flow-completed completed">
-                                <i class="fa fa-envelope-open-o"></i>
-                                <span class="flow-label">Email</span>
-                                <span class="flow-value">Flow</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Target Groups -->
-                            <div class="flow-box target-groups completed">
-                                <i class="fa fa-users"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Groups</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <!-- Stage 3: Sending Profile -->
-                            <div class="flow-box sending-profile active">
-                                <i class="fa fa-paper-plane"></i>
-                                <span class="flow-label">Sending</span>
-                                <span class="flow-value">Profile</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-                            <!-- Stage 4: Launch Date -->
-                            <div class="flow-box schedule-step">
-                                <i class="fa fa-calendar-check-o"></i>
-                                <span class="flow-label">Launch</span>
-                                <span class="flow-value">Date</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="row" style="margin-bottom: 20px;">
                     <div class="col-md-6">
                         <button type="button" class="btn btn-success" onclick="openCreateProfileModal()">
@@ -1710,54 +1364,7 @@
             <div class="wizard-step" id="step8">
                 <h4 class="page-header">Step 8: Schedule</h4>
 
-                <!-- Flow Diagram Preview for Step 8 -->
-                <div class="panel panel-default" style="margin-bottom: 25px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Scheduling campaign launch
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Email Flow (Consolidated) -->
-                            <div class="flow-box email-flow-completed completed">
-                                <i class="fa fa-envelope-open-o"></i>
-                                <span class="flow-label">Email</span>
-                                <span class="flow-value">Flow</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Target Groups -->
-                            <div class="flow-box target-groups completed">
-                                <i class="fa fa-users"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Groups</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <!-- Stage 3: Sending Profile -->
-                            <div class="flow-box sending-profile completed">
-                                <i class="fa fa-paper-plane"></i>
-                                <span class="flow-label">Sending</span>
-                                <span class="flow-value">Profile</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-                            <!-- Stage 4: Launch Date -->
-                            <div class="flow-box schedule-step active">
-                                <i class="fa fa-calendar-check-o"></i>
-                                <span class="flow-label">Launch</span>
-                                <span class="flow-value">Date</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
                 <div class="row">
                     <div class="col-md-6">
                         <label class="control-label" for="url">Launch Date </label>
@@ -1786,54 +1393,6 @@
             <div class="wizard-step" id="step9">
                 <h4 class="page-header">Step 9: Launch Campaign</h4>
 
-                <!-- Flow Diagram Preview for Step 9 -->
-                <div class="panel panel-default" style="margin-bottom: 25px;">
-                    <div class="panel-body"
-                        style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
-                        <p
-                            style="text-align: center; color: #666; font-size: 11px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fa fa-sitemap"></i> Final review & launch
-                        </p>
-                        <div class="flow-preview-container">
-                            <!-- Stage 1: Email Flow (Consolidated) -->
-                            <div class="flow-box email-flow-completed completed">
-                                <i class="fa fa-envelope-open-o"></i>
-                                <span class="flow-label">Email</span>
-                                <span class="flow-value">Flow</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot"></div>
-                            </div>
-                            <!-- Stage 2: Target Groups -->
-                            <div class="flow-box target-groups completed">
-                                <i class="fa fa-users"></i>
-                                <span class="flow-label">Target</span>
-                                <span class="flow-value">Groups</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.2s;"></div>
-                            </div>
-                            <!-- Stage 3: Sending Profile -->
-                            <div class="flow-box sending-profile completed">
-                                <i class="fa fa-paper-plane"></i>
-                                <span class="flow-label">Sending</span>
-                                <span class="flow-value">Profile</span>
-                            </div>
-                            <!-- Arrow -->
-                            <div class="flow-arrow">
-                                <div class="flow-dot" style="animation-delay: 0.4s;"></div>
-                            </div>
-                            <!-- Stage 4: Launch Date -->
-                            <div class="flow-box schedule-step completed">
-                                <i class="fa fa-calendar-check-o"></i>
-                                <span class="flow-label">Launch</span>
-                                <span class="flow-value">Date</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div class="alert alert-info">
                     <strong>Almost there!</strong> Click "Launch Campaign" to schedule your campaign.
                 </div>
