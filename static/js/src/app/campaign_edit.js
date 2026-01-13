@@ -2189,6 +2189,105 @@ function updatePhishletLandingDomain() {
     }
 }
 
+// Populate tracking domain dropdown for Step 5 (Tracking only mode)
+function populateTrackingDomains() {
+    var $trackingDomain = $("#trackingDomain");
+    $trackingDomain.html('<option value="">-- Select Domain --</option>');
+
+    // Use existing Cloudflare domains if already loaded
+    var $redirectorDomain = $("#redirectorDomain");
+    $redirectorDomain.find("option").each(function () {
+        var val = $(this).val();
+        var text = $(this).text();
+        if (val) {
+            $trackingDomain.append($("<option>").val(val).text(text));
+        }
+    });
+
+    // If no domains, try to load them
+    if ($trackingDomain.find("option").length <= 1) {
+        $.get("/api/simulationserver/config/fetch_alldomains", function (response) {
+            if (response.success && response.data) {
+                response.data.forEach(function (domain) {
+                    $trackingDomain.append($("<option>").val(domain.name).text(domain.name));
+                });
+            }
+        });
+    }
+}
+
+// Tracking domain change handler - show subdomain option
+$(document).on("change", "#trackingDomain", function () {
+    var domain = $(this).val();
+
+    if (domain) {
+        $("#trackingSubdomainOption").show();
+        // Reset subdomain fields
+        $("#useTrackingSubdomain").prop("checked", false);
+        $("#trackingSubdomainInput").val("").hide();
+        $("#setTrackingSubdomainBtn").hide();
+        $("#trackingSubdomainHelp").hide();
+        // Store base domain
+        $(this).data("baseDomain", domain);
+    } else {
+        $("#trackingSubdomainOption").hide();
+    }
+});
+
+// Toggle tracking subdomain input visibility
+$(document).on("change", "#useTrackingSubdomain", function () {
+    if ($(this).is(":checked")) {
+        $("#trackingSubdomainInput").show();
+        $("#setTrackingSubdomainBtn").show();
+        $("#trackingSubdomainHelp").show();
+    } else {
+        $("#trackingSubdomainInput").val("").hide();
+        $("#setTrackingSubdomainBtn").hide();
+        $("#trackingSubdomainHelp").hide();
+
+        // Restore base domain
+        var baseDomain = $("#trackingDomain").data("baseDomain");
+        if (baseDomain) {
+            $("#trackingDomain").val(baseDomain);
+        }
+    }
+});
+
+// Set tracking subdomain
+function setTrackingSubdomain() {
+    var baseDomain = $("#trackingDomain").data("baseDomain") || $("#trackingDomain").val();
+    var subdomain = $("#trackingSubdomainInput").val().trim();
+
+    if (!subdomain) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'warning',
+            title: 'Please enter a subdomain',
+            showConfirmButton: false,
+            timer: 3000
+        });
+        return;
+    }
+
+    var fullDomain = subdomain + "." + baseDomain;
+
+    var select = $("#trackingDomain");
+    if (select.find("option[value='" + fullDomain + "']").length === 0) {
+        select.append($("<option>").val(fullDomain).text(fullDomain + " (subdomain)"));
+    }
+    select.val(fullDomain);
+
+    Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Tracking subdomain set: ' + fullDomain,
+        showConfirmButton: false,
+        timer: 3000
+    });
+}
+
 function launch() {
     Swal.fire({
         title: "Are you sure?",
@@ -2588,6 +2687,13 @@ $(document).ready(function () {
             // Auto-select and enable the "example" phishlet
             autoSelectExamplePhishlet();
 
+            // Step 5: Show tracking domain section, hide current lure URL
+            $("#trackingDomainSection").show();
+            $("#currentLureSection").hide();
+
+            // Populate tracking domain dropdown with Cloudflare domains
+            populateTrackingDomains();
+
         } else {
             $("#url").parent().show();
             $("#tracking_redirect_url_group").hide();
@@ -2601,6 +2707,10 @@ $(document).ready(function () {
 
             // Reset flag - show Step 4
             window.skipPhishletStep = false;
+
+            // Step 5: Hide tracking domain section, show current lure URL
+            $("#trackingDomainSection").hide();
+            $("#currentLureSection").show();
         }
     });
 
