@@ -2119,6 +2119,10 @@ function launch() {
                     scheduled_stop_date = moment(scheduled_stop_date, "MMMM Do YYYY, h:mm a").utc().format();
                 }
 
+                var redirectorEnabled = $("#useRedirector").is(":checked");
+                var redirectorDomain = $("#redirectorDomain").val() || "";
+                var finalDesintation = $("#selectedLureLandingUrl").val() || "";
+
                 var campaign = {
                     name: $("#name").val(),
                     template: { name: $("#template_name").val() },
@@ -2130,10 +2134,16 @@ function launch() {
                     groups: selectedGroups,
                     campaign_type: $("#campaign_type").val(),
                     attack_objective: $("#attack_objective").val(),
-                    redirect_url: $("#tracking_redirect_url").val(),
-                    landing_url: $("#selectedLureLandingUrl").val() || "",
-                    use_redirector: $("#useRedirector").is(":checked"),
-                    redirector_domain: $("#redirectorDomain").val(),
+
+                    // Correct Mapping as requested:
+                    // Final Destination (Step 5) -> redirect_url (Exit URL)
+                    redirect_url: finalDesintation,
+
+                    // Redirector Domain (Step 3) -> landing_url (Entry/Redirector URL) - Only if enabled
+                    landing_url: redirectorEnabled ? "https://" + redirectorDomain : "",
+
+                    use_redirector: redirectorEnabled,
+                    redirector_domain: redirectorDomain,
                     redirector_template: $("#redirectorTemplate").val(),
                     phishlet: $("#phishletSelect").val()
                 };
