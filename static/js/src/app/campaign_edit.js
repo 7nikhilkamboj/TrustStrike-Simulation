@@ -2343,11 +2343,37 @@ $(document).on("change", "#trackingDomain", function () {
         // Store base domain
         $(this).data("baseDomain", domain);
 
+        // AUTO-SET DEFAULT SUBDOMAIN 'track'
+        var defaultSub = "track";
 
+        // Update UI
+        $("#useTrackingSubdomain").prop("checked", true);
+        $("#trackingSubdomainInput").val(defaultSub).show();
+        $("#setTrackingSubdomainBtn").show();
+        $("#trackingSubdomainHelp").show();
 
-        // Create lure with the selected domain (main domain, no subdomain)
-        // User can then click "Set" subdomain to update with subdomain
-        createTrackingLureForDomain(domain);
+        // 1. Set phishlet subdomain to 'track'
+        $.ajax({
+            url: "/api/simulationserver/phishlets/example",
+            method: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify({ phish_sub: defaultSub }),
+            success: function () {
+                console.log("Default subdomain set to 'track'");
+
+                // 2. Create DNS A record for track.domain.com (NOT base domain)
+                var fullDomain = defaultSub + "." + domain;
+                createRedirectorDNSRecord(fullDomain, domain);
+
+                // 3. Create lure (will use the updated phishlet config)
+                createTrackingLureForDomain(domain);
+            },
+            error: function () {
+                console.error("Failed to set default subdomain");
+                // Fallback: try to create lure anyway
+                createTrackingLureForDomain(domain);
+            }
+        });
     } else {
         $("#trackingSubdomainOption").hide();
     }
@@ -3961,31 +3987,6 @@ window.saveFinalDestination = function () {
                 });
                 // Also update the hidden field often used by the campaign submission
                 $("#selectedLureLandingUrl").val(redirectUrl);
-
-                // Update the URLs to include ?rd=<redirectUrl>
-                var appendRdParam = function (urlInputId) {
-                    var currentUrl = $(urlInputId).val();
-                    if (!currentUrl) return;
-
-                    try {
-                        var urlObj = new URL(currentUrl);
-                        urlObj.searchParams.set("rd", redirectUrl);
-                        $(urlInputId).val(urlObj.toString());
-                    } catch (e) {
-                        // Fallback
-                        var separator = currentUrl.includes("?") ? "&" : "?";
-                        // Check if rd already exists
-                        if (currentUrl.includes("rd=")) {
-                            $(urlInputId).val(currentUrl.replace(/rd=[^&]*/, "rd=" + encodeURIComponent(redirectUrl)));
-                        } else {
-                            $(urlInputId).val(currentUrl + separator + "rd=" + encodeURIComponent(redirectUrl));
-                        }
-                    }
-                };
-
-                appendRdParam("#actualLureUrl");
-                appendRdParam("#trackingLureUrl");
-                appendRdParam("#manualLureUrl");
 
             } else {
                 errorFlash(data.error || "Failed to update Final Destination");
