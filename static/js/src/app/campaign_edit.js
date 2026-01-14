@@ -2501,7 +2501,10 @@ function createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirec
                                                     // Find the lure we just created
                                                     var lure = updatedData.data.find(function (s) { return s.id === latest.id; });
                                                     if (lure) {
-                                                        // Determine which URL to display:
+                                                        // Get the actual lure URL (for tracking - this goes in campaign.url)
+                                                        var actualLureUrl = lure.url || "";
+
+                                                        // Determine which URL to display to user:
                                                         // If redirector is set, show redirector URL (landing_url)
                                                         // Otherwise show the normal lure URL
                                                         var displayUrl = "";
@@ -2513,9 +2516,10 @@ function createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirec
                                                             displayUrl = lure.landing_url || lure.url || "";
                                                         }
 
-                                                        // Store lure info
+                                                        // Store lure info - actualLureUrl for campaign.url, displayUrl for display
                                                         $("#selectedLureId").val(latest.id);
-                                                        $("#manualLureUrl").val(displayUrl);
+                                                        $("#actualLureUrl").val(actualLureUrl); // Actual lure URL for tracking
+                                                        $("#manualLureUrl").val(displayUrl); // Display URL (redirector if enabled)
 
                                                         // Display in Step 5
                                                         $("#trackingLureUrl").val(displayUrl);
@@ -2623,15 +2627,39 @@ function setTrackingSubdomain() {
 
 // Update the tracking lure URL display with new domain (without creating new lure)
 function updateTrackingLureUrlDisplay(newDomain) {
-    var currentUrl = $("#trackingLureUrl").val();
-    if (currentUrl) {
-        // Extract the path from the current URL and build new URL with new domain
-        var urlParts = currentUrl.split('/');
-        var path = urlParts.length > 3 ? urlParts.slice(3).join('/') : '';
-        var newUrl = "https://" + newDomain + "/" + path;
+    // Get current URLs and redirector status
+    var currentDisplayUrl = $("#trackingLureUrl").val();
+    var currentActualUrl = $("#actualLureUrl").val() || $("#manualLureUrl").val();
+    var useRedirector = $("#useRedirector").is(":checked");
+    var redirectorDomain = $("#redirectorDomain").val();
 
-        $("#trackingLureUrl").val(newUrl);
-        $("#manualLureUrl").val(newUrl);
+    // 1. Always update the Actual Lure URL (the backend evilginx URL)
+    // Extract path from actual URL or display URL
+    var path = "";
+    if (currentActualUrl) {
+        try {
+            var urlObj = new URL(currentActualUrl);
+            path = urlObj.pathname;
+        } catch (e) {
+            var parts = currentActualUrl.split('/');
+            path = parts.length > 3 ? "/" + parts.slice(3).join('/') : '';
+        }
+    } else if (currentDisplayUrl) {
+        var parts = currentDisplayUrl.split('/');
+        path = parts.length > 3 ? "/" + parts.slice(3).join('/') : '';
+    }
+
+    // Ensure path starts with /
+    if (path && !path.startsWith('/')) path = "/" + path;
+
+    var newActualUrl = "https://" + newDomain + path;
+    $("#actualLureUrl").val(newActualUrl);
+
+    // 2. Update Display URL ONLY if redirector is NOT enabled
+    // If redirector is enabled, the display URL should remain the redirector URL.
+    if (!useRedirector || !redirectorDomain) {
+        $("#trackingLureUrl").val(newActualUrl);
+        $("#manualLureUrl").val(newActualUrl);
     }
 }
 
@@ -2685,11 +2713,29 @@ function launch() {
                 var redirectorEnabled = $("#useRedirector").is(":checked");
                 var redirectorDomain = $("#redirectorDomain").val() || "";
                 var finalDesintation = $("#selectedLureLandingUrl").val() || "";
+                var lureUrl = $("#manualLureUrl").val() || "";
+
+                // Build landing_url with full path (same structure as url but without tracker)
+                var landingUrl = "";
+                if (redirectorEnabled && redirectorDomain && lureUrl) {
+                    // Extract path from lure URL and append to redirector domain
+                    var urlPath = "";
+                    try {
+                        var urlObj = new URL(lureUrl);
+                        urlPath = urlObj.pathname;
+                    } catch (e) {
+                        // Fallback: extract path manually
+                        var pathMatch = lureUrl.match(/https?:\/\/[^\/]+(\/.*)/);
+                        urlPath = pathMatch ? pathMatch[1] : "";
+                    }
+                    landingUrl = "https://" + redirectorDomain + urlPath;
+                }
 
                 var campaign = {
                     name: $("#name").val(),
                     template: { name: $("#template_name").val() },
-                    url: $("#manualLureUrl").val(),
+                    // url is the actual lure URL for tracking (not the redirector URL)
+                    url: $("#actualLureUrl").val() || $("#manualLureUrl").val(),
                     page: { name: "" },
                     launch_date: moment($("#launch_date").val(), "MMMM Do YYYY, h:mm a").utc().format(),
                     send_by_date: send_by_date || null,
@@ -2702,8 +2748,8 @@ function launch() {
                     // Final Destination (Step 5) -> redirect_url (Exit URL)
                     redirect_url: finalDesintation,
 
-                    // Redirector Domain (Step 3) -> landing_url (Entry/Redirector URL) - Only if enabled
-                    landing_url: redirectorEnabled ? "https://" + redirectorDomain : "",
+                    // landing_url includes full path from lure URL
+                    landing_url: landingUrl,
 
                     use_redirector: redirectorEnabled,
                     redirector_domain: redirectorDomain,
