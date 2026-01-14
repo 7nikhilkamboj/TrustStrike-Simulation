@@ -816,6 +816,14 @@ window.nextStep = function () {
             }
         }
 
+        // Auto-save Final Destination when leaving Step 5
+        if (currentStep === 5) {
+            var finalDest = $("#lureFinalDestination").val();
+            if (finalDest && finalDest.trim() !== "") {
+                saveFinalDestination();
+            }
+        }
+
         showStep(nextStepNum);
     }
 };
@@ -2208,8 +2216,11 @@ $(document).on("change", "#redirectorDomain", function () {
         $("#subdomainHelp").hide();
         // Store the base domain for subdomain logic
         $(this).data("baseDomain", domain);
+        // Show email URL preview with the selected domain
+        updateEmailUrlPreview(domain);
     } else {
         $("#subdomainOption").hide();
+        $("#emailUrlPreview").hide();
     }
 
     updatePhishletLandingDomain();
@@ -2270,6 +2281,9 @@ function setRedirectorSubdomain() {
     // Create DNS A record for the subdomain with EC2 IP
     createRedirectorDNSRecord(fullDomain, baseDomain);
 
+    // Update the email URL preview
+    updateEmailUrlPreview(fullDomain);
+
     Swal.fire({
         toast: true,
         position: 'top-end',
@@ -2278,6 +2292,34 @@ function setRedirectorSubdomain() {
         showConfirmButton: false,
         timer: 3000
     });
+}
+
+// Update the Email URL preview in Step 3
+function updateEmailUrlPreview(domain) {
+    if (domain) {
+        // Show the preview and set the URL (just domain + random path placeholder)
+        $("#emailUrlPreviewValue").val("https://" + domain + "/<random-path>");
+        $("#emailUrlPreview").show();
+    } else {
+        $("#emailUrlPreview").hide();
+    }
+}
+
+// Copy Email URL to clipboard
+function copyEmailUrl() {
+    var emailUrl = $("#emailUrlPreviewValue").val();
+    if (emailUrl) {
+        navigator.clipboard.writeText(emailUrl).then(function () {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Email URL copied!',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        });
+    }
 }
 
 // Create DNS A record for redirector domain with EC2 IP
@@ -2455,13 +2497,13 @@ $(document).on("change", "#trackingDomain", function () {
         $(this).data("baseDomain", domain);
 
         // AUTO-SET DEFAULT SUBDOMAIN 'track'
-        var defaultSub = "track";
+        var defaultSub = "";
 
         // Update UI
-        $("#useTrackingSubdomain").prop("checked", true);
-        $("#trackingSubdomainInput").val(defaultSub).show();
-        $("#setTrackingSubdomainBtn").show();
-        $("#trackingSubdomainHelp").show();
+        // $("#useTrackingSubdomain").prop("checked", false);
+        // $("#trackingSubdomainInput").val(defaultSub).hide();
+        // $("#setTrackingSubdomainBtn").hide();
+        // $("#trackingSubdomainHelp").hide();
 
         // 1. Set phishlet subdomain to 'track'
         $.ajax({
@@ -2473,7 +2515,7 @@ $(document).on("change", "#trackingDomain", function () {
                 console.log("Default subdomain set to 'track'");
 
                 // 2. Create DNS A record for track.domain.com (NOT base domain)
-                var fullDomain = defaultSub + "." + domain;
+                var fullDomain = domain;
                 createRedirectorDNSRecord(fullDomain, domain);
 
                 // 3. Create lure (will use the updated phishlet config)
@@ -2609,8 +2651,8 @@ function createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirec
                                                         $("#actualLureUrl").val(actualLureUrl); // Actual lure URL for tracking
                                                         $("#manualLureUrl").val(displayUrl); // Display URL (redirector if enabled)
 
-                                                        // Display in Step 5
-                                                        $("#trackingLureUrl").val(displayUrl);
+                                                        // Display in Step 5 - Always show the actual lure URL
+                                                        $("#trackingLureUrl").val(actualLureUrl);
                                                         $("#trackingLureDisplay").show();
 
                                                         const Toast = Swal.mixin({
@@ -2760,21 +2802,15 @@ function updateTrackingLureUrlDisplay(newDomain) {
     var newActualUrl = "https://" + newDomain + path + query;
     $("#actualLureUrl").val(newActualUrl);
 
-    // 2. Update Display URL ONLY if redirector is NOT enabled
-    // If redirector is enabled, the display URL should remain the redirector URL.
-    if (!useRedirector || !redirectorDomain) {
-        $("#trackingLureUrl").val(newActualUrl);
-        $("#manualLureUrl").val(newActualUrl);
-    } else {
-        // If redirector IS enabled, we might also want to preserve query params on the redirector URL?
-        // Current display URL is the redirector URL.
-        // We should just update actualLureUrl above. 
-        // But if redirector URL also needs the query param (rd), we should ensure it's there?
-        // saveFinalDestination will add it. If we change domain, display URL (redirector) domain doesn't change, so it's fine.
-        // But if we had params on display URL, we should keep them?
-        // The display URL is managed separately. `saveFinalDestination` will update both.
-    }
+    // 2. Always update the Tracking Lure URL display with the actual lure URL
+    // User wants to always see the lure_url, not the redirector URL
+    $("#trackingLureUrl").val(newActualUrl);
 
+    // Update manualLureUrl based on redirector state (for campaign submission)
+    if (!useRedirector || !redirectorDomain) {
+        $("#manualLureUrl").val(newActualUrl);
+    }
+    // If redirector is enabled, manualLureUrl keeps the redirector URL
 
 }
 
@@ -3222,6 +3258,13 @@ $(document).ready(function () {
             $("#trackingDomainSection").show();
             $("#currentLureSection").hide();
 
+            // Hide Final Destination section in Tracking Only mode
+            // $("#finalDestinationSection").hide();
+            // $("#btnSaveFinalDestination").hide();
+
+            // Update Step 5 label based on redirector state
+            updateTrackingDomainLabel();
+
             // Populate tracking domain dropdown with Cloudflare domains
             populateTrackingDomains();
 
@@ -3237,11 +3280,42 @@ $(document).ready(function () {
             // Step 5: Hide tracking domain section, show current lure URL
             $("#trackingDomainSection").hide();
             $("#currentLureSection").show();
+
+            // Show Final Destination section in Session Hijacking mode
+            $("#finalDestinationSection").show();
+            $("#btnSaveFinalDestination").show();
         }
 
         // Update flow diagram to reflect the new attack objective
         var currentStep = parseInt($(".step-wizard-item.current-item").data("step")) || 1;
         updateVisualFlow(currentStep);
+    });
+
+    // Function to update Step 5 Tracking Domain label based on redirector state
+    function updateTrackingDomainLabel() {
+        var useRedirector = $("#useRedirector").is(":checked");
+
+        if (useRedirector) {
+            // Redirector ON: Step 5 label = "Domain in Redirector Page"
+            $("#trackingDomainLabel").text("Domain in Redirector Page");
+            $("#trackingDomainHelpText").text("Select the domain to use for the redirector page.");
+            // Update Tracking Lure URL label
+            $("#trackingLureUrlLabelText").text("URL in Redirector Page");
+        } else {
+            // Redirector OFF: Step 5 label = "Domain in Email"
+            $("#trackingDomainLabel").text("Domain in Email");
+            $("#trackingDomainHelpText").text("Select the domain to use for the email link.");
+            // Update Tracking Lure URL label
+            $("#trackingLureUrlLabelText").text("URL in Email");
+        }
+    }
+
+    // Update Step 5 label when redirector checkbox changes
+    $(document).on("change", "#useRedirector", function () {
+        var isTrackingOnly = $("#attack_objective").val() === "Tracking only";
+        if (isTrackingOnly) {
+            updateTrackingDomainLabel();
+        }
     });
 
     // Auto-select and enable the "example" phishlet for Tracking only mode
@@ -4042,7 +4116,7 @@ window.saveFinalDestination = function () {
 
     var btn = $("#btnSaveFinalDestination");
     var originalHtml = btn.html();
-    btn.prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Saving...');
+    // btn.prop("disabled", true).html('<i class="fa fa-spinner fa-spin"></i> Saving...');
 
     $.ajax({
         url: '/api/simulationserver/strikes/' + id + '/edit',
@@ -4052,13 +4126,7 @@ window.saveFinalDestination = function () {
         success: function (data) {
             btn.prop("disabled", false).html(originalHtml);
             if (data.success) {
-                Swal.fire({
-                    title: 'Final Destination Set!',
-                    text: 'Targets will be redirected to: ' + redirectUrl,
-                    type: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
+
                 // Also update the hidden field often used by the campaign submission
                 $("#selectedLureLandingUrl").val(redirectUrl);
 
