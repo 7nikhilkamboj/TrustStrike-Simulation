@@ -2343,8 +2343,7 @@ $(document).on("change", "#trackingDomain", function () {
         // Store base domain
         $(this).data("baseDomain", domain);
 
-        // Create DNS A record for the main domain with EC2 IP
-        createRedirectorDNSRecord(domain, domain);
+
 
         // Create lure with the selected domain (main domain, no subdomain)
         // User can then click "Set" subdomain to update with subdomain
