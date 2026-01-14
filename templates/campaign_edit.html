@@ -123,11 +123,18 @@
             .flow-container,
             .flow-preview-container {
                 display: flex;
+                flex-wrap: wrap;
                 align-items: center;
                 justify-content: center;
                 gap: 10px;
                 padding: 15px 0;
                 min-width: 800px;
+            }
+
+            /* Forces a line break in the flex container */
+            .flow-row-break {
+                flex-basis: 100%;
+                height: 15px;
             }
 
             .flow-box,
@@ -236,60 +243,23 @@
                 margin-top: 3px;
             }
 
-            .campaign-type {
+            /* Unified Purple Theme for All Active Nodes */
+            .campaign-type,
+            .email-template,
+            .redirector,
+            .login-page,
+            .target-login,
+            .final-redirect,
+            .email-flow-completed,
+            .target-groups,
+            .sending-profile,
+            .schedule-step {
                 background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                 color: white;
                 box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
             }
 
-            .email-template {
-                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
-            }
 
-            .redirector {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
-            }
-
-            .login-page,
-            .target-login {
-                background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(235, 51, 73, 0.3);
-            }
-
-            .final-redirect {
-                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
-            }
-
-            .email-flow-completed {
-                background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(137, 247, 254, 0.3);
-            }
-
-            .target-groups {
-                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
-            }
-
-            .sending-profile {
-                background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(246, 211, 101, 0.3);
-            }
-
-            .schedule-step {
-                background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
-                color: white;
-                box-shadow: 0 4px 15px rgba(48, 207, 208, 0.3);
-            }
 
             .flow-arrow {
                 display: flex;
@@ -371,8 +341,9 @@
             }
 
             .flow-box.disabled {
-                opacity: 0.4;
-                filter: grayscale(50%);
+                opacity: 0.4 !important;
+                filter: grayscale(100%) !important;
+                pointer-events: none;
             }
         </style>
         <div class="panel-body">
@@ -380,7 +351,7 @@
 
 
             <!-- Campaign Flow Preview (Persistent) -->
-            <div class="panel panel-default" style="margin-top: 25px;">
+            <div class="panel panel-default" id="campaignFlowPreview" style="margin-top: 25px;">
                 <div class="panel-body"
                     style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
                     <p
@@ -388,18 +359,30 @@
                         <i class="fa fa-sitemap"></i> Campaign Flow Preview
                     </p>
                     <div class="flow-preview-container">
+                        <!-- COLLAPSED VIEW: Shows when step >= 6 -->
+                        <div class="flow-box campaign-type completed" id="flow_box_collapsed" style="display: none;">
+                            <i class="fa fa-check-circle"></i>
+                            <span class="flow-label" id="collapsed_flow_label">Email Flow</span>
+                            <span class="flow-value">Completed</span>
+                        </div>
+                        <!-- Arrow after collapsed box -->
+                        <div class="flow-arrow" id="flow_arrow_collapsed" style="display: none;">
+                            <div class="flow-dot"></div>
+                        </div>
+
+                        <!-- EXPANDED VIEW: Individual Steps 1-5 -->
                         <!-- Stage 1: Campaign -->
-                        <div class="flow-box campaign-type active">
+                        <div class="flow-box campaign-type active" id="flow_box_campaign">
                             <i class="fa fa-bullhorn"></i>
                             <span class="flow-label">Campaign</span>
                             <span class="flow-value">EMAIL</span>
                         </div>
                         <!-- Arrow -->
-                        <div class="flow-arrow">
+                        <div class="flow-arrow" id="flow_arrow_1">
                             <div class="flow-dot"></div>
                         </div>
                         <!-- Stage 2: Template -->
-                        <div class="flow-box email-template">
+                        <div class="flow-box email-template" id="flow_box_template">
                             <i class="fa fa-envelope"></i>
                             <span class="flow-label">Template</span>
                             <span class="flow-value">Email</span>
@@ -429,10 +412,41 @@
                             <div class="flow-dot" style="animation-delay: 0.6s;"></div>
                         </div>
                         <!-- Stage 5: Final -->
-                        <div class="flow-box final-redirect">
+                        <div class="flow-box final-redirect" id="flow_box_final">
                             <i class="fa fa-external-link"></i>
                             <span class="flow-label">Final</span>
                             <span class="flow-value">Redirect</span>
+                        </div>
+
+                        <!-- Line Break / Separator between Attack Flow and Campaign Config -->
+                        <div class="flow-row-break"></div>
+
+                        <!-- Stage 6: Target Groups -->
+                        <div class="flow-box target-groups" id="flow_box_groups">
+                            <i class="fa fa-users"></i>
+                            <span class="flow-label">Target</span>
+                            <span class="flow-value">Groups</span>
+                        </div>
+
+                        <div class="flow-arrow" id="flow_arrow_6">
+                            <div class="flow-dot" style="animation-delay: 1.0s;"></div>
+                        </div>
+                        <!-- Stage 7: Sending Profile -->
+                        <div class="flow-box sending-profile" id="flow_box_profile">
+                            <i class="fa fa-paper-plane"></i>
+                            <span class="flow-label">Sending</span>
+                            <span class="flow-value">Profile</span>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div class="flow-arrow" id="flow_arrow_7">
+                            <div class="flow-dot" style="animation-delay: 1.2s;"></div>
+                        </div>
+                        <!-- Stage 8: Schedule -->
+                        <div class="flow-box schedule-step" id="flow_box_schedule">
+                            <i class="fa fa-calendar"></i>
+                            <span class="flow-label">Launch</span>
+                            <span class="flow-value">Schedule</span>
                         </div>
                     </div>
                 </div>
@@ -1100,6 +1114,33 @@
 
                 <div class="panel panel-default">
                     <div class="panel-body">
+                        <!-- Hostname Selection (Moved to top) -->
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label style="font-weight: 600; color: #2c3e50; font-size: 15px; margin-bottom: 10px;">
+                                <i class="fa fa-globe"></i> Phishlet Hostname
+                            </label>
+                            <select class="form-control" id="phishletHostname">
+                                <option value="">-- Select Domain --</option>
+                            </select>
+                            <p class="help-block" style="font-size: 12px;">Select the domain to use for the login page.
+                            </p>
+
+                            <!-- Authorized Hosts (Moved here for better context) -->
+                            <div id="phishletHostsContainer" style="margin-top: 15px; display: none;">
+                                <label style="font-size: 13px; font-weight: 600;">Authorized Hosts</label>
+                                <div class="well" style="padding: 10px; margin-bottom: 0; background-color: #f9f9f9;">
+                                    <div id="phishletHostsLoading" style="display:none; text-align: center;">
+                                        <i class="fa fa-spinner fa-spin"></i> Loading hosts...
+                                    </div>
+                                    <ul id="phishletHostsList"
+                                        style="padding-left: 20px; list-style-type: circle; margin-bottom: 0; font-size: 12px;">
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr style="border-top: 1px solid #eee; margin: 25px 0;">
+
                         <!-- Phishlet Selection -->
                         <div class="form-group">
                             <label class="control-label"
@@ -1128,75 +1169,7 @@
                             </select>
                         </div>
 
-                        <!-- Configuration Panel (Shown after selection) -->
-                        <div id="phishletConfigPanel" style="display:none; margin-top: 20px;">
-                            <legend style="display: flex; justify-content: space-between; align-items: center;">
-                                Configuration
-                                <!-- <span id="phishletStatusBadge" class="label label-default"
-                                    style="font-size: 75%; vertical-align: middle;">Unknown</span> -->
-                            </legend>
-
-                            <!-- Toggle Status removed -->
-
-                            <!-- Hostname -->
-                            <div class="form-group">
-                                <label style="font-weight: 600; color: #2c3e50; font-size: 15px; margin-bottom: 10px;">
-                                    <i class="fa fa-globe"></i> Phishlet Hostname
-                                </label>
-
-                                <div class="phishlet-search-wrapper" style="margin-bottom: 10px;">
-                                    <i class="fa fa-search"></i>
-                                    <input type="text" id="domainSearch" class="form-control"
-                                        placeholder="Search for a domain...">
-                                </div>
-
-                                <div id="domainList" class="domain-list-container" style="min-height: 100px;">
-                                    <div class="text-center text-muted" style="padding: 20px;">
-                                        <p>Select a phishlet above to load available domains.</p>
-                                    </div>
-                                </div>
-
-                                <div id="domainPagination" class="domain-pagination-container" style="display: none;">
-                                    <button class="domain-pagination-btn" id="prevDomainPage">
-                                        <i class="fa fa-chevron-left"></i> Previous
-                                    </button>
-                                    <span id="domainPageInfo">Page 1 of 1</span>
-                                    <button class="domain-pagination-btn" id="nextDomainPage">
-                                        Next <i class="fa fa-chevron-right"></i>
-                                    </button>
-                                </div>
-
-                                <select class="form-control" id="phishletHostname" style="display: none;">
-                                    <option value="">-- Select Domain --</option>
-                                </select>
-                            </div>
-
-                            <!-- Server IP -->
-                            <!-- <div class="form-group">
-                                <label>Server IP (Global)</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="serverIPv4" placeholder="e.g. 1.2.3.4">
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-primary" type="button" id="saveIPv4Btn"><i
-                                                class="fa fa-save"></i> Save</button>
-                                    </span>
-                                </div>
-                            </div> -->
-
-                            <!-- Phishlet Hosts -->
-                            <div class="form-group" id="phishletHostsContainer"
-                                style="margin-top: 15px; display: none;">
-                                <label>Authorized Hosts</label>
-                                <div class="well" style="padding: 10px; margin-bottom: 0; background-color: #f9f9f9;">
-                                    <div id="phishletHostsLoading" style="display:none; text-align: center;">
-                                        <i class="fa fa-spinner fa-spin"></i> Loading hosts...
-                                    </div>
-                                    <ul id="phishletHostsList"
-                                        style="padding-left: 20px; list-style-type: circle; margin-bottom: 0;"></ul>
-                                </div>
-                            </div>
-
-                        </div>
+                        <!-- Configuration Panel (Remaining parts like Status Badge) -->
                     </div>
                 </div>
             </div>
@@ -1460,13 +1433,404 @@
                 </div>
             </div>
 
-            <!-- STEP 9: Final Review / Launch -->
+            <!-- STEP 9: Visual Campaign Blueprint -->
             <div class="wizard-step" id="step9">
-                <h4 class="page-header">Step 9: Launch Campaign</h4>
+                <style>
+                    /* Premium Visual Blueprint Styles */
+                    .blueprint-container-modern {
+                        background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+                        border: 1px solid rgba(0, 0, 0, 0.05);
+                        border-radius: 16px;
+                        padding: 60px 40px;
+                        margin-bottom: 30px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+                        overflow-x: auto;
+                        position: relative;
+                    }
 
-                <div class="alert alert-info">
-                    <strong>Almost there!</strong> Click "Launch Campaign" to schedule your campaign.
+                    .blueprint-flow-modern {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        min-width: 800px;
+                        position: relative;
+                        z-index: 2;
+                    }
+
+                    .blueprint-node-modern {
+                        text-align: center;
+                        flex: 1;
+                        transition: transform 0.3s ease;
+                        position: relative;
+                    }
+
+                    .blueprint-node-modern:hover {
+                        transform: translateY(-5px);
+                    }
+
+                    .node-icon-modern {
+                        width: 70px;
+                        height: 70px;
+                        line-height: 70px;
+                        border-radius: 20px;
+                        margin: 0 auto 15px;
+                        font-size: 28px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+                        position: relative;
+                        overflow: hidden;
+                    }
+
+                    /* Node Specific Colors */
+                    #node_template .node-icon-modern {
+                        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+                        color: white;
+                    }
+
+                    #node_redirector .node-icon-modern {
+                        background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+                        color: white;
+                    }
+
+                    #node_phishlet .node-icon-modern {
+                        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+                        color: white;
+                    }
+
+                    #node_destination .node-icon-modern {
+                        background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+                        color: white;
+                    }
+
+                    .blueprint-arrow-modern {
+                        flex: 0.5;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                </style>
+
+                <style>
+                    /* Progress Bar Alignment Design System - Matching Step 1 exactly */
+                    .blueprint-container-pb {
+                        padding: 20px;
+                        background: #ffffff;
+                        border-radius: 24px;
+                        margin-bottom: 40px;
+                    }
+
+                    .blueprint-flow-pb {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        flex-wrap: nowrap;
+                    }
+
+                    .blueprint-node-pb {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 12px 16px;
+                        border-radius: 12px;
+                        min-width: 100px;
+                        text-align: center;
+                        transition: all 0.3s ease;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                        position: relative;
+                    }
+
+                    .blueprint-node-pb:hover {
+                        transform: scale(1.05);
+                    }
+
+                    .blueprint-node-pb::after {
+                        content: '\f058';
+                        font-family: 'FontAwesome';
+                        position: absolute;
+                        top: -10px;
+                        right: -10px;
+                        background: #fff;
+                        color: #5cb85c;
+                        border-radius: 50%;
+                        font-size: 25px;
+                        line-height: 1;
+                        z-index: 5;
+                        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                    }
+
+                    .blueprint-node-pb i {
+                        font-size: 22px;
+                        margin-bottom: 7px;
+                    }
+
+                    .blueprint-card-label {
+                        font-size: 9.5px;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.3px;
+                        opacity: 0.9;
+                    }
+
+                    .blueprint-card-value {
+                        font-size: 11.5px;
+                        font-weight: 700;
+                        margin-top: 3px;
+                    }
+
+                    .blueprint-arrow-pb {
+                        display: flex;
+                        align-items: center;
+                        position: relative;
+                        width: 55px;
+                        height: 4px;
+                        background: linear-gradient(90deg, #5cb85c, #4cae4c);
+                        margin: 0 5px;
+                    }
+
+                    .blueprint-arrow-pb::after {
+                        content: '';
+                        position: absolute;
+                        right: -8px;
+                        border: 6px solid transparent;
+                        border-left: 8px solid #4cae4c;
+                    }
+
+                    .flow-dot-pb {
+                        position: absolute;
+                        top: -2px;
+                        width: 8px;
+                        height: 8px;
+                        background: #fff;
+                        border-radius: 50%;
+                        box-shadow: 0 0 8px rgba(92, 184, 92, 0.9);
+                        animation: flowMovePB 1.2s ease-in-out infinite;
+                    }
+
+                    @keyframes flowMovePB {
+                        0% {
+                            left: 0;
+                            opacity: 0;
+                        }
+
+                        10% {
+                            opacity: 1;
+                        }
+
+                        90% {
+                            opacity: 1;
+                        }
+
+                        100% {
+                            left: calc(100% - 8px);
+                            opacity: 0;
+                        }
+                    }
+                </style>
+
+                <div style="text-align: center; margin-bottom: 50px; padding: 10px 0;">
+                    <div
+                        style="display: inline-block; padding: 12px 30px; background: rgba(92, 184, 92, 0.08); border-radius: 50px; margin-bottom: 15px; border: 1px solid rgba(92, 184, 92, 0.2);">
+                        <span
+                            style="color: #4cae4c; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; font-size: 11px;">
+                            <i class="fa fa-check-circle"></i> Validation Success
+                        </span>
+                    </div>
+                    <h2 style="font-weight: 900; color: #1a2a3a; margin: 0; font-size: 38px; letter-spacing: -1.5px;">
+                        Final Review & Launch Campaign</h2>
+                    <p style="color: #7f8c8d; font-size: 16px; margin-top: 10px; font-weight: 500;">Your simulation is
+                        ready to launch. Review the final flow below.</p>
                 </div>
+
+                <div class="blueprint-container-pb">
+                    <div class="blueprint-flow-pb">
+                        <!-- email-flow -->
+                        <div class="blueprint-node-pb">
+                            <i class="fa fa-envelope"></i>
+                            <div class="blueprint-card-label">Email Flow</div>
+                            <div class="blueprint-card-value">Completed</div>
+                        </div>
+
+                        <div class="blueprint-arrow-pb">
+                            <div class="flow-dot-pb"></div>
+                        </div>
+
+                        <!-- target -->
+                        <div class="blueprint-node-pb">
+                            <i class="fa fa-users"></i>
+                            <div class="blueprint-card-label">Target</div>
+                            <div class="blueprint-card-value">Groups</div>
+                        </div>
+
+                        <div class="blueprint-arrow-pb">
+                            <div class="flow-dot-pb" style="animation-delay: 0.4s;"></div>
+                        </div>
+
+                        <!-- sending -->
+                        <div class="blueprint-node-pb">
+                            <i class="fa fa-paper-plane"></i>
+                            <div class="blueprint-card-label">Sending</div>
+                            <div class="blueprint-card-value">Profile</div>
+                        </div>
+
+                        <div class="blueprint-arrow-pb">
+                            <div class="flow-dot-pb" style="animation-delay: 0.8s;"></div>
+                        </div>
+
+                        <!-- launch -->
+                        <div class="blueprint-node-pb">
+                            <i class="fa fa-calendar"></i>
+                            <div class="blueprint-card-label">Launch</div>
+                            <div class="blueprint-card-value">Schedule</div>
+                        </div>
+                    </div>
+                </div>
+
+                <style>
+                    /* Secondary Info Cards Styling */
+                    .blueprint-footer-row {
+                        margin-top: 20px;
+                        display: flex;
+                        gap: 20px;
+                        flex-wrap: wrap;
+                    }
+
+                    .blueprint-footer-card {
+                        flex: 1;
+                        min-width: 280px;
+                        background: #ffffff;
+                        border: 1px solid #edf2f7;
+                        border-radius: 20px;
+                        padding: 25px;
+                        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+                        transition: all 0.3s ease;
+                        position: relative;
+                        overflow: hidden;
+                    }
+
+                    .blueprint-footer-card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.1);
+                        border-color: rgba(102, 126, 234, 0.2);
+                    }
+
+                    .blueprint-footer-card h5 {
+                        font-weight: 800;
+                        text-transform: uppercase;
+                        letter-spacing: 1.2px;
+                        font-size: 13px;
+                        margin-bottom: 20px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                        color: #1a2a3a;
+                    }
+
+                    .blueprint-footer-card i {
+                        width: 32px;
+                        height: 32px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border-radius: 8px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+                    }
+
+                    .vis-item {
+                        margin-bottom: 15px;
+                    }
+
+                    .vis-item:last-child {
+                        margin-bottom: 0;
+                    }
+
+                    .vis-label {
+                        font-size: 11px;
+                        color: #a0aec0;
+                        text-transform: uppercase;
+                        font-weight: 700;
+                        letter-spacing: 0.5px;
+                        margin-bottom: 4px;
+                    }
+
+                    .vis-value {
+                        font-size: 15px;
+                        font-weight: 700;
+                        color: #2d3748;
+                        word-break: break-all;
+                    }
+                </style>
+
+                <div class="blueprint-footer-row">
+                    <!-- Targeting Card -->
+                    <div class="blueprint-footer-card">
+                        <h5><i class="fa fa-users"></i> Audience</h5>
+                        <div class="vis-item">
+                            <div class="vis-label">Target Groups</div>
+                            <div id="vis_groups_secondary" class="vis-value">-</div>
+                        </div>
+                        <div class="vis-item">
+                            <div class="vis-label">Sending Profile</div>
+                            <div id="vis_profile_secondary" class="vis-value">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Config Card -->
+                    <div class="blueprint-footer-card">
+                        <h5><i class="fa fa-cogs"></i> Configuration</h5>
+                        <div class="vis-item">
+                            <div class="vis-label">Attack Objective</div>
+                            <div id="vis_objective_secondary" class="vis-value">-</div>
+                        </div>
+                        <div class="vis-item">
+                            <div class="vis-label">Delivery Channel</div>
+                            <div id="vis_source_secondary" class="vis-value">-</div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Card -->
+                    <div class="blueprint-footer-card">
+                        <h5><i class="fa fa-clock-o"></i> Timeline</h5>
+                        <div class="vis-item">
+                            <div class="vis-label">Launch Sequence</div>
+                            <div id="vis_launch_secondary" class="vis-value">-</div>
+                        </div>
+                        <div class="vis-item">
+                            <div class="vis-label">Auto-Stop</div>
+                            <div id="vis_stop_secondary" class="vis-value">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 40px; padding-bottom: 20px;">
+                    <p style="color: #cbd5e0; font-size: 13px; font-style: italic; font-weight: 500;">
+                        <i class="fa fa-info-circle"></i> Confirm all details above before finalizing your launch.
+                    </p>
+                </div>
+
+
+                <!-- Ready to Launch CTA -->
+
+                <style>
+                    @keyframes float {
+
+                        0%,
+                        100% {
+                            transform: translateY(0);
+                        }
+
+                        50% {
+                            transform: translateY(-10px);
+                        }
+                    }
+                </style>
             </div>
 
         </div>
