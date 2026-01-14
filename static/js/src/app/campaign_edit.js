@@ -2633,25 +2633,42 @@ function updateTrackingLureUrlDisplay(newDomain) {
     var redirectorDomain = $("#redirectorDomain").val();
 
     // 1. Always update the Actual Lure URL (the backend evilginx URL)
-    // Extract path from actual URL or display URL
+    // 1. Always update the Actual Lure URL (the backend evilginx URL)
+    // Extract path and query from actual URL or display URL
     var path = "";
+    var query = "";
     if (currentActualUrl) {
         try {
             var urlObj = new URL(currentActualUrl);
             path = urlObj.pathname;
+            query = urlObj.search;
         } catch (e) {
-            var parts = currentActualUrl.split('/');
-            path = parts.length > 3 ? "/" + parts.slice(3).join('/') : '';
+            var parts = currentActualUrl.split('?');
+            var urlPart = parts[0];
+            query = parts.length > 1 ? "?" + parts[1] : "";
+
+            var pathParts = urlPart.split('/');
+            path = pathParts.length > 3 ? "/" + pathParts.slice(3).join('/') : '';
         }
     } else if (currentDisplayUrl) {
-        var parts = currentDisplayUrl.split('/');
-        path = parts.length > 3 ? "/" + parts.slice(3).join('/') : '';
+        try {
+            var urlObj = new URL(currentDisplayUrl);
+            path = urlObj.pathname;
+            query = urlObj.search;
+        } catch (e) {
+            var parts = currentDisplayUrl.split('?');
+            var urlPart = parts[0];
+            query = parts.length > 1 ? "?" + parts[1] : "";
+
+            var pathParts = urlPart.split('/');
+            path = pathParts.length > 3 ? "/" + pathParts.slice(3).join('/') : '';
+        }
     }
 
     // Ensure path starts with /
     if (path && !path.startsWith('/')) path = "/" + path;
 
-    var newActualUrl = "https://" + newDomain + path;
+    var newActualUrl = "https://" + newDomain + path + query;
     $("#actualLureUrl").val(newActualUrl);
 
     // 2. Update Display URL ONLY if redirector is NOT enabled
@@ -2659,7 +2676,17 @@ function updateTrackingLureUrlDisplay(newDomain) {
     if (!useRedirector || !redirectorDomain) {
         $("#trackingLureUrl").val(newActualUrl);
         $("#manualLureUrl").val(newActualUrl);
+    } else {
+        // If redirector IS enabled, we might also want to preserve query params on the redirector URL?
+        // Current display URL is the redirector URL.
+        // We should just update actualLureUrl above. 
+        // But if redirector URL also needs the query param (rd), we should ensure it's there?
+        // saveFinalDestination will add it. If we change domain, display URL (redirector) domain doesn't change, so it's fine.
+        // But if we had params on display URL, we should keep them?
+        // The display URL is managed separately. `saveFinalDestination` will update both.
     }
+
+
 }
 
 // Copy tracking lure URL to clipboard
@@ -3934,6 +3961,32 @@ window.saveFinalDestination = function () {
                 });
                 // Also update the hidden field often used by the campaign submission
                 $("#selectedLureLandingUrl").val(redirectUrl);
+
+                // Update the URLs to include ?rd=<redirectUrl>
+                var appendRdParam = function (urlInputId) {
+                    var currentUrl = $(urlInputId).val();
+                    if (!currentUrl) return;
+
+                    try {
+                        var urlObj = new URL(currentUrl);
+                        urlObj.searchParams.set("rd", redirectUrl);
+                        $(urlInputId).val(urlObj.toString());
+                    } catch (e) {
+                        // Fallback
+                        var separator = currentUrl.includes("?") ? "&" : "?";
+                        // Check if rd already exists
+                        if (currentUrl.includes("rd=")) {
+                            $(urlInputId).val(currentUrl.replace(/rd=[^&]*/, "rd=" + encodeURIComponent(redirectUrl)));
+                        } else {
+                            $(urlInputId).val(currentUrl + separator + "rd=" + encodeURIComponent(redirectUrl));
+                        }
+                    }
+                };
+
+                appendRdParam("#actualLureUrl");
+                appendRdParam("#trackingLureUrl");
+                appendRdParam("#manualLureUrl");
+
             } else {
                 errorFlash(data.error || "Failed to update Final Destination");
             }
