@@ -624,6 +624,16 @@ window.nextStep = function () {
             autoCreateTrackingLure();
         }
 
+        // When navigating from Step 3, create DNS A record for redirector domain if no subdomain was set
+        if (currentStep === 3) {
+            var useSubdomain = $("#useSubdomain").is(":checked");
+            var redirectorDomain = $("#redirectorDomain").val();
+            // Only create for main domain if no subdomain was set (subdomain DNS is created on "Set" click)
+            if (!useSubdomain && redirectorDomain) {
+                createRedirectorDNSRecord(redirectorDomain, redirectorDomain);
+            }
+        }
+
         showStep(nextStepNum);
     }
 };
@@ -2149,6 +2159,9 @@ function setRedirectorSubdomain() {
     // Update phishlet landing domain
     updatePhishletLandingDomain();
 
+    // Create DNS A record for the subdomain with EC2 IP
+    createRedirectorDNSRecord(fullDomain, baseDomain);
+
     Swal.fire({
         toast: true,
         position: 'top-end',
@@ -2156,6 +2169,107 @@ function setRedirectorSubdomain() {
         title: 'Subdomain set: ' + fullDomain,
         showConfirmButton: false,
         timer: 3000
+    });
+}
+
+// Create DNS A record for redirector domain with EC2 IP
+function createRedirectorDNSRecord(fullDomain, baseDomain) {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000
+    });
+
+    Toast.fire({
+        icon: 'info',
+        title: 'Creating DNS record for redirector...'
+    });
+
+    // Get EC2 IP from status API
+    $.ajax({
+        url: "/api/simulationserver/ec2/status",
+        method: "GET",
+        success: function (statusResponse) {
+            var ec2IP = statusResponse.data && statusResponse.data.public_ip;
+            if (!ec2IP) {
+                Toast.fire({
+                    icon: 'warning',
+                    title: 'EC2 not running - cannot create DNS record'
+                });
+                return;
+            }
+
+            // Get zone_id for the base domain
+            $.ajax({
+                url: "/api/simulationserver/config/fetch_alldomains",
+                method: "GET",
+                success: function (domainData) {
+                    var zones = domainData.data || domainData.domains || domainData || [];
+
+                    // Find matching zone for the base domain
+                    var matchingZone = zones.find(function (z) {
+                        return baseDomain === z.name || baseDomain.endsWith("." + z.name);
+                    });
+
+                    if (!matchingZone) {
+                        Toast.fire({
+                            icon: 'warning',
+                            title: 'Could not find Cloudflare zone for ' + baseDomain
+                        });
+                        return;
+                    }
+
+                    var zoneId = matchingZone.id;
+
+                    // Create DNS A record for the redirector domain
+                    $.ajax({
+                        url: "/api/simulationserver/config/create_dns_record",
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            zone_id: zoneId,
+                            name: fullDomain,
+                            content: ec2IP,
+                            type: "A",
+                            proxied: false
+                        }),
+                        success: function () {
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'DNS record created: ' + fullDomain
+                            });
+                        },
+                        error: function (xhr) {
+                            var response = xhr.responseJSON || {};
+                            if (response.message && response.message.indexOf("already exists") > -1) {
+                                Toast.fire({
+                                    icon: 'info',
+                                    title: 'DNS record already exists for ' + fullDomain
+                                });
+                            } else {
+                                Toast.fire({
+                                    icon: 'error',
+                                    title: 'Failed to create DNS record: ' + (response.message || xhr.statusText)
+                                });
+                            }
+                        }
+                    });
+                },
+                error: function () {
+                    Toast.fire({
+                        icon: 'error',
+                        title: 'Failed to fetch Cloudflare domains'
+                    });
+                }
+            });
+        },
+        error: function () {
+            Toast.fire({
+                icon: 'error',
+                title: 'Failed to get EC2 status'
+            });
+        }
     });
 }
 
