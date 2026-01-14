@@ -1833,7 +1833,6 @@ function autoCreateDNSRecords(phishletName, hostname) {
                 contentType: "application/json",
                 data: JSON.stringify({ external: ec2IP }),
                 success: function () {
-
                 },
                 error: function () {
                     console.error("Failed to update global IPv4");
@@ -2394,7 +2393,6 @@ function createTrackingLureForDomain(trackingDomain) {
         contentType: "application/json",
         data: JSON.stringify({ domain: baseDomain }),
         success: function () {
-
         },
         error: function () {
             console.error("Failed to set global domain");
@@ -2409,7 +2407,6 @@ function createTrackingLureForDomain(trackingDomain) {
         contentType: "application/json",
         data: JSON.stringify({ landing_domain: landingDomain }),
         success: function () {
-
         },
         error: function () {
             console.error("Failed to set landing domain");
@@ -2429,7 +2426,6 @@ function createTrackingLureForDomain(trackingDomain) {
                     togglePromises.push(
                         $.post('/api/simulationserver/modules/' + m.name + '/toggle')
                     );
-
                 }
             });
 
@@ -3102,7 +3098,6 @@ $(document).ready(function () {
             // Enable the example phishlet on the server
             $.post("/api/simulationserver/modules/example/toggle", function (response) {
                 if (response.success) {
-
                 }
             });
         }, 500);
