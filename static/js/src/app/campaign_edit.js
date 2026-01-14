@@ -619,9 +619,7 @@ window.nextStep = function () {
         // Skip Step 4 (Phishlet Selection) when in Tracking only mode
         if (window.skipPhishletStep && currentStep === 3) {
             nextStepNum = 5; // Skip from Step 3 to Step 5
-
-            // Auto-create lure for tracking mode
-            autoCreateTrackingLure();
+            // Note: Lure creation moved to Step 5 when domain is selected
         }
 
         // When navigating from Step 3, create DNS A record for redirector domain if no subdomain was set
@@ -2333,7 +2331,6 @@ function populateTrackingDomains() {
     }
 }
 
-// Tracking domain change handler - show subdomain option
 $(document).on("change", "#trackingDomain", function () {
     var domain = $(this).val();
 
@@ -2346,6 +2343,13 @@ $(document).on("change", "#trackingDomain", function () {
         $("#trackingSubdomainHelp").hide();
         // Store base domain
         $(this).data("baseDomain", domain);
+
+        // Create DNS A record for the main domain with EC2 IP
+        createRedirectorDNSRecord(domain, domain);
+
+        // Create lure with the selected domain (main domain, no subdomain)
+        // User can then click "Set" subdomain to update with subdomain
+        createTrackingLureForDomain(domain);
     } else {
         $("#trackingSubdomainOption").hide();
     }
@@ -2369,12 +2373,50 @@ $(document).on("change", "#useTrackingSubdomain", function () {
         }
     }
 });
-// Auto-create lure for tracking only mode with random path
-function autoCreateTrackingLure() {
+// Create lure for tracking mode when domain is selected in Step 5
+// This is triggered when main domain is selected or subdomain is set
+function createTrackingLureForDomain(trackingDomain) {
     var randomPath = generateRandomPath(8);
-    var trackingDomain = $("#trackingDomain").val() || "";
 
-    // First check phishlet status
+    // Get redirector from Step 3 if it was set
+    var useRedirector = $("#useRedirector").is(":checked");
+    var redirectorDomain = $("#redirectorDomain").val() || "";
+    var redirectorName = selectedRedirectorTemplate || $("#redirectorTemplate").val() || null;
+
+    // Extract the base TLD domain (e.g., test.prprzo.com -> prprzo.com)
+    // Get the stored base domain from tracking domain dropdown, or extract from trackingDomain
+    var baseDomain = $("#trackingDomain").data("baseDomain") || trackingDomain;
+
+    // First set the global domain in evilginx (use base TLD only)
+    $.ajax({
+        url: "/api/simulationserver/config/domain",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ domain: baseDomain }),
+        success: function () {
+            console.log("Global domain set to: " + baseDomain);
+        },
+        error: function () {
+            console.error("Failed to set global domain");
+        }
+    });
+
+    // Set landing_domain on example phishlet - use redirector domain if selected, otherwise blank
+    var landingDomain = (useRedirector && redirectorDomain) ? redirectorDomain : "";
+    $.ajax({
+        url: "/api/simulationserver/modules/example/landing_domain",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({ landing_domain: landingDomain }),
+        success: function () {
+            console.log("Landing domain set to: " + (landingDomain || "(blank)"));
+        },
+        error: function () {
+            console.error("Failed to set landing domain");
+        }
+    });
+
+    // Then check phishlet status and enable example
     $.ajax({
         url: '/api/simulationserver/modules',
         type: 'GET',
@@ -2401,23 +2443,31 @@ function autoCreateTrackingLure() {
                 if (needEnableExample) {
                     $.post('/api/simulationserver/modules/example/toggle', function () {
                         console.log("Example phishlet enabled");
-                        createTrackingLureWithPath(randomPath);
+                        createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
                     });
                 } else {
                     // Already enabled, just create the lure
-                    createTrackingLureWithPath(randomPath);
+                    createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
                 }
             });
         },
         error: function () {
             // If can't fetch modules, try to create lure anyway
-            createTrackingLureWithPath(randomPath);
+            createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
         }
     });
 }
 
-// Helper function to create tracking lure with given path
-function createTrackingLureWithPath(randomPath) {
+// Auto-create lure for tracking only mode with random path (legacy function, kept for compatibility)
+function autoCreateTrackingLure() {
+    var trackingDomain = $("#trackingDomain").val() || "";
+    if (trackingDomain) {
+        createTrackingLureForDomain(trackingDomain);
+    }
+}
+
+// Helper function to create tracking lure with redirector support
+function createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName) {
     $.ajax({
         url: '/api/simulationserver/strikes/create',
         type: 'POST',
@@ -2425,7 +2475,7 @@ function createTrackingLureWithPath(randomPath) {
         data: JSON.stringify({ module: "example" }),
         success: function (data) {
             if (data.success) {
-                // Get the created lure and update with random path
+                // Get the created lure and update with random path and redirector
                 setTimeout(function () {
                     getStrikes().then(function (strikesData) {
                         if (strikesData && strikesData.success && strikesData.data) {
@@ -2435,12 +2485,18 @@ function createTrackingLureWithPath(randomPath) {
                                 strikes.sort(function (a, b) { return b.id - a.id });
                                 var latest = strikes[0];
 
-                                // Update with random path
+                                // Build edit payload with path and optional redirector
+                                var editPayload = { path: "/" + randomPath };
+                                if (useRedirector && redirectorName) {
+                                    editPayload.redirector = redirectorName;
+                                }
+
+                                // Update with random path and optional redirector
                                 $.ajax({
                                     url: '/api/simulationserver/strikes/' + latest.id + '/edit',
                                     type: 'POST',
                                     contentType: 'application/json',
-                                    data: JSON.stringify({ path: "/" + randomPath }),
+                                    data: JSON.stringify(editPayload),
                                     success: function () {
                                         // Fetch updated strikes to get actual URL from server
                                         setTimeout(function () {
@@ -2449,15 +2505,24 @@ function createTrackingLureWithPath(randomPath) {
                                                     // Find the lure we just created
                                                     var lure = updatedData.data.find(function (s) { return s.id === latest.id; });
                                                     if (lure) {
-                                                        // Use landing_url if exists, otherwise use url
-                                                        var lureUrl = lure.landing_url || lure.url || "";
+                                                        // Determine which URL to display:
+                                                        // If redirector is set, show redirector URL (landing_url)
+                                                        // Otherwise show the normal lure URL
+                                                        var displayUrl = "";
+                                                        if (useRedirector && redirectorDomain) {
+                                                            // Build redirector URL with the path
+                                                            displayUrl = "https://" + redirectorDomain + "/" + randomPath;
+                                                        } else {
+                                                            // Use landing_url if exists, otherwise use url
+                                                            displayUrl = lure.landing_url || lure.url || "";
+                                                        }
 
                                                         // Store lure info
                                                         $("#selectedLureId").val(latest.id);
-                                                        $("#manualLureUrl").val(lureUrl);
+                                                        $("#manualLureUrl").val(displayUrl);
 
                                                         // Display in Step 5
-                                                        $("#trackingLureUrl").val(lureUrl);
+                                                        $("#trackingLureUrl").val(displayUrl);
                                                         $("#trackingLureDisplay").show();
 
                                                         const Toast = Swal.mixin({
@@ -2466,9 +2531,14 @@ function createTrackingLureWithPath(randomPath) {
                                                             showConfirmButton: false,
                                                             timer: 3000
                                                         });
+
+                                                        var toastMsg = 'Tracking lure created';
+                                                        if (useRedirector && redirectorName) {
+                                                            toastMsg += ' (with redirector)';
+                                                        }
                                                         Toast.fire({
                                                             icon: 'success',
-                                                            title: 'Tracking lure created'
+                                                            title: toastMsg
                                                         });
                                                     }
                                                 }
@@ -2486,6 +2556,11 @@ function createTrackingLureWithPath(randomPath) {
             console.error("Failed to create tracking lure");
         }
     });
+}
+
+// Legacy function - kept for compatibility
+function createTrackingLureWithPath(randomPath) {
+    createTrackingLureWithRedirector(randomPath, "", false, "", null);
 }
 
 // Set tracking subdomain
@@ -2530,6 +2605,12 @@ function setTrackingSubdomain() {
                 showConfirmButton: false,
                 timer: 3000
             });
+
+            // Create DNS A record for the subdomain with EC2 IP
+            createRedirectorDNSRecord(fullDomain, baseDomain);
+
+            // Update the displayed lure URL with the new subdomain (don't create new lure)
+            updateTrackingLureUrlDisplay(fullDomain);
         },
         error: function () {
             Swal.fire({
@@ -2542,6 +2623,20 @@ function setTrackingSubdomain() {
             });
         }
     });
+}
+
+// Update the tracking lure URL display with new domain (without creating new lure)
+function updateTrackingLureUrlDisplay(newDomain) {
+    var currentUrl = $("#trackingLureUrl").val();
+    if (currentUrl) {
+        // Extract the path from the current URL and build new URL with new domain
+        var urlParts = currentUrl.split('/');
+        var path = urlParts.length > 3 ? urlParts.slice(3).join('/') : '';
+        var newUrl = "https://" + newDomain + "/" + path;
+
+        $("#trackingLureUrl").val(newUrl);
+        $("#manualLureUrl").val(newUrl);
+    }
 }
 
 // Copy tracking lure URL to clipboard
