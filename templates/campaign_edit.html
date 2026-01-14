@@ -415,7 +415,7 @@
                         <div class="flow-box final-redirect" id="flow_box_final">
                             <i class="fa fa-external-link"></i>
                             <span class="flow-label">Final</span>
-                            <span class="flow-value">Redirect</span>
+                            <span class="flow-value">Destination</span>
                         </div>
 
                         <!-- Line Break / Separator between Attack Flow and Campaign Config -->
@@ -752,19 +752,19 @@
                         <!-- Redirector Options (shown when toggle is ON) -->
                         <div id="redirectorOptions" style="opacity: 0.4; pointer-events: none;">
                             <div class="form-group">
-                                <label class="control-label" style="font-weight: bold;">Cloudflare Domain </label>
+                                <label class="control-label" id="redirectorDomainLabel"
+                                    style="font-weight: bold;">Domain in Email</label>
 
                                 <select class="form-control" id="redirectorDomain">
                                     <option value="">-- Select Domain --</option>
                                 </select>
-                                <p class="help-block">Select the domain to use for the redirector page.</p>
                             </div>
 
                             <!-- Subdomain Option (shown after domain is selected) -->
                             <div class="form-group" id="subdomainOption" style="display: none;">
                                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                     <label class="checkbox-inline"
-                                        style="font-weight: bold; margin-right: 10px; font-size: 17px;">
+                                        style="font-weight: bold; margin-right: 10px; font-size: 15px;">
                                         <input type="checkbox" id="useSubdomain"
                                             style="margin-left: -19px; margin-top: 13px;"> Use Subdomain
                                     </label>
@@ -775,9 +775,22 @@
                                         Set
                                     </button>
                                 </div>
-                                <p class="help-block" id="subdomainHelp" style="display: none;">
-                                    Enter a subdomain (e.g., "landing" will become landing.domain.com)
-                                </p>
+                            </div>
+
+                            <!-- Dynamic URL Preview -->
+                            <div class="form-group" id="emailUrlPreview" style="display: none; margin-top: 15px;">
+                                <label class="control-label" style="font-weight: bold; color: #555;">
+                                    <i class="fa fa-link"></i> URL in Email
+                                </label>
+                                <div class="input-group">
+                                    <input type="text" id="emailUrlPreviewValue" class="form-control" readonly
+                                        style="background-color: #e8f5e9; border-color: #4caf50; font-family: monospace; font-size: 13px;">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-success" type="button" onclick="copyEmailUrl()">
+                                            <i class="fa fa-copy"></i> Copy
+                                        </button>
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -787,7 +800,7 @@
                 <div class="panel panel-default" id="redirectorTemplatePanel"
                     style="opacity: 0.4; pointer-events: none;">
                     <div class="panel-heading" style="background-color: #fff; font-weight: bold; font-size: 16px;">
-                        Redirector Template
+                        Redirector Page Template
                     </div>
                     <div class="panel-body">
                         <div class="row" style="margin-bottom: 15px;">
@@ -1117,7 +1130,7 @@
                         <!-- Hostname Selection (Moved to top) -->
                         <div class="form-group" style="margin-bottom: 25px;">
                             <label style="font-weight: 600; color: #2c3e50; font-size: 15px; margin-bottom: 10px;">
-                                <i class="fa fa-globe"></i> Phishlet Hostname
+                                <i class="fa fa-globe"></i> Login Domain
                             </label>
                             <select class="form-control" id="phishletHostname">
                                 <option value="">-- Select Domain --</option>
@@ -1145,7 +1158,7 @@
                         <div class="form-group">
                             <label class="control-label"
                                 style="font-weight: 600; color: #2c3e50; font-size: 15px; margin-bottom: 15px;">
-                                <i class="fa fa-shield"></i> Select Phishlet
+                                <i class="fa fa-shield"></i> Login Page Template
                             </label>
 
                             <div class="phishlet-search-wrapper">
@@ -1179,18 +1192,17 @@
                 <h4 class="page-header">Step 5: Final Destination</h4>
 
                 <div class="panel panel-default" style="border-color: #ddd;">
-                    <div class="panel-heading" style="background-color: #fff; font-weight: bold; font-size: 16px;">
-                        Final Destination & Redirection
-                    </div>
+
                     <div class="panel-body">
                         <!-- Tracking Only: Domain Selection (shown only in Tracking only mode) -->
                         <div id="trackingDomainSection" style="display: none; margin-bottom: 25px;">
                             <div class="form-group">
-                                <label class="control-label" style="font-weight: bold;">Tracking Domain</label>
+                                <label class="control-label" id="trackingDomainLabel" style="font-weight: bold;">Domain
+                                    in Email</label>
                                 <select class="form-control" id="trackingDomain">
                                     <option value="">-- Select Domain --</option>
                                 </select>
-                                <p class="help-block">Select the domain to use for tracking.</p>
+
                             </div>
 
                             <!-- Subdomain Option for Tracking -->
@@ -1208,15 +1220,13 @@
                                         Set
                                     </button>
                                 </div>
-                                <p class="help-block" id="trackingSubdomainHelp" style="display: none;">
-                                    Enter a subdomain (e.g., "track" will become track.domain.com)
-                                </p>
                             </div>
 
                             <!-- Tracking Lure URL Display -->
                             <div class="form-group" id="trackingLureDisplay" style="display: none; margin-top: 20px;">
-                                <label class="control-label" style="font-weight: bold; color: #555;">
-                                    <i class="fa fa-link"></i> Tracking Lure URL
+                                <label class="control-label" id="trackingLureUrlLabel"
+                                    style="font-weight: bold; color: #555;">
+                                    <i class="fa fa-link"></i> <span id="trackingLureUrlLabelText">URL in Email</span>
                                 </label>
                                 <div class="input-group">
                                     <input type="text" id="trackingLureUrl" class="form-control" readonly
@@ -1227,9 +1237,6 @@
                                         </button>
                                     </span>
                                 </div>
-                                <p class="help-block" style="font-size: 11px;">
-                                    This is the tracking URL that will be sent to targets.
-                                </p>
                             </div>
                         </div>
 
@@ -1247,23 +1254,16 @@
                         </div>
 
                         <!-- Final Destination Input -->
-                        <div class="form-group" style="margin-bottom: 20px;">
+                        <div class="form-group" id="finalDestinationSection" style="margin-bottom: 20px;">
                             <label class="control-label" style="font-weight: bold; color: #555;">Final Destination
-                                (Redirection URL)</label>
+                            </label>
                             <input type="text" id="lureFinalDestination" class="form-control"
                                 placeholder="https://www.google.com" style="border-radius: 4px;">
-                            <p class="help-block" style="font-size: 11px;">Where targets will be sent after they finish
-                                the phishing flow.</p>
+
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
-                                <button type="button" class="btn btn-primary" id="btnSaveFinalDestination"
-                                    onclick="saveFinalDestination()">
-                                    <i class="fa fa-save"></i> Set Final Destination
-                                </button>
-                            </div>
-                        </div>
+                        <!-- Save button hidden - Final Destination auto-saves on Next -->
+
 
                         <!-- Hidden input to store selected lure for form submission -->
                         <input type="hidden" id="manualLureUrl" name="manual_lure_url">
