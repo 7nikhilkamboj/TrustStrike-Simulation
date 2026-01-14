@@ -584,9 +584,21 @@ function showStep(step) {
 
     currentStep = step;
 
+    // Hide the persistent flow preview on Step 9 (Blueprint takes over)
+    if (step == 9) {
+        $("#campaignFlowPreview").hide();
+    } else {
+        $("#campaignFlowPreview").show();
+    }
+
     // Step 5: Refresh lures to show updated enabled phishlet domains
     if (step == 5) {
         refreshLuresForStep5();
+    }
+
+    // Step 9: Populate Visual Blueprint
+    if (step == 9) {
+        populateVisualBlueprint();
     }
 
     // Reset scroll position to top of page/container
@@ -594,7 +606,179 @@ function showStep(step) {
     if ($(".modal-body").length) {
         $(".modal-body").scrollTop(0);
     }
+
+    // Update Flow Diagram Visuals
+    updateVisualFlow(step);
 }
+
+function populateVisualBlueprint() {
+    // 1. Primary Flow Pillars
+    var templateName = $("#template_name").val() || "None selected";
+    $("#vis_template_name_pb").text(templateName);
+
+    var selectedGroups = $("#users").val() || [];
+    var groupsText = selectedGroups.length > 0 ? selectedGroups.join(", ") : "None Selected";
+    $("#vis_groups_pb").text(groupsText);
+
+    var profileName = $("#profile_name").val() || "None selected";
+    $("#vis_profile_pb").text(profileName);
+
+    var launchTime = $("#launch_date").val() || "Immediate";
+    var launchObjective = $("#attack_objective").val() || "Tracking only";
+    $("#vis_launch_pb").text(launchTime + " (" + launchObjective + ")");
+
+    // 2. Secondary Detail Cards
+    // Audience
+    $("#vis_groups_secondary").text(groupsText);
+    $("#vis_profile_secondary").text(profileName);
+
+    // Configuration
+    $("#vis_objective_secondary").text(launchObjective);
+    var campaignType = $("#campaign_type").val();
+    var sourceText = campaignType === "sms" ? "SMS Gateway" : (campaignType === "qr" ? "QR Generation" : "Email Server");
+    $("#vis_source_secondary").text(sourceText);
+
+    // Timeline
+    $("#vis_launch_secondary").text(launchTime);
+    var stopTime = $("#scheduled_stop_date").val() || "Manual Stop";
+    $("#vis_stop_secondary").text(stopTime);
+}
+
+// Update the visual flow diagram based on current step
+function updateVisualFlow(step) {
+    // Reset all
+    $(".flow-box").removeClass("active completed disabled");
+
+    // Individual steps 1-5 (Attack Flow)
+    var attackFlowNodes = [
+        { id: "flow_box_campaign", step: 1 },
+        { id: "flow_box_template", step: 2 },
+        { id: "flow_box_redirector", step: 3 },
+        { id: "flow_box_login", step: 4 },
+        { id: "flow_box_final", step: 5 }
+    ];
+
+    // Steps 6-8 (Campaign Config)
+    var configNodes = [
+        { id: "flow_box_groups", step: 6 },
+        { id: "flow_box_profile", step: 7 },
+        { id: "flow_box_schedule", step: 8 }
+    ];
+
+    // Check states
+    var useRedirector = $("#useRedirector").is(":checked");
+    var trackingOnly = $("#attack_objective").val() === "Tracking only";
+    var campaignType = $("#campaign_type").val();
+
+    // Update labels/icons for Campaign and Template nodes based on type
+    var $campaignBox = $("#flow_box_campaign");
+    var $templateBox = $("#flow_box_template");
+
+    if (campaignType === "sms") {
+        $campaignBox.find(".flow-value").text("SMS");
+        $templateBox.find(".flow-label").text("Template");
+        $templateBox.find(".flow-value").text("SMS");
+        $templateBox.find("i").attr("class", "fa fa-commenting");
+    } else if (campaignType === "qr") {
+        $campaignBox.find(".flow-value").text("QR");
+        $templateBox.find(".flow-label").text("Setup");
+        $templateBox.find(".flow-value").text("QR");
+        $templateBox.find("i").attr("class", "fa fa-qrcode");
+    } else {
+        // Default Email
+        $campaignBox.find(".flow-value").text("EMAIL");
+        $templateBox.find(".flow-label").text("Template");
+        $templateBox.find(".flow-value").text("Email");
+        $templateBox.find("i").attr("class", "fa fa-envelope");
+    }
+
+    // Determine if we show collapsed view (step >= 6)
+    var showCollapsed = (step >= 6);
+
+    // Update collapsed box label based on campaign type
+    var flowLabel = "Email Flow";
+    if (campaignType === "sms") {
+        flowLabel = "SMS Flow";
+    } else if (campaignType === "qr") {
+        flowLabel = "QR Flow";
+    }
+    $("#collapsed_flow_label").text(flowLabel);
+
+    if (showCollapsed) {
+        // COLLAPSED VIEW: Hide individual steps 1-5, show collapsed box
+        attackFlowNodes.forEach(function (node) {
+            $("#" + node.id).hide();
+        });
+        // Hide all arrows for steps 1-5 by ID
+        $("#flow_arrow_1, #flow_arrow_2, #flow_arrow_3, #flow_arrow_4").hide();
+
+        // Show collapsed box and its arrow
+        $("#flow_box_collapsed").show().addClass("completed");
+        $("#flow_arrow_collapsed").show();
+
+        // Show config nodes (6-8)
+        configNodes.forEach(function (node) {
+            var $el = $("#" + node.id);
+            $el.show();
+
+            if (node.step < step) {
+                $el.addClass("completed");
+            } else if (node.step === step) {
+                $el.addClass("active");
+            }
+        });
+        // Show arrows for config nodes
+        $("#flow_arrow_6").show();
+        $("#flow_arrow_7").show();
+
+    } else {
+        // EXPANDED VIEW: Show individual steps 1-5, hide collapsed box
+        $("#flow_box_collapsed").hide();
+        $("#flow_arrow_collapsed").hide();
+
+        // Hide config nodes (they're not relevant yet)
+        configNodes.forEach(function (node) {
+            $("#" + node.id).hide();
+        });
+        $(".flow-row-break").hide();
+        $("#flow_arrow_6").hide();
+        $("#flow_arrow_7").hide();
+
+        // Show and manage attack flow nodes
+        attackFlowNodes.forEach(function (node) {
+            var $el = $("#" + node.id);
+            $el.show();
+
+            // Redirector disabled logic
+            if (node.id === "flow_box_redirector" && !useRedirector) {
+                $el.addClass("disabled");
+                return;
+            }
+
+            // Tracking Only: hide Login node
+            if (node.id === "flow_box_login" && trackingOnly) {
+                $el.hide();
+                $("#flow_arrow_4").hide();
+                return;
+            }
+
+            if (node.step < step) {
+                $el.addClass("completed");
+            } else if (node.step === step) {
+                $el.addClass("active");
+            }
+        });
+
+        // Show arrows for visible attack flow steps by ID
+        $("#flow_arrow_1, #flow_arrow_2, #flow_arrow_3, #flow_arrow_4").show();
+        if (trackingOnly) {
+            $("#flow_arrow_4").hide();
+        }
+    }
+}
+
+// Add event listeners for dynamic updates
+// Consolidated event listeners removed from here and moved to main ready block at the end of file
 
 // Refresh lures in Step 5 to show current enabled phishlet data
 function refreshLuresForStep5() {
@@ -856,12 +1040,9 @@ window.updateFlowDiagram = function () {
 };
 
 // --- Load Cloudflare Domains for Redirector ---
-// --- Load Cloudflare Domains (Paginated List) ---
+// --- Load Cloudflare Domains (Dropdown) ---
 var allDomains = [];
-var currentDomainPage = 1;
-var domainSearchQuery = "";
 var selectedDomain = null;
-const DOMAINS_PER_PAGE = 10;
 
 function loadCloudflaireDomains() {
     $.ajax({
@@ -875,7 +1056,7 @@ function loadCloudflaireDomains() {
             var select = $("#redirectorDomain");
             select.find("option:not(:first)").remove();
 
-            // Populate hidden select for Phishlet Hostname (Step 4)
+            // Populate Phishlet Hostname Dropdown (Step 4)
             var selectPhishlet = $("#phishletHostname");
             selectPhishlet.find("option:not(:first)").remove();
 
@@ -885,102 +1066,16 @@ function loadCloudflaireDomains() {
                 selectPhishlet.append($("<option>").val(name).text(name));
             });
 
-            renderDomainList(1);
+            // Trigger change if we have a selected domain already
+            if (selectedDomain) {
+                selectPhishlet.val(selectedDomain).trigger("change");
+            }
         },
         error: function (xhr) {
             console.error("Failed to load Cloudflare domains:", xhr.responseText);
-            $("#domainList").html('<div class="text-center text-danger" style="padding: 20px;"><p>Failed to load domains. Please check your Cloudflare configuration.</p></div>');
         }
     });
 }
-
-function renderDomainList(page, query) {
-    currentDomainPage = page || 1;
-    domainSearchQuery = query || "";
-
-    var container = $("#domainList");
-    var pagination = $("#domainPagination");
-    container.empty();
-
-    // Filter
-    var filtered = allDomains.filter(function (d) {
-        var name = d.name || d;
-        return name.toLowerCase().indexOf(domainSearchQuery.toLowerCase()) !== -1;
-    });
-
-    if (filtered.length === 0) {
-        container.html('<div class="text-center text-muted" style="padding: 20px;"><i class="fa fa-info-circle"></i> <p>No domains found matching "' + domainSearchQuery + '"</p></div>');
-        pagination.hide();
-        return;
-    }
-
-    // Paginate
-    var totalPages = Math.ceil(filtered.length / DOMAINS_PER_PAGE);
-    var start = (currentDomainPage - 1) * DOMAINS_PER_PAGE;
-    var end = start + DOMAINS_PER_PAGE;
-    var pageItems = filtered.slice(start, end);
-
-    // Render
-    pageItems.forEach(function (d) {
-        var name = d.name || d;
-        var isActive = (selectedDomain === name);
-        var activeClass = isActive ? ' active' : '';
-        var status = d.status || 'Active'; // Assume active if not specified
-
-        var item = `
-        <div class="domain-item${activeClass}" data-name="${name}">
-            <span><i class="fa fa-globe" style="margin-right: 10px; color: #11998e;"></i> ${name}</span>
-            <span class="domain-status">${status}</span>
-        </div>`;
-        container.append(item);
-    });
-
-    // Update Pagination UI
-    pagination.show();
-    $("#domainPageInfo").text(`Page ${currentDomainPage} of ${totalPages}`);
-    $("#prevDomainPage").prop("disabled", currentDomainPage === 1);
-    $("#nextDomainPage").prop("disabled", currentDomainPage === totalPages);
-}
-
-// Search filter for domains
-$(document).on("input", "#domainSearch", function () {
-    var query = $(this).val();
-    renderDomainList(1, query);
-});
-
-// Pagination handlers
-$(document).on("click", "#prevDomainPage", function () {
-    if (currentDomainPage > 1) {
-        renderDomainList(currentDomainPage - 1, domainSearchQuery);
-    }
-});
-
-$(document).on("click", "#nextDomainPage", function () {
-    var filteredCount = allDomains.filter(function (d) {
-        var name = d.name || d;
-        return name.toLowerCase().indexOf(domainSearchQuery.toLowerCase()) !== -1;
-    }).length;
-    var totalPages = Math.ceil(filteredCount / DOMAINS_PER_PAGE);
-
-    if (currentDomainPage < totalPages) {
-        renderDomainList(currentDomainPage + 1, domainSearchQuery);
-    }
-});
-
-// Selection handler for domain items
-$(document).on("click", ".domain-item", function () {
-    var name = $(this).data("name");
-
-    // Update global state
-    selectedDomain = name;
-
-    // Update UI
-    $(".domain-item").removeClass("active");
-    $(this).addClass("active");
-
-    // Update hidden select and trigger change to fire existing configuration logic
-    $("#phishletHostname").val(name).trigger("change");
-});
 
 
 // --- Load Redirector Templates (Card-based) ---
@@ -1527,16 +1622,24 @@ $("#phishletSelect").on("change", function () {
     if (selected) {
         $("#phishletConfigPanel").show();
         loadPhishletConfig(selected);
-        // Note: Phishlet will be enabled when hostname is selected
+
+        // If a hostname is already selected in the dropdown, trigger the provisioning logic
+        var currentHostname = $("#phishletHostname").val();
+        if (currentHostname && currentHostname !== "") {
+            console.log("Hostname already selected, triggering provisioning for:", selected);
+            $("#phishletHostname").trigger("change");
+        }
     } else {
         $("#phishletConfigPanel").hide();
     }
 });
 
 // Auto-enable the selected phishlet and disable all others
-function autoEnablePhishlet(phishletName) {
+function autoEnablePhishlet(phishletName, callback) {
     // Get the redirector domain from Step 3 for landing_domain
     var redirectorDomain = $("#redirectorDomain").val();
+    var useRedirector = $("#useRedirector").is(":checked");
+    var landingDomainToSet = useRedirector ? (redirectorDomain || "") : "";
 
     $.ajax({
         url: "/api/simulationserver/modules",
@@ -1545,6 +1648,7 @@ function autoEnablePhishlet(phishletName) {
             var modules = data.modules || data;
             if (!Array.isArray(modules)) return;
 
+            var togglePromises = [];
             var selectedModule = modules.find(function (m) { return m.name == phishletName; });
             var selectedIsEnabled = selectedModule && (selectedModule.status == "enabled" || selectedModule.enabled === true);
 
@@ -1552,54 +1656,49 @@ function autoEnablePhishlet(phishletName) {
             modules.forEach(function (m) {
                 var isEnabled = m.status == "enabled" || m.enabled === true;
                 if (isEnabled && m.name != phishletName) {
-                    // Toggle to disable this one
-                    $.post("/api/simulationserver/modules/" + encodeURIComponent(m.name) + "/toggle");
+                    togglePromises.push($.post("/api/simulationserver/modules/" + encodeURIComponent(m.name) + "/toggle"));
                 }
             });
 
-            // 2. Set the landing_domain from Step 3's redirector domain (if selected)
-            if (redirectorDomain) {
-                $.ajax({
-                    url: "/api/simulationserver/modules/" + encodeURIComponent(phishletName) + "/landing_domain",
-                    method: "POST",
-                    contentType: "application/json",
-                    data: JSON.stringify({ landing_domain: redirectorDomain }),
-                    success: function () {
+            // Set landing_domain first
+            $.ajax({
+                url: "/api/simulationserver/modules/" + encodeURIComponent(phishletName) + "/landing_domain",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ landing_domain: landingDomainToSet }),
+                success: function () {
+                    console.log("Phishlet landing_domain updated successfully:", landingDomainToSet);
+                }
+            });
 
-                    }
-                });
-            }
-
-            // 3. Then enable the selected one if it's disabled
-            if (!selectedIsEnabled) {
-                $.post("/api/simulationserver/modules/" + encodeURIComponent(phishletName) + "/toggle", function (response) {
-                    if (response.success) {
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000
-                        });
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Phishlet "' + phishletName + '" enabled'
-                        });
-                    }
-                });
-            } else {
-                // Already enabled, just show toast
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Phishlet "' + phishletName + '" enabled'
-                });
-            }
+            // Wait for all disables to complete before enabling the target
+            $.when.apply($, togglePromises).always(function () {
+                if (!selectedIsEnabled) {
+                    $.post("/api/simulationserver/modules/" + encodeURIComponent(phishletName) + "/toggle", function (response) {
+                        if (response.success) {
+                            showPhishletEnabledToast(phishletName);
+                        }
+                        if (typeof callback === "function") callback();
+                    });
+                } else {
+                    showPhishletEnabledToast(phishletName);
+                    if (typeof callback === "function") callback();
+                }
+            });
         }
+    });
+}
+
+function showPhishletEnabledToast(phishletName) {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+    });
+    Toast.fire({
+        icon: 'success',
+        title: 'Phishlet "' + phishletName + '" enabled'
     });
 }
 
@@ -1641,10 +1740,12 @@ function loadPhishletConfig(name) {
                 var module = modules.find(function (m) { return m.name == name; });
                 if (module) {
                     var hostname = module.hostname || "";
-                    if (hostname && $("#phishletHostname option[value='" + hostname + "']").length === 0) {
-                        $("#phishletHostname").append($("<option>").val(hostname).text(hostname));
+                    if (hostname && hostname !== "") {
+                        if ($("#phishletHostname option[value='" + hostname + "']").length === 0) {
+                            $("#phishletHostname").append($("<option>").val(hostname).text(hostname));
+                        }
+                        $("#phishletHostname").val(hostname).trigger('change.select2');
                     }
-                    $("#phishletHostname").val(hostname);
                     $("#phishletLandingDomain").val(module.landing_domain || "");
 
                     var badge = $("#phishletStatusBadge");
@@ -1991,33 +2092,43 @@ function autoCreateDefaultLure(phishletName, hostname) {
                                     contentType: 'application/json',
                                     data: JSON.stringify(editPayload),
                                     success: function () {
-                                        // Set the lure URL in the form field
-                                        var lureUrl = "https://login." + hostname + "/" + randomPath;
-                                        $("#lureList").val(lureUrl);
+                                        // Fetch the latest strikes again to get the final generated URL from the backend
+                                        getStrikes().then(function (finalStrikesData) {
+                                            var finalUrl = "https://login." + hostname + "/" + randomPath; // High-level fallback
 
-                                        // Track the lure ID and display URL for Step 5
-                                        $("#selectedLureId").val(latest.id);
-                                        $("#manualLureUrl").val(lureUrl);
-                                        $("#currentLureDisplay").val(lureUrl);
+                                            if (finalStrikesData && finalStrikesData.success && finalStrikesData.data) {
+                                                var updatedLure = finalStrikesData.data.find(function (s) { return s.id == latest.id; });
+                                                if (updatedLure) {
+                                                    // Use landing_url if available (contains redirector info), otherwise use url
+                                                    finalUrl = updatedLure.landing_url || updatedLure.url || finalUrl;
+                                                }
+                                            }
 
-                                        const Toast = Swal.mixin({
-                                            toast: true,
-                                            position: 'top-end',
-                                            showConfirmButton: false,
-                                            timer: 3000
+                                            // Update all relevant UI fields
+                                            $("#lureList").val(finalUrl);
+                                            $("#selectedLureId").val(latest.id);
+                                            $("#manualLureUrl").val(finalUrl);
+                                            $("#currentLureDisplay").val(finalUrl);
+
+                                            const Toast = Swal.mixin({
+                                                toast: true,
+                                                position: 'top-end',
+                                                showConfirmButton: false,
+                                                timer: 3000
+                                            });
+
+                                            var toastMsg = 'Default lure created: /' + randomPath;
+                                            if (redirectorName) {
+                                                toastMsg += ' (with redirector: ' + redirectorName + ')';
+                                            }
+                                            Toast.fire({
+                                                icon: 'success',
+                                                title: toastMsg
+                                            });
+
+                                            // Refresh lures table to show the new entry
+                                            refreshLures();
                                         });
-
-                                        var toastMsg = 'Default lure created: /' + randomPath;
-                                        if (redirectorName) {
-                                            toastMsg += ' (with redirector: ' + redirectorName + ')';
-                                        }
-                                        Toast.fire({
-                                            icon: 'success',
-                                            title: toastMsg
-                                        });
-
-                                        // Refresh lures table
-                                        refreshLures();
                                     },
                                     error: function () {
                                         console.error("Failed to set lure path");
@@ -2424,58 +2535,10 @@ function createTrackingLureForDomain(trackingDomain) {
         }
     });
 
-    // Set landing_domain on example phishlet - use redirector domain if selected, otherwise blank
-    var landingDomain = (useRedirector && redirectorDomain) ? redirectorDomain : "";
-    $.ajax({
-        url: "/api/simulationserver/modules/example/landing_domain",
-        method: "POST",
-        contentType: "application/json",
-        data: JSON.stringify({ landing_domain: landingDomain }),
-        success: function () {
-        },
-        error: function () {
-            console.error("Failed to set landing domain");
-        }
-    });
-
-    // Then check phishlet status and enable example
-    $.ajax({
-        url: '/api/simulationserver/modules',
-        type: 'GET',
-        success: function (modules) {
-            var togglePromises = [];
-
-            // Disable all other enabled phishlets (not "example")
-            modules.forEach(function (m) {
-                if (m.name !== "example" && m.enabled) {
-                    togglePromises.push(
-                        $.post('/api/simulationserver/modules/' + m.name + '/toggle')
-                    );
-                }
-            });
-
-            // Check if example needs to be enabled
-            var exampleModule = modules.find(function (m) { return m.name === "example"; });
-            var needEnableExample = exampleModule && !exampleModule.enabled;
-
-            // Wait for all disables to complete
-            $.when.apply($, togglePromises).always(function () {
-                // Now enable example if needed
-                if (needEnableExample) {
-                    $.post('/api/simulationserver/modules/example/toggle', function () {
-
-                        createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
-                    });
-                } else {
-                    // Already enabled, just create the lure
-                    createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
-                }
-            });
-        },
-        error: function () {
-            // If can't fetch modules, try to create lure anyway
-            createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
-        }
+    // Set global domain and phishlet configuration via autoEnablePhishlet
+    autoEnablePhishlet("example", function () {
+        // After "example" phishlet is enabled (and others disabled)
+        createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
     });
 }
 
@@ -2954,11 +3017,22 @@ function populateCampaignData(campaign) {
     }
 }
 
+// Main Initialization Block (Consolidated)
 $(document).ready(function () {
     // Select2 Defaults
     $.fn.select2.defaults.set("width", "100%");
-    // $.fn.select2.defaults.set("dropdownParent", $(".panel-body"));
     $.fn.select2.defaults.set("theme", "bootstrap");
+
+    // Initialize Select2 ONLY on valid SELECT elements
+    $("#campaign_type").select2();
+    $("#attack_objective").select2();
+    $("#phishletHostname").select2({
+        placeholder: "-- Select Domain --",
+        allowClear: true
+    });
+    $("#redirectorDomain").select2();
+    $("#users").select2();
+
 
     $("#campaign_type").change(function () {
         var type = $(this).val()
@@ -3136,12 +3210,7 @@ $(document).ready(function () {
             $("#url").parent().show();
             $("#tracking_redirect_url_group").show();
 
-            // Flow Diagram Update: Hide Redirector node, Rename Login node
-            $("#flow_box_redirector").hide();
-            $("#flow_arrow_2").hide();
-            $("#flow_box_login .flow-label").text("Redirector");
-            $("#flow_box_login .flow-value").text("Page");
-            $("#flow_box_login i").attr("class", "fa fa-random");
+            // Flow Diagram Update: Handled by updateVisualFlow()
 
             // Set flag to skip Step 4
             window.skipPhishletStep = true;
@@ -3160,12 +3229,7 @@ $(document).ready(function () {
             $("#url").parent().show();
             $("#tracking_redirect_url_group").hide();
 
-            // Flow Diagram Update: Show Redirector node, Restore Login node
-            $("#flow_box_redirector").show();
-            $("#flow_arrow_2").show();
-            $("#flow_box_login .flow-label").text("Target");
-            $("#flow_box_login .flow-value").text("Login");
-            $("#flow_box_login i").attr("class", "fa fa-sign-in");
+            // Flow Diagram Update: Handled by updateVisualFlow()
 
             // Reset flag - show Step 4
             window.skipPhishletStep = false;
@@ -3174,6 +3238,10 @@ $(document).ready(function () {
             $("#trackingDomainSection").hide();
             $("#currentLureSection").show();
         }
+
+        // Update flow diagram to reflect the new attack objective
+        var currentStep = parseInt($(".step-wizard-item.current-item").data("step")) || 1;
+        updateVisualFlow(currentStep);
     });
 
     // Auto-select and enable the "example" phishlet for Tracking only mode
@@ -3219,24 +3287,30 @@ $(document).ready(function () {
         });
     } else {
         // New campaign defaults
-        $("#campaign_type").trigger('change');
     }
 
     setupOptions();
 
-    // Load data for new wizard steps (3 and 4)
+    // Load data for wizard steps
     loadCloudflaireDomains();
     loadRedirectorTemplates();
     loadPhishlets();
 
-    // Bind checkbox toggle event with jQuery (more reliable than inline onchange)
+    // Bind checkbox toggle event
     $("#useRedirector").on("change", function () {
         toggleRedirectorOptions();
     });
 
     // Initial state set
     toggleRedirectorOptions();
-    $("#attack_objective").trigger("change");
+
+    // Trigger initial changes to set correct UI state (Tracking Only/Session Hijacking etc)
+    // Note: This must happen AFTER all listeners are bound
+    setTimeout(function () {
+        $("#attack_objective").trigger("change");
+        $("#campaign_type").trigger("change");
+        updateVisualFlow(currentStep);
+    }, 100);
 });
 
 // --- Template Creation From Modal Logic ---
