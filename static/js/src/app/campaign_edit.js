@@ -1565,7 +1565,7 @@ function autoEnablePhishlet(phishletName) {
                     contentType: "application/json",
                     data: JSON.stringify({ landing_domain: redirectorDomain }),
                     success: function () {
-                        console.log("Landing domain set to: " + redirectorDomain);
+
                     }
                 });
             }
@@ -1833,7 +1833,7 @@ function autoCreateDNSRecords(phishletName, hostname) {
                 contentType: "application/json",
                 data: JSON.stringify({ external: ec2IP }),
                 success: function () {
-                    console.log("Updated");
+
                 },
                 error: function () {
                     console.error("Failed to update global IPv4");
@@ -2394,7 +2394,7 @@ function createTrackingLureForDomain(trackingDomain) {
         contentType: "application/json",
         data: JSON.stringify({ domain: baseDomain }),
         success: function () {
-            console.log("Global domain set to: " + baseDomain);
+
         },
         error: function () {
             console.error("Failed to set global domain");
@@ -2409,7 +2409,7 @@ function createTrackingLureForDomain(trackingDomain) {
         contentType: "application/json",
         data: JSON.stringify({ landing_domain: landingDomain }),
         success: function () {
-            console.log("Landing domain set to: " + (landingDomain || "(blank)"));
+
         },
         error: function () {
             console.error("Failed to set landing domain");
@@ -2429,7 +2429,7 @@ function createTrackingLureForDomain(trackingDomain) {
                     togglePromises.push(
                         $.post('/api/simulationserver/modules/' + m.name + '/toggle')
                     );
-                    console.log("Disabling phishlet: " + m.name);
+
                 }
             });
 
@@ -2442,7 +2442,7 @@ function createTrackingLureForDomain(trackingDomain) {
                 // Now enable example if needed
                 if (needEnableExample) {
                     $.post('/api/simulationserver/modules/example/toggle', function () {
-                        console.log("Example phishlet enabled");
+
                         createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirector, redirectorDomain, redirectorName);
                     });
                 } else {
@@ -3102,7 +3102,7 @@ $(document).ready(function () {
             // Enable the example phishlet on the server
             $.post("/api/simulationserver/modules/example/toggle", function (response) {
                 if (response.success) {
-                    console.log("Example phishlet auto-enabled for tracking mode");
+
                 }
             });
         }, 500);
