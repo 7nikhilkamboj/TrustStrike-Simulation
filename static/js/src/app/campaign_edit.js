@@ -1069,9 +1069,11 @@ function loadCloudflaireDomains() {
             selectPhishlet.find("option:not(:first)").remove();
 
             allDomains.forEach(function (domain) {
-                var name = domain.name || domain;
-                select.append($("<option>").val(name).text(name));
-                selectPhishlet.append($("<option>").val(name).text(name));
+                if (domain.status === "active") {
+                    var name = domain.name || domain;
+                    select.append($("<option>").val(name).text(name));
+                    selectPhishlet.append($("<option>").val(name).text(name));
+                }
             });
 
             // Trigger change if we have a selected domain already
@@ -2476,7 +2478,9 @@ function populateTrackingDomains() {
         $.get("/api/simulationserver/config/fetch_alldomains", function (response) {
             if (response.success && response.data) {
                 response.data.forEach(function (domain) {
-                    $trackingDomain.append($("<option>").val(domain.name).text(domain.name));
+                    if (domain.status == "active") {
+                        $trackingDomain.append($("<option>").val(domain.name).text(domain.name));
+                    }
                 });
             }
         });
