@@ -176,6 +176,7 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/sms_campaigns", mid.Use(as.SMSCampaigns, mid.RequireLogin))
 	router.HandleFunc("/settings", mid.Use(as.Settings, mid.RequireLogin))
 	router.HandleFunc("/simulationserver", mid.Use(as.SimulationServer, mid.RequireLogin))
+	router.HandleFunc("/dns_config", mid.Use(as.DNSConfig, mid.RequireLogin))
 	router.HandleFunc("/phishlets", mid.Use(as.Phishlets, mid.RequireLogin))
 	router.HandleFunc("/user_groups", mid.Use(as.UserGroups, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/users", mid.Use(as.UserManagement, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
@@ -286,6 +287,13 @@ func (as *AdminServer) SimulationServer(w http.ResponseWriter, r *http.Request) 
 	params := newTemplateParams(r)
 	params.Title = "SimulationServer Integration"
 	getTemplate(w, "simulationserver").ExecuteTemplate(w, "base", params)
+}
+
+// DNSConfig handles the DNS Configuration page
+func (as *AdminServer) DNSConfig(w http.ResponseWriter, r *http.Request) {
+	params := newTemplateParams(r)
+	params.Title = "DNS Configuration"
+	getTemplate(w, "dns_config").ExecuteTemplate(w, "base", params)
 }
 
 // Phishlets handles the phishlet management page
