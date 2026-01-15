@@ -2598,6 +2598,19 @@ function createTrackingLureForDomain(trackingDomain) {
         contentType: "application/json",
         data: JSON.stringify({ domain: baseDomain }),
         success: function () {
+            // [NEW] Set Phishlet Hostname for 'example'
+            $.ajax({
+                url: "/api/simulationserver/modules/example/hostname",
+                method: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ hostname: trackingDomain }),
+                success: function () {
+                    console.log("Example phishlet hostname set to:", trackingDomain);
+                },
+                error: function () {
+                    console.error("Failed to set example phishlet hostname");
+                }
+            });
         },
         error: function () {
             console.error("Failed to set global domain");
