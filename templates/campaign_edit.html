@@ -454,7 +454,7 @@
 
             <!-- STEP 1: Name, Type, Objective -->
             <div class="wizard-step active" id="step1">
-                <h4 class="page-header">Step 1: Campaign Details</h4>
+                <h4 class="page-header">Campaign Details</h4>
 
                 <div class="form-group">
                     <label for="name">Name:</label>
@@ -666,7 +666,7 @@
                 </style>
                 <div class="row">
                     <div class="col-md-6">
-                        <h4 class="page-header" id="step2_title" style="margin-top: 0;">Step 2: Template</h4>
+                        <h4 class="page-header" id="step2_title" style="margin-top: 0;">Template</h4>
                     </div>
                     <div class="col-md-6 text-right">
                         <button type="button" class="btn btn-primary" onclick="openCreateTemplateModal()">
@@ -709,7 +709,7 @@
             <!-- STEP 3: Redirector Domain -->
             <div class="wizard-step" id="step3">
                 <h4 class="page-header" style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
-                    <span>Step 3: Redirector Page</span>
+                    <span>Redirector Page</span>
                     <div style="display: flex; align-items: center; gap: 12px;">
                         <label class="redirector-switch"
                             style="position: relative; display: inline-block; width: 52px; height: 28px; margin: 0;">
@@ -779,8 +779,9 @@
 
                             <!-- Dynamic URL Preview -->
                             <div class="form-group" id="emailUrlPreview" style="display: none; margin-top: 15px;">
-                                <label class="control-label" style="font-weight: bold; color: #555;">
-                                    <i class="fa fa-link"></i> URL in Email
+                                <label class="control-label" id="emailUrlPreviewLabel"
+                                    style="font-weight: bold; color: #555;">
+                                    <i class="fa fa-link"></i> <span id="emailUrlPreviewLabelText">URL in Email</span>
                                 </label>
                                 <div class="input-group">
                                     <input type="text" id="emailUrlPreviewValue" class="form-control" readonly
@@ -1123,7 +1124,7 @@
                         font-weight: 500;
                     }
                 </style>
-                <h4 class="page-header">Step 4: Login page</h4>
+                <h4 class="page-header">Login Page</h4>
 
                 <div class="panel panel-default">
                     <div class="panel-body">
@@ -1189,16 +1190,19 @@
 
             <!-- STEP 5: Lure / Redirect -->
             <div class="wizard-step" id="step5">
-                <h4 class="page-header">Step 5: Final Destination</h4>
+                <h4 class="page-header">Final Destination</h4>
 
                 <div class="panel panel-default" style="border-color: #ddd;">
-
+                    <div class="panel-heading" style="background-color: #fff; font-weight: bold; font-size: 16px;">
+                        <i class="fa fa-link"></i> <label class="control-label" id="trackingDomainLabel"
+                            style="font-weight: bold;">Domain
+                            in Email</label>
+                    </div>
                     <div class="panel-body">
                         <!-- Tracking Only: Domain Selection (shown only in Tracking only mode) -->
                         <div id="trackingDomainSection" style="display: none; margin-bottom: 25px;">
                             <div class="form-group">
-                                <label class="control-label" id="trackingDomainLabel" style="font-weight: bold;">Domain
-                                    in Email</label>
+
                                 <select class="form-control" id="trackingDomain">
                                     <option value="">-- Select Domain --</option>
                                 </select>
@@ -1253,15 +1257,6 @@
                             </p>
                         </div>
 
-                        <!-- Final Destination Input -->
-                        <div class="form-group" id="finalDestinationSection" style="margin-bottom: 20px;">
-                            <label class="control-label" style="font-weight: bold; color: #555;">Final Destination
-                            </label>
-                            <input type="text" id="lureFinalDestination" class="form-control"
-                                placeholder="https://www.google.com" style="border-radius: 4px;">
-
-                        </div>
-
                         <!-- Save button hidden - Final Destination auto-saves on Next -->
 
 
@@ -1292,11 +1287,25 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Final Destination Panel (Separate Container) -->
+                <div class="panel panel-default" style="border-color: #ddd; margin-top: 20px;">
+                    <div class="panel-heading" style="background-color: #fff; font-weight: bold; font-size: 16px;">
+                        <i class="fa fa-flag-checkered"></i> Final Destination
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group" id="finalDestinationSection" style="margin-bottom: 0;">
+
+                            <input type="text" id="lureFinalDestination" class="form-control"
+                                placeholder="https://www.google.com" style="border-radius: 4px; margin-top: 10px;">
+                        </div>
+                    </div>
+                </div>
             </div> <!-- Close Step 5 -->
 
             <!-- STEP 6: Groups -->
             <div class="wizard-step" id="step6">
-                <h4 class="page-header">Step 6: Target Groups</h4>
+                <h4 class="page-header">Target Groups</h4>
 
                 <div class="row" style="margin-bottom: 20px;">
                     <div class="col-md-6">
@@ -1358,7 +1367,7 @@
 
             <!-- STEP 7: Sending Profile -->
             <div class="wizard-step" id="step7">
-                <h4 class="page-header" id="step7_title">Step 7: Sending Profile</h4>
+                <h4 class="page-header" id="step7_title">Sending Profile</h4>
 
                 <div class="row" style="margin-bottom: 20px;">
                     <div class="col-md-6">
@@ -1406,7 +1415,7 @@
 
             <!-- STEP 8: Schedule -->
             <div class="wizard-step" id="step8">
-                <h4 class="page-header">Step 8: Schedule</h4>
+                <h4 class="page-header">Schedule</h4>
 
 
                 <div class="row">
