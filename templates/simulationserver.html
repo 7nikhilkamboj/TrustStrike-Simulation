@@ -241,7 +241,7 @@
 
                         <!-- Create Lures -->
                         <div class="form-group row" style="margin-bottom: 20px;">
-                            <div class="col-sm-8">
+                            <div class="col-sm-12">
                                 <button type="button" onclick="openCreateLureModal()" id="createBtn"
                                     class="btn btn-primary">
                                     <i class="fa fa-plus"></i> Create New Lure
@@ -249,6 +249,10 @@
                                 <button type="button" onclick="openRedirectorsModal()" class="btn btn-success"
                                     style="margin-left: 10px;">
                                     <i class="fa fa-file-code-o"></i> Show Redirectors
+                                </button>
+                                <button type="button" onclick="deleteAllLures()" class="btn btn-danger"
+                                    style="margin-left: 10px;">
+                                    <i class="fa fa-trash"></i> Delete All Lures
                                 </button>
                             </div>
                         </div>
@@ -1491,6 +1495,53 @@
 
                     showToast('error', 'Failed to connect');
                 }
+            }
+        });
+    }
+
+    async function deleteAllLures() {
+        if (currentStrikes.length === 0) {
+            showToast('warning', 'No lures to delete');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Delete All Lures?',
+            text: `This will delete all ${currentStrikes.length} lures. This action cannot be undone!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete all!'
+        }).then(async (result) => {
+            if (result.value) {
+                showToast('info', 'Deleting all lures...');
+                let deleted = 0;
+                let failed = 0;
+
+                // Delete in reverse order (last to first)
+                const strikesToDelete = [...currentStrikes].reverse();
+                for (const strike of strikesToDelete) {
+                    try {
+                        const response = await fetch(`/api/simulationserver/strikes/${strike.id}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            deleted++;
+                        } else {
+                            failed++;
+                        }
+                    } catch (err) {
+                        failed++;
+                    }
+                }
+
+                if (failed === 0) {
+                    showToast('success', `Deleted ${deleted} lures successfully!`);
+                } else {
+                    showToast('warning', `Deleted ${deleted} lures, ${failed} failed`);
+                }
+                loadStrikes();
             }
         });
     }
