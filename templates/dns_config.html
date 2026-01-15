@@ -194,6 +194,9 @@
         loadAllDomains();
     });
 
+    // Store domains globally for nameserver lookup
+    let allDomains = [];
+
     async function loadAllDomains() {
         try {
             const response = await fetch('/api/simulationserver/config/fetch_alldomains');
@@ -203,7 +206,8 @@
             }
             const data = await response.json();
             if (data.success) {
-                renderAllDomains(data.data || []);
+                allDomains = data.data || [];
+                renderAllDomains(allDomains);
             }
         } catch (err) {
             console.error('Error in loadAllDomains:', err);
@@ -238,19 +242,19 @@
                 const opt = document.createElement('option');
                 opt.value = domain.id;
                 opt.textContent = domain.name;
+                // Store nameservers and status as data attributes
+                opt.dataset.nameservers = JSON.stringify(domain.name_servers || []);
+                opt.dataset.status = domain.status || 'unknown';
                 dropdown.appendChild(opt);
             }
         });
     }
 
     async function setupCloudflare() {
-        const domain = document.getElementById('configDomainCF').value.trim();
-        if (!domain) {
-            showToast('warning', 'Please enter a domain');
-            return;
-        }
+        const domain = document.getElementById('configDomainCF').value;
+        if (!domain) { showToast('warning', 'Please enter a domain'); return; }
 
-        showToast('info', 'Setting up domain...');
+        showToast('info', 'Setting up Cloudflare domain...');
 
         try {
             const response = await fetch('/api/simulationserver/config/cloudflare_setup', {
@@ -259,37 +263,67 @@
                 body: JSON.stringify({ domain: domain })
             });
 
+            if (!response.ok) {
+                const text = await response.text();
+                showToast('error', `Setup failed: ${text}`);
+                return;
+            }
+
             const data = await response.json();
             if (data.success) {
-                showToast('success', 'Domain setup initiated. Check nameservers.');
-                if (data.data && data.data.name_servers) {
-                    renderNameservers(data.data.name_servers);
-                    document.getElementById('nameserverStatus').value = data.data.status || 'pending';
-                }
+                showToast('success', 'Cloudflare setup completed');
+                loadInfo(data.data);
                 loadAllDomains();
             } else {
-                showToast('error', data.message || 'Failed to setup domain');
+                showToast('error', data.message || 'Error setting up Cloudflare');
             }
         } catch (err) {
+            console.error(err);
             showToast('error', 'Failed to connect');
         }
     }
 
-    function renderNameservers(nameservers) {
-        const container = document.getElementById('nsContainer');
-        container.innerHTML = '';
+    function loadInfo(data) {
+        const statusInput = document.getElementById('nameserverStatus');
 
-        nameservers.forEach(ns => {
-            const div = document.createElement('div');
-            div.className = 'ns-box';
-            div.innerHTML = `
-                <span class="ns-value">${ns}</span>
-                <a class="ns-copy" onclick="copyToClipboard('${ns}')">Copy</a>
-            `;
-            container.appendChild(div);
-        });
+        let nameservers = [];
+        if (data.ns1 && data.ns2) {
+            nameservers = [
+                data.ns1,
+                data.ns2
+            ];
+        } else if (data.dns_records) {
+            nameservers = data.dns_records;
+        }
+
+        renderNameservers(nameservers);
+
+        if (data.status != "error" && data.status != "") {
+            statusInput.value = data.status == "active" ? "active" : "pending"
+        } else if (data.status == "error") {
+            statusInput.value = "Please contact the domain owner to onboard the domain"
+            showToast('error', "Please contact the domain owner to onboard the domain");
+        } else {
+            statusInput.value = ""
+        }
     }
 
+    function renderNameservers(nameservers) {
+        const container = document.getElementById("nsContainer");
+        container.innerHTML = "";
+
+        nameservers.forEach(ns => {
+            const box = document.createElement("div");
+            box.className = "ns-box";
+
+            box.innerHTML = `
+            <span class="ns-value">${ns}</span>
+            <a class="ns-copy" onclick="copyToClipboard('${ns}')">Click to copy</a>
+        `;
+
+            container.appendChild(box);
+        });
+    }
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
             showToast('success', 'Copied!');
@@ -300,13 +334,19 @@
         const zoneId = document.getElementById('domainSelectDropdown').value;
         if (!zoneId) {
             document.getElementById('dnsRecordsSection').style.display = 'none';
+            // Clear nameservers when no domain selected
+            document.getElementById('nsContainer').innerHTML = '';
+            document.getElementById('nameserverStatus').value = '';
             return;
         }
+
+        // Update nameservers display for selected domain
+        updateNameserverDisplay(zoneId);
 
         showToast('info', 'Loading DNS records...');
 
         try {
-            const response = await fetch('/api/simulationserver/config/dns_records?zone_id=' + zoneId);
+            const response = await fetch('/api/simulationserver/config/fetch_dns_records?zone_id=' + zoneId);
             const data = await response.json();
             if (data.success) {
                 renderDNSRecords(data.data || []);
@@ -316,6 +356,31 @@
             }
         } catch (err) {
             showToast('error', 'Failed to connect');
+        }
+    }
+
+    function updateNameserverDisplay(zoneId) {
+        // Get the selected option from dropdown
+        const dropdown = document.getElementById('domainSelectDropdown');
+        const selectedOption = dropdown.options[dropdown.selectedIndex];
+
+
+        if (selectedOption && selectedOption.dataset.nameservers) {
+            // Parse nameservers from data attribute
+            const nameservers = JSON.parse(selectedOption.dataset.nameservers);
+            const status = selectedOption.dataset.status || 'unknown';
+
+            // Render nameservers
+            if (nameservers && nameservers.length > 0) {
+                renderNameservers(nameservers);
+            } else {
+                document.getElementById('nsContainer').innerHTML = '<span class="text-muted">No nameservers found</span>';
+            }
+            // Update status
+            document.getElementById('nameserverStatus').value = status;
+        } else {
+            document.getElementById('nsContainer').innerHTML = '<span class="text-muted">No data available</span>';
+            document.getElementById('nameserverStatus').value = '';
         }
     }
 
@@ -365,7 +430,7 @@
         showToast('info', 'Creating DNS record...');
 
         try {
-            const response = await fetch('/api/simulationserver/config/dns_records', {
+            const response = await fetch('/api/simulationserver/config/create_dns_record', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -398,7 +463,7 @@
         showToast('info', 'Deleting DNS record...');
 
         try {
-            const response = await fetch('/api/simulationserver/config/dns_records/' + recordId + '?zone_id=' + zoneId, {
+            const response = await fetch('/api/simulationserver/config/delete_dns_record?zone_id=' + zoneId + '&record_id=' + recordId, {
                 method: 'DELETE'
             });
 
