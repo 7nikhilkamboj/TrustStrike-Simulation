@@ -341,7 +341,7 @@
         }
 
         // Update nameservers display for selected domain
-        updateNameserverDisplay(zoneId);
+        // updateNameserverDisplay(zoneId); // Removed to separate Onboard form from Selection
 
         showToast('info', 'Loading DNS records...');
 
@@ -459,27 +459,37 @@
     }
 
     async function deleteDNSRecord(recordId) {
-        if (!confirm('Are you sure you want to delete this DNS record?')) return;
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const zoneId = document.getElementById('domainSelectDropdown').value;
 
-        const zoneId = document.getElementById('domainSelectDropdown').value;
+                showToast('info', 'Deleting DNS record...');
 
-        showToast('info', 'Deleting DNS record...');
+                try {
+                    const response = await fetch('/api/simulationserver/config/delete_dns_record?zone_id=' + zoneId + '&record_id=' + recordId, {
+                        method: 'DELETE'
+                    });
 
-        try {
-            const response = await fetch('/api/simulationserver/config/delete_dns_record?zone_id=' + zoneId + '&record_id=' + recordId, {
-                method: 'DELETE'
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                showToast('success', 'DNS record deleted!');
-                loadDNSRecords();
-            } else {
-                showToast('error', data.message || 'Failed to delete DNS record');
+                    const data = await response.json();
+                    if (data.success) {
+                        showToast('success', 'DNS record deleted!');
+                        loadDNSRecords();
+                    } else {
+                        showToast('error', data.message || 'Failed to delete DNS record');
+                    }
+                } catch (err) {
+                    showToast('error', 'Failed to connect');
+                }
             }
-        } catch (err) {
-            showToast('error', 'Failed to connect');
-        }
+        });
     }
 </script>
 {{end}}
