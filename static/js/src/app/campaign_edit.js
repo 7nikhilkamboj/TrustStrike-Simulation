@@ -1974,80 +1974,90 @@ function createDNSRecordsWithIP(phishletName, hostname, ec2IP, Toast) {
             }
 
 
-            // 2. Get zone_id from domains
-            $.ajax({
-                url: "/api/simulationserver/config/fetch_alldomains",
-                method: "GET",
-                success: function (domainData) {
+            // 2. Get zone_id from domains (using cached allDomains)
+            var zones = allDomains || [];
 
-                    // API returns {success: true, data: zones} where zones is array of {name: "domain.com", id: "...", ...}
-                    var zones = domainData.data || domainData.domains || domainData || [];
-
-
-                    // Find the zone that matches the hostname
-                    var matchingZone = zones.find(function (z) {
-                        return hostname.endsWith(z.name);
-                    });
-
-                    if (!matchingZone) {
-                        console.error("Could not find matching Cloudflare zone for", hostname);
+            // If allDomains is empty, fallback to fetch (safety mechanism)
+            if (zones.length === 0) {
+                $.ajax({
+                    url: "/api/simulationserver/config/fetch_alldomains",
+                    method: "GET",
+                    success: function (domainData) {
+                        zones = domainData.data || domainData.domains || domainData || [];
+                        allDomains = zones; // Update cache
+                        var matchingZone = zones.find(function (z) {
+                            return hostname.endsWith(z.name);
+                        });
+                        proceedWithValidation(matchingZone);
+                    },
+                    error: function () {
                         Toast.fire({
-                            icon: 'warning',
-                            title: 'Could not find Cloudflare zone for ' + hostname
+                            icon: 'error',
+                            title: 'Failed to fetch Cloudflare domains'
                         });
-                        return;
                     }
+                });
+                return;
+            }
 
-                    var zoneId = matchingZone.id;
-
-
-                    // 3. Create A record for each host
-                    var createdCount = 0;
-                    var errorCount = 0;
-
-                    hosts.forEach(function (host) {
-                        $.ajax({
-                            url: "/api/simulationserver/config/create_dns_record",
-                            method: "POST",
-                            contentType: "application/json",
-                            data: JSON.stringify({
-                                zone_id: zoneId,
-                                name: host,
-                                content: ec2IP,
-                                type: "A",
-                                proxied: false
-                            }),
-                            success: function () {
-                                createdCount++;
-
-                                if (createdCount + errorCount === hosts.length) {
-                                    showDNSCompletionMessage(createdCount, errorCount);
-                                }
-                            },
-                            error: function (xhr) {
-                                // Check if record already exists - treat as success/skip
-                                var response = xhr.responseJSON || {};
-                                if (response.message && response.message.indexOf("already exists") > -1) {
-                                    createdCount++; // Count as success (record exists)
-
-                                } else {
-                                    errorCount++;
-                                    console.error("Failed to create DNS record for:", host, xhr.responseText);
-                                }
-                                if (createdCount + errorCount === hosts.length) {
-                                    showDNSCompletionMessage(createdCount, errorCount);
-                                }
-                            }
-                        });
-                    });
-                },
-                error: function () {
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Failed to fetch Cloudflare domains'
-                    });
-                }
+            var matchingZone = zones.find(function (z) {
+                return hostname.endsWith(z.name);
             });
+            proceedWithValidation(matchingZone);
+
+            function proceedWithValidation(matchingZone) {
+                if (!matchingZone) {
+                    console.error("Could not find matching Cloudflare zone for", hostname);
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Could not find Cloudflare zone for ' + hostname
+                    });
+                    return;
+                }
+
+                var zoneId = matchingZone.id;
+
+
+                // 3. Create A record for each host
+                var createdCount = 0;
+                var errorCount = 0;
+
+                hosts.forEach(function (host) {
+                    $.ajax({
+                        url: "/api/simulationserver/config/create_dns_record",
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            zone_id: zoneId,
+                            name: host,
+                            content: ec2IP,
+                            type: "A",
+                            proxied: false
+                        }),
+                        success: function () {
+                            createdCount++;
+
+                            if (createdCount + errorCount === hosts.length) {
+                                showDNSCompletionMessage(createdCount, errorCount);
+                            }
+                        },
+                        error: function (xhr) {
+                            // Check if record already exists - treat as success/skip
+                            var response = xhr.responseJSON || {};
+                            if (response.message && response.message.indexOf("already exists") > -1) {
+                                createdCount++; // Count as success (record exists)
+
+                            } else {
+                                errorCount++;
+                                console.error("Failed to create DNS record for:", host, xhr.responseText);
+                            }
+                            if (createdCount + errorCount === hosts.length) {
+                                showDNSCompletionMessage(createdCount, errorCount);
+                            }
+                        }
+                    });
+                });
+            }
         },
         error: function () {
             Toast.fire({
@@ -2352,69 +2362,82 @@ function createRedirectorDNSRecord(fullDomain, baseDomain) {
                 return;
             }
 
-            // Get zone_id for the base domain
-            $.ajax({
-                url: "/api/simulationserver/config/fetch_alldomains",
-                method: "GET",
-                success: function (domainData) {
-                    var zones = domainData.data || domainData.domains || domainData || [];
+            // Get zone_id for the base domain (using cached allDomains)
+            var zones = allDomains || [];
 
-                    // Find matching zone for the base domain
-                    var matchingZone = zones.find(function (z) {
-                        return baseDomain === z.name || baseDomain.endsWith("." + z.name);
-                    });
-
-                    if (!matchingZone) {
-                        Toast.fire({
-                            icon: 'warning',
-                            title: 'Could not find Cloudflare zone for ' + baseDomain
+            if (zones.length === 0) {
+                // Fallback fetch if cache empty
+                $.ajax({
+                    url: "/api/simulationserver/config/fetch_alldomains",
+                    method: "GET",
+                    success: function (domainData) {
+                        zones = domainData.data || domainData.domains || domainData || [];
+                        allDomains = zones;
+                        var matchingZone = zones.find(function (z) {
+                            return baseDomain === z.name || baseDomain.endsWith("." + z.name);
                         });
-                        return;
+                        proceedWithCreateLure(matchingZone);
+                    },
+                    error: function () {
+                        Toast.fire({
+                            icon: 'error',
+                            title: 'Failed to fetch Cloudflare domains'
+                        });
                     }
+                });
+                return;
+            }
 
-                    var zoneId = matchingZone.id;
-
-                    // Create DNS A record for the redirector domain
-                    $.ajax({
-                        url: "/api/simulationserver/config/create_dns_record",
-                        method: "POST",
-                        contentType: "application/json",
-                        data: JSON.stringify({
-                            zone_id: zoneId,
-                            name: fullDomain,
-                            content: ec2IP,
-                            type: "A",
-                            proxied: false
-                        }),
-                        success: function () {
-                            Toast.fire({
-                                icon: 'success',
-                                title: 'DNS record created: ' + fullDomain
-                            });
-                        },
-                        error: function (xhr) {
-                            var response = xhr.responseJSON || {};
-                            if (response.message && response.message.indexOf("already exists") > -1) {
-                                Toast.fire({
-                                    icon: 'info',
-                                    title: 'DNS record already exists for ' + fullDomain
-                                });
-                            } else {
-                                Toast.fire({
-                                    icon: 'error',
-                                    title: 'Failed to create DNS record: ' + (response.message || xhr.statusText)
-                                });
-                            }
-                        }
-                    });
-                },
-                error: function () {
-                    Toast.fire({
-                        icon: 'error',
-                        title: 'Failed to fetch Cloudflare domains'
-                    });
-                }
+            var matchingZone = zones.find(function (z) {
+                return baseDomain === z.name || baseDomain.endsWith("." + z.name);
             });
+            proceedWithCreateLure(matchingZone);
+
+            function proceedWithCreateLure(matchingZone) {
+                if (!matchingZone) {
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'Could not find Cloudflare zone for ' + baseDomain
+                    });
+                    return;
+                }
+
+                var zoneId = matchingZone.id;
+
+                // Create DNS A record for the redirector domain
+                $.ajax({
+                    url: "/api/simulationserver/config/create_dns_record",
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        zone_id: zoneId,
+                        name: fullDomain,
+                        content: ec2IP,
+                        type: "A",
+                        proxied: false
+                    }),
+                    success: function () {
+                        Toast.fire({
+                            icon: 'success',
+                            title: 'DNS record created: ' + fullDomain
+                        });
+                    },
+                    error: function (xhr) {
+                        var response = xhr.responseJSON || {};
+                        if (response.message && response.message.indexOf("already exists") > -1) {
+                            Toast.fire({
+                                icon: 'info',
+                                title: 'DNS record already exists for ' + fullDomain
+                            });
+                        } else {
+                            Toast.fire({
+                                icon: 'error',
+                                title: 'Failed to create DNS record: ' + (response.message || xhr.statusText)
+                            });
+                        }
+                    }
+                });
+            }
         },
         error: function () {
             Toast.fire({
