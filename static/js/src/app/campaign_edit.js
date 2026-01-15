@@ -1897,7 +1897,7 @@ $("#addSubdomainDNSBtn").on("click", function () {
                 name: hostname,
                 content: ip,
                 type: "A",
-                proxied: false // Default to false? User said "IP", usually means direct A record.
+                proxied: true // Default to false? User said "IP", usually means direct A record.
             }),
             success: function () {
                 Swal.fire("Success", "DNS Record created.", "success");
@@ -2032,7 +2032,7 @@ function createDNSRecordsWithIP(phishletName, hostname, ec2IP, Toast) {
                             name: host,
                             content: ec2IP,
                             type: "A",
-                            proxied: false
+                            proxied: true
                         }),
                         success: function () {
                             createdCount++;
@@ -2414,7 +2414,7 @@ function createRedirectorDNSRecord(fullDomain, baseDomain) {
                         name: fullDomain,
                         content: ec2IP,
                         type: "A",
-                        proxied: false
+                        proxied: true
                     }),
                     success: function () {
                         Toast.fire({
