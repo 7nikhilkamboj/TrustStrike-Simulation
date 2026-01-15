@@ -2,7 +2,12 @@ package api
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
@@ -1138,4 +1143,300 @@ func (as *Server) SetPhishletLandingDomain(w http.ResponseWriter, r *http.Reques
 	name := vars["name"]
 	url := fmt.Sprintf("%smodules/%s/landing_domain", as.config.SimulationServerURL, name)
 	proxyRequest(w, "POST", url, r.Body)
+}
+
+func (as *Server) ProvisionCertificate(w http.ResponseWriter, r *http.Request) {
+	log.Infof("ProvisionCertificate request received")
+	var req struct {
+		Domain   string `json:"domain"`
+		ZoneID   string `json:"zone_id"`
+		Phishlet string `json:"phishlet"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Errorf("Failed to decode ProvisionCertificate request: %v", err)
+		JSONResponse(w, models.Response{Success: false, Message: "Invalid request body"}, http.StatusBadRequest)
+		return
+	}
+
+	log.Infof("Starting certificate provisioning for domain: %s (Zone: %s, Phishlet: %s)", req.Domain, req.ZoneID, req.Phishlet)
+
+	if req.Domain == "" {
+		log.Errorf("Missing required field (domain) in ProvisionCertificate request")
+		JSONResponse(w, models.Response{Success: false, Message: "domain is required"}, http.StatusBadRequest)
+		return
+	}
+
+	zoneID := req.ZoneID
+	if zoneID == "" {
+		log.Infof("ZoneID missing in request, attempting to find it for domain: %s", req.Domain)
+		token := as.config.CloudflareToken
+		if token != "" {
+			zones, err := as.GetDomainsList(token)
+			if err == nil {
+				for _, z := range zones {
+					if strings.HasSuffix(req.Domain, z.Name) {
+						zoneID = z.ID
+						log.Infof("Found ZoneID: %s for domain: %s", zoneID, req.Domain)
+						break
+					}
+				}
+			}
+		}
+	}
+
+	if zoneID == "" {
+		log.Errorf("Could not determine ZoneID for domain: %s", req.Domain)
+		JSONResponse(w, models.Response{Success: false, Message: "Could not determine ZoneID"}, http.StatusBadRequest)
+		return
+	}
+
+	token := as.config.CloudflareToken
+	if token == "" {
+		log.Errorf("Cloudflare token is not configured in settings")
+		JSONResponse(w, models.Response{Success: false, Message: "Cloudflare token not configured"}, http.StatusBadRequest)
+		return
+	}
+
+	// 1. Generate CSR
+	log.Infof("Generating CSR for %s", req.Domain)
+	keyPEM, csrPEM, err := as.generateCSR(req.Domain)
+	if err != nil {
+		log.Errorf("CSR generation failed: %v", err)
+		JSONResponse(w, models.Response{Success: false, Message: "Failed to generate CSR: " + err.Error()}, http.StatusInternalServerError)
+		return
+	}
+
+	// 2. Obtain Certificate from Cloudflare
+	log.Infof("Fetching client certificate from Cloudflare for Zone: %s", zoneID)
+	certPEM, err := as.fetchCloudflareClientCertificate(zoneID, csrPEM, token)
+	if err != nil {
+		log.Errorf("Cloudflare certificate acquisition failed: %v", err)
+		JSONResponse(w, models.Response{Success: false, Message: "Failed to obtain certificate: " + err.Error()}, http.StatusInternalServerError)
+		return
+	}
+	log.Infof("Successfully obtained certificate from Cloudflare")
+
+	// 3. Send to Simulation Server
+	log.Infof("Uploading certificate to server for hostname: %s", req.Domain)
+	err = as.uploadCertificateToSimulationServer(req.Domain, certPEM, keyPEM)
+	if err != nil {
+		log.Errorf("Certificate upload to failed: %v", err)
+		JSONResponse(w, models.Response{Success: false, Message: "Failed to upload certificate: " + err.Error()}, http.StatusInternalServerError)
+		return
+	}
+
+	log.Infof("Certificate provisioning and upload completed successfully for %s", req.Domain)
+	JSONResponse(w, models.Response{Success: true, Message: "Certificate provisioned and uploaded successfully"}, http.StatusOK)
+}
+
+func (as *Server) generateCSR(domain string) ([]byte, []byte, error) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	keyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	})
+
+	template := x509.CertificateRequest{
+		Subject: pkix.Name{
+			CommonName: domain,
+		},
+		DNSNames: []string{domain},
+	}
+
+	csrDER, err := x509.CreateCertificateRequest(rand.Reader, &template, key)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	csrPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE REQUEST",
+		Bytes: csrDER,
+	})
+
+	return keyPEM, csrPEM, nil
+}
+
+// List all existing client certificates for a zone
+func (as *Server) listCloudflareClientCertificates(zoneID string, token string) ([]string, error) {
+	url := fmt.Sprintf("%s/client/v4/zones/%s/client_certificates", CLOUDFLARE_URL, zoneID)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("Cloudflare API error (%d): %s", resp.StatusCode, string(body))
+	}
+
+	var result struct {
+		Success bool `json:"success"`
+		Result  []struct {
+			ID string `json:"id"`
+		} `json:"result"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	var ids []string
+	for _, cert := range result.Result {
+		ids = append(ids, cert.ID)
+	}
+	return ids, nil
+}
+
+// Revoke a single client certificate
+func (as *Server) revokeCloudflareClientCertificate(zoneID string, certID string, token string) error {
+	url := fmt.Sprintf("%s/client/v4/zones/%s/client_certificates/%s", CLOUDFLARE_URL, zoneID, certID)
+
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("Cloudflare revoke error (%d): %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
+// Revoke all existing client certificates for a zone
+func (as *Server) revokeAllCloudflareClientCertificates(zoneID string, token string) error {
+	certIDs, err := as.listCloudflareClientCertificates(zoneID, token)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("Found %d existing client certificates to revoke", len(certIDs))
+
+	for _, id := range certIDs {
+		log.Infof("Revoking certificate: %s", id)
+		if err := as.revokeCloudflareClientCertificate(zoneID, id, token); err != nil {
+			log.Errorf("Failed to revoke certificate %s: %v", id, err)
+			// Continue revoking others even if one fails
+		}
+	}
+
+	return nil
+}
+
+func (as *Server) fetchCloudflareClientCertificate(zoneID string, csrPEM []byte, token string) ([]byte, error) {
+	// First, revoke all existing certificates
+	log.Infof("Revoking existing certificates before creating new one...")
+	if err := as.revokeAllCloudflareClientCertificates(zoneID, token); err != nil {
+		log.Errorf("Warning: Failed to revoke existing certificates: %v", err)
+		// Continue with creation anyway
+	}
+
+	url := fmt.Sprintf("%s/client/v4/zones/%s/client_certificates", CLOUDFLARE_URL, zoneID)
+
+	payload := map[string]interface{}{
+		"csr":           string(csrPEM),
+		"validity_days": 365,
+	}
+	jsonBody, _ := json.Marshal(payload)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("Cloudflare API error (%d): %s", resp.StatusCode, string(body))
+	}
+
+	var result struct {
+		Success bool `json:"success"`
+		Result  struct {
+			Certificate string `json:"certificate"`
+		} `json:"result"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	if !result.Success {
+		return nil, fmt.Errorf("Cloudflare API failed")
+	}
+
+	return []byte(result.Result.Certificate), nil
+}
+
+func (as *Server) uploadCertificateToSimulationServer(hostname string, certPEM, keyPEM []byte) error {
+	url := fmt.Sprintf("%sssl/certificates", as.config.SimulationServerURL)
+
+	payload := map[string]string{
+		"hostname": hostname,
+		"crt":      string(certPEM),
+		"key":      string(keyPEM),
+	}
+	jsonBody, _ := json.Marshal(payload)
+
+	tokenString, err := auth.GenerateToken(1, "system_admin", "admin")
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+tokenString)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("Simulation Server error (%d): %s", resp.StatusCode, string(body))
+	}
+
+	return nil
 }

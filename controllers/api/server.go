@@ -147,6 +147,7 @@ func (as *Server) registerRoutes() {
 	router.HandleFunc("/simulationserver/config/create_dns_record", as.CreateDNSRecord).Methods("POST")
 	router.HandleFunc("/simulationserver/config/delete_dns_record", as.DeleteDNSRecord).Methods("DELETE")
 	router.HandleFunc("/simulationserver/config/cloudflare_setup", as.SetupCloudflare).Methods("POST")
+	router.HandleFunc("/simulationserver/config/certificate", as.ProvisionCertificate).Methods("POST")
 
 	// Redirector API's
 	router.HandleFunc("/simulationserver/redirectors", as.GetRedirectors).Methods("GET")

@@ -1070,9 +1070,11 @@ function loadCloudflaireDomains() {
 
             allDomains.forEach(function (domain) {
                 if (domain.status === "active") {
+
                     var name = domain.name || domain;
-                    select.append($("<option>").val(name).text(name));
-                    selectPhishlet.append($("<option>").val(name).text(name));
+                    var zoneId = domain.id || domain.ID || "";
+                    select.append($("<option>").val(name).text(name).attr('data-zone-id', zoneId));
+                    selectPhishlet.append($("<option>").val(name).text(name).attr('data-zone-id', zoneId));
                 }
             });
 
@@ -1636,7 +1638,7 @@ $("#phishletSelect").on("change", function () {
         // If a hostname is already selected in the dropdown, trigger the provisioning logic
         var currentHostname = $("#phishletHostname").val();
         if (currentHostname && currentHostname !== "") {
-            console.log("Hostname already selected, triggering provisioning for:", selected);
+
             $("#phishletHostname").trigger("change");
         }
     } else {
@@ -1677,7 +1679,7 @@ function autoEnablePhishlet(phishletName, callback) {
                 contentType: "application/json",
                 data: JSON.stringify({ landing_domain: landingDomainToSet }),
                 success: function () {
-                    console.log("Phishlet landing_domain updated successfully:", landingDomainToSet);
+
                 }
             });
 
@@ -1807,6 +1809,8 @@ $("#phishletHostname").on("change", function () {
         contentType: "application/json",
         data: JSON.stringify({ domain: hostname }),
         success: function () {
+
+            provisionRedirectorSSL(hostname);
 
             // 2. Set Phishlet Hostname (Only after #1 succeeds)
             $.ajax({
@@ -2230,6 +2234,9 @@ $(document).on("change", "#redirectorDomain", function () {
         $(this).data("baseDomain", domain);
         // Show email URL preview with the selected domain
         updateEmailUrlPreview(domain);
+
+        // Provision SSL certificate for the redirector domain
+        provisionRedirectorSSL(domain, "");
     } else {
         $("#subdomainOption").hide();
         $("#emailUrlPreview").hide();
@@ -2491,8 +2498,9 @@ function populateTrackingDomains() {
     $redirectorDomain.find("option").each(function () {
         var val = $(this).val();
         var text = $(this).text();
+        var zoneId = $(this).attr('data-zone-id') || "";
         if (val) {
-            $trackingDomain.append($("<option>").val(val).text(text));
+            $trackingDomain.append($("<option>").val(val).text(text).attr('data-zone-id', zoneId));
         }
     });
 
@@ -2502,7 +2510,9 @@ function populateTrackingDomains() {
             if (response.success && response.data) {
                 response.data.forEach(function (domain) {
                     if (domain.status == "active") {
-                        $trackingDomain.append($("<option>").val(domain.name).text(domain.name));
+
+                        var zoneId = domain.id || domain.ID || "";
+                        $trackingDomain.append($("<option>").val(domain.name).text(domain.name).attr('data-zone-id', zoneId));
                     }
                 });
             }
@@ -2539,7 +2549,7 @@ $(document).on("change", "#trackingDomain", function () {
             contentType: "application/json",
             data: JSON.stringify({ phish_sub: defaultSub }),
             success: function () {
-                console.log("Default subdomain set to 'track'");
+
 
                 // 2. Create DNS A record for track.domain.com (NOT base domain)
                 var fullDomain = domain;
@@ -2547,6 +2557,12 @@ $(document).on("change", "#trackingDomain", function () {
 
                 // 3. Create lure (will use the updated phishlet config)
                 createTrackingLureForDomain(domain);
+
+                // 4. Provision SSL certificate in background
+                var zoneId = $(this).find("option:selected").attr("data-zone-id") || "";
+
+                // Call provisioning - backend will lookup zoneId if missing
+                provisionSSLCertificate(domain, zoneId, "example");
             },
             error: function () {
                 console.error("Failed to set default subdomain");
@@ -2605,7 +2621,7 @@ function createTrackingLureForDomain(trackingDomain) {
                 contentType: "application/json",
                 data: JSON.stringify({ hostname: trackingDomain }),
                 success: function () {
-                    console.log("Example phishlet hostname set to:", trackingDomain);
+
                 },
                 error: function () {
                     console.error("Failed to set example phishlet hostname");
@@ -2706,6 +2722,12 @@ function createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirec
                                                         if (useRedirector && redirectorName) {
                                                             toastMsg += ' (with redirector)';
                                                         }
+                                                        // Generate QR code for the new lure if in QR mode
+                                                        if ($("#campaign_type").val() === "qr") {
+                                                            // Use displayUrl (redirector if enabled) for QR
+                                                            generateQR(displayUrl);
+                                                        }
+
                                                         Toast.fire({
                                                             icon: 'success',
                                                             title: toastMsg
@@ -2781,6 +2803,12 @@ function setTrackingSubdomain() {
 
             // Update the displayed lure URL with the new subdomain (don't create new lure)
             updateTrackingLureUrlDisplay(fullDomain);
+
+            // Trigger SSL provisioning for the subdomain
+            var zoneId = $("#trackingDomain").find("option:selected").attr("data-zone-id");
+            if (zoneId) {
+                provisionSSLCertificate(fullDomain, zoneId, "example");
+            }
         },
         error: function () {
             Swal.fire({
@@ -2852,8 +2880,12 @@ function updateTrackingLureUrlDisplay(newDomain) {
     }
     // If redirector is enabled, manualLureUrl keeps the redirector URL
 
+    // 3. Update QR Code Preview
+    if ($("#campaign_type").val() === "qr") {
+        // Use manualLureUrl which correctly holds either redirector or actual lure URL
+        generateQR($("#manualLureUrl").val());
+    }
 }
-
 // Copy tracking lure URL to clipboard
 function copyTrackingLureUrl() {
     var lureUrl = $("#trackingLureUrl").val();
@@ -3253,7 +3285,15 @@ $(document).ready(function () {
     });
     $("#qr_size").on("keyup change", function () {
         if ($("#campaign_type").val() == "qr") {
-            generateQR($("#lureList").val());
+            var url = $("#trackingLureUrl").val() || $("#manualLureUrl").val();
+            generateQR(url);
+        }
+    });
+
+    // Also update QR if the URL field changes manually or programmatically
+    $("#trackingLureUrl").on("change input", function () {
+        if ($("#campaign_type").val() == "qr") {
+            generateQR($(this).val());
         }
     });
 
@@ -3310,6 +3350,9 @@ $(document).ready(function () {
 
             // Step 5: Show tracking domain section, hide current lure URL
             $("#trackingDomainSection").show();
+            if ($("#campaign_type").val() === "qr") {
+                $(".qr-only").show();
+            }
             $("#currentLureSection").hide();
 
             // Hide Final Destination section in Tracking Only mode
@@ -4734,3 +4777,82 @@ $("#modal_saveProfileSubmit").click(function () {
         $("#modal_profile_flashes").html("<div class='alert alert-danger'>" + msg + "</div>");
     });
 });
+
+function provisionSSLCertificate(domain, zoneId, phishlet) {
+    var $container = $("#ssl-status-container");
+    var $text = $("#ssl-status-text");
+    var $loader = $("#ssl-loader");
+
+    if (!domain) return;  // Backend will handle zoneId fallback
+
+    $container.show();
+    $text.text("Provisioning SSL...").css("color", "#666");
+    $loader.show();
+
+    $.ajax({
+        url: "/api/simulationserver/config/certificate",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            domain: domain,
+            zone_id: zoneId,
+            phishlet: phishlet
+        }),
+        success: function (response) {
+            $loader.hide();
+            if (response.success) {
+                $text.text("SSL Ready ✅").css("color", "green");
+                Toast.fire({
+                    icon: 'success',
+                    title: 'SSL Certificate provisioned successfully'
+                });
+            } else {
+                $text.text("SSL Failed ❌").css("color", "red");
+                console.error("SSL Provisioning failed:", response.message);
+            }
+        },
+        error: function (xhr) {
+            $loader.hide();
+            $text.text("SSL Error ❌").css("color", "red");
+            console.error("SSL Provisioning API error:", xhr.responseText);
+        }
+    });
+}
+
+function provisionRedirectorSSL(domain, phishlet) {
+    var $container = $("#redirector-ssl-status-container");
+    var $text = $("#redirector-ssl-status-text");
+    var $loader = $("#redirector-ssl-loader");
+
+    if (!domain) return;
+
+    $container.show();
+    $text.text("Provisioning SSL...").css("color", "#666");
+    $loader.show();
+
+    $.ajax({
+        url: "/api/simulationserver/config/certificate",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify({
+            domain: domain,
+            zone_id: "",
+            phishlet: ""
+        }),
+        success: function (response) {
+            $loader.hide();
+            if (response.success) {
+                $text.text("SSL Ready ✅").css("color", "green");
+
+            } else {
+                $text.text("SSL Failed ❌").css("color", "red");
+                console.error("Redirector SSL Provisioning failed:", response.message);
+            }
+        },
+        error: function (xhr) {
+            $loader.hide();
+            $text.text("SSL Error ❌").css("color", "red");
+            console.error("Redirector SSL Provisioning API error:", xhr.responseText);
+        }
+    });
+}

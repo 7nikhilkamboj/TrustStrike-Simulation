@@ -86,6 +86,27 @@
         display: inline-block !important;
         margin-bottom: 2px;
     }
+
+    .small-loader {
+        border: 2px solid #f3f3f3;
+        border-top: 2px solid #3498db;
+        border-radius: 50%;
+        width: 14px;
+        height: 14px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
     <div class="row">
@@ -758,6 +779,15 @@
                                 <select class="form-control" id="redirectorDomain">
                                     <option value="">-- Select Domain --</option>
                                 </select>
+                                <div id="redirector-ssl-status-container" style="margin-top: 10px; display: none;">
+                                    <span id="redirector-ssl-status-label" style="font-size: 12px; font-weight: bold;">
+                                        <i class="fa fa-shield"></i> SSL Status:
+                                    </span>
+                                    <span id="redirector-ssl-status-text"
+                                        style="font-size: 12px; margin-left: 5px; color: #666;">Ready</span>
+                                    <div id="redirector-ssl-loader" class="small-loader"
+                                        style="display: none; margin-left: 10px;"></div>
+                                </div>
                             </div>
 
                             <!-- Subdomain Option (shown after domain is selected) -->
@@ -1206,7 +1236,15 @@
                                 <select class="form-control" id="trackingDomain">
                                     <option value="">-- Select Domain --</option>
                                 </select>
-
+                                <div id="ssl-status-container" style="margin-top: 10px; display: none;">
+                                    <span id="ssl-status-label" style="font-size: 12px; font-weight: bold;">
+                                        <i class="fa fa-shield"></i> SSL Status:
+                                    </span>
+                                    <span id="ssl-status-text"
+                                        style="font-size: 12px; margin-left: 5px; color: #666;">Ready</span>
+                                    <div id="ssl-loader" class="small-loader" style="display: none; margin-left: 10px;">
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Subdomain Option for Tracking -->
@@ -1275,15 +1313,27 @@
                             <input type="text" class="form-control" id="tracking_redirect_url"
                                 placeholder="https://target.com/login" style="display: none;">
                         </div>
-                        <div class="form-group qr-only" style="display:none;">
-                            <label class="control-label" for="qr_size">QR Code Size (px):</label>
-                            <input type="number" class="form-control" id="qr_size" value="250" min="100" max="500" />
-                        </div>
-                        <div class="form-group qr-only" style="display:none;">
-                            <label class="control-label">QR Code Preview:</label>
-                            <div id="qrcode"
-                                style="display: flex; justify-content: center; padding: 20px; background: #f5f5f5; border-radius: 4px;">
+                        <!-- QR Code Specific Configuration -->
+                        <div class="form-group qr-only" id="qrConfigurationSection"
+                            style="display:none; margin-top: 20px;">
+                            <hr style="border-top: 1px dashed #ddd; margin: 20px 0;">
+
+                            <label class="control-label" for="qr_size" style="font-weight: bold; color: #555;">
+                                <i class="fa fa-arrows-alt"></i> QR Code Size (px):
+                            </label>
+                            <input type="number" class="form-control" id="qr_size" value="250" min="100" max="500"
+                                style="width: 120px; margin-bottom: 20px;" />
+
+                            <label class="control-label" style="font-weight: bold; color: #555;">
+                                <i class="fa fa-qrcode"></i> QR Code Preview:
+                            </label>
+                            <div id="qrcode-container"
+                                style="padding: 30px; background: #f9f9f9; border: 1px solid #eee; border-radius: 8px; text-align: center; display: flex; justify-content: center; align-items: center; min-height: 200px;">
+                                <div id="qrcode"></div>
                             </div>
+                            <p class="help-block" style="font-size: 11px; text-align: center; margin-top: 10px;">
+                                The QR code above will automatically update as you change the domain or subdomain.
+                            </p>
                         </div>
                     </div>
                 </div>

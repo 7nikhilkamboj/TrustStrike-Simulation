@@ -495,11 +495,12 @@ func (as *AdminServer) handleInvalidLogin(w http.ResponseWriter, r *http.Request
 	session := ctx.Get(r, "session").(*sessions.Session)
 	Flash(w, r, "danger", message)
 	params := struct {
-		User    models.User
-		Title   string
-		Flashes []interface{}
-		Token   string
-	}{Title: "Login", Token: csrf.Token(r)}
+		User            models.User
+		Title           string
+		Flashes         []interface{}
+		Token           string
+		KeycloakEnabled bool
+	}{Title: "Login", Token: csrf.Token(r), KeycloakEnabled: as.keycloak.Enabled}
 	params.Flashes = session.Flashes()
 	session.Save(r, w)
 	templates := template.New("template")

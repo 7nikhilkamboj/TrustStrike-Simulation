@@ -10,55 +10,125 @@
     <meta name="author" content="Trust Strike">
     <link rel="shortcut icon" href="/images/trust_strike_top.png">
 
-    <title>Trust Strike- {{ .Title }}</title>
+    <title>Trust Strike - {{ .Title }}</title>
 
     <link href="/css/dist/trust_strike.css" rel="stylesheet">
-
-    <link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600,700' rel='stylesheet'
-        type='text/css'>
+    <link href="/css/login_redesign.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <img class="navbar-logo" src="/images/trust_strike_top.png" style="width:50px;">
-                <a class="navbar-brand" href="/">&nbsp;Trust Strike</a>
+    <div class="page-container">
+        <div class="login-card">
+            <div class="logo-container">
+                <img src="/images/trust_strike_top.png" class="logo" alt="Trust Strike Logo">
             </div>
-            <div class="navbar-collapse collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li>
-                        <a id="login-button" href="/login">
-                            <button type="button" class="btn btn-primary">Login</button>
-                        </a>
-                    </li>
-                </ul>
+
+            {{template "flashes" .Flashes}}
+
+            <form id="loginForm" action="" method="POST">
+                <!-- Step 1: Username -->
+                <div id="step-username" class="step-container">
+                    <h1 class="title">Sign in</h1>
+                    <p class="subtitle">Enter your username to access your dashboard.</p>
+
+                    <div class="form-group">
+                        <label class="label">Username</label>
+                        <input type="text" id="usernameInput" name="username" class="input-field" placeholder=""
+                            required autofocus autocomplete="username">
+                    </div>
+
+                    <button type="button" id="btn-next" class="btn-primary">Continue</button>
+                </div>
+
+                <!-- Step 2: Password -->
+                <div id="step-password" class="step-container hidden">
+                    <h1 class="title">Welcome back</h1>
+                    <p class="subtitle">Please enter your password to continue.</p>
+
+                    <div class="user-badge">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        <span id="display-username"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="label">Password</label>
+                        <input type="password" id="passwordInput" name="password" class="input-field" placeholder=""
+                            required autocomplete="current-password">
+                    </div>
+
+                    <input type="hidden" name="csrf_token" value="{{.Token}}" />
+
+                    <button type="submit" class="btn-primary">Sign in</button>
+
+                    <button type="button" id="btn-back" class="back-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Use another account
+                    </button>
+                </div>
+            </form>
+
+            {{ if .KeycloakEnabled }}
+            <div style="margin-top: 24px; border-top: 1px solid var(--border-default); padding-top: 24px;">
+                <a href="/login/keycloak" class="btn-primary"
+                    style="background-color: #ffffff; color: #111827; border: 1px solid var(--border-default); text-decoration: none;">
+                    Login with Keycloak
+                </a>
             </div>
+            {{ end }}
         </div>
     </div>
-    <div class="container">
-        <form class="form-signin" action="" method="POST">
-            <img id="logo" src="/images/trust_strike_main.png" style="width: 200px; height: auto;">
-            {{template "flashes" .Flashes}}
-            <input type="text" name="username" class="form-control top-input" placeholder="Username" required autofocus>
-            <input type="password" name="password" class="form-control bottom-input" placeholder="Password"
-                autocomplete="off" required>
-            <input type="hidden" name="csrf_token" value="{{.Token}}" />
-            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
-            {{ if .KeycloakEnabled }}
-            <br>
-            <a href="/login/keycloak" class="btn btn-lg btn-info btn-block"
-                style="background-color: #428bca; color: white;">Login with Keycloak</a>
-            {{ end }}
-        </form>
-    </div>
-    <!-- Placed at the end of the document so the pages load faster -->
+
+    <script>
+        const stepUsername = document.getElementById('step-username');
+        const stepPassword = document.getElementById('step-password');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const btnNext = document.getElementById('btn-next');
+        const btnBack = document.getElementById('btn-back');
+        const displayUsername = document.getElementById('display-username');
+
+        // Transition logic
+        function showStep(step) {
+            if (step === 2) {
+                displayUsername.textContent = usernameInput.value;
+                stepUsername.classList.add('hidden');
+                stepPassword.classList.remove('hidden');
+                passwordInput.focus();
+            } else {
+                stepPassword.classList.add('hidden');
+                stepUsername.classList.remove('hidden');
+                usernameInput.focus();
+            }
+        }
+
+        btnNext.addEventListener('click', () => {
+            if (usernameInput.checkValidity()) {
+                showStep(2);
+            } else {
+                usernameInput.reportValidity();
+            }
+        });
+
+        btnBack.addEventListener('click', () => {
+            showStep(1);
+        });
+
+        // Handle Enter key on username field
+        usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnNext.click();
+            }
+        });
+    </script>
     <script src="/js/dist/vendor.min.js"></script>
 </body>
 
