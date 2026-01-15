@@ -22,20 +22,28 @@
             <li class="{{ if eq .Title " Email Campaigns" }}active{{ end }}">
                 <a href="/campaigns" class="nav-item-link">Campaigns</a>
             </li>
-            <li class="{{ if eq .Title " Email Templates" }}active{{ end }}">
-                <a href="/templates" class="nav-item-link">Templates</a>
-            </li>
             <li class="{{ if eq .Title " Users & Groups" }}active{{ end }}">
                 <a href="/groups" class="nav-item-link">Users & Groups</a>
+            </li>
+        </div>
+
+        <!-- TEMPLATES SECTION -->
+        <div class="nav-section-label">TEMPLATES</div>
+        <div class="nav-group-container">
+            <li class="{{ if eq .Title " Email Templates" }}active{{ end }}">
+                <a href="/templates" class="nav-item-link">Email/QR/SMS Templates</a>
+            </li>
+            <li class="{{ if eq .Title " Redirector Templates" }}active{{ end }}">
+                <a href="/redirectors" class="nav-item-link">Redirector Page Templates</a>
+            </li>
+            <li class="{{ if eq .Title " Landing Pages" }}active{{ end }}">
+                <a href="/login_pages" class="nav-item-link">Login Page Templates</a>
             </li>
         </div>
 
         <!-- CONFIGURATION SECTION -->
         <div class="nav-section-label">CONFIGURATION</div>
         <div class="nav-group-container">
-            <li class="{{ if eq .Title " Redirectors" }}active{{ end }}">
-                <a href="/redirectors" class="nav-item-link">Redirectors</a>
-            </li>
             <li class="{{ if or (eq .Title " Email Sending Profiles" ) (eq .Title "SMS Sending Profiles" ) }}active{{
                 end }}">
                 <a href="/sending_profiles" class="nav-item-link">Sending Profiles</a>

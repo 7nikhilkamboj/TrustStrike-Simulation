@@ -157,6 +157,7 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/templates/qr", mid.Use(as.QRTemplates, mid.RequireLogin))
 	router.HandleFunc("/templates/sms", mid.Use(as.SMSTemplates, mid.RequireLogin))
 	router.HandleFunc("/groups", mid.Use(as.Groups, mid.RequireLogin))
+	router.HandleFunc("/login_pages", mid.Use(as.LoginPages, mid.RequireLogin))
 	router.HandleFunc("/landing_pages", mid.Use(as.LandingPages, mid.RequireLogin))
 	router.HandleFunc("/landing_page", mid.Use(as.LandingPageEdit, mid.RequireLogin))
 	router.HandleFunc("/landing_page/{id:[0-9]+}", mid.Use(as.LandingPageEdit, mid.RequireLogin))
@@ -350,6 +351,13 @@ func (as *AdminServer) LandingPages(w http.ResponseWriter, r *http.Request) {
 	params := newTemplateParams(r)
 	params.Title = "Landing Pages"
 	getTemplate(w, "landing_pages").ExecuteTemplate(w, "base", params)
+}
+
+// LoginPages handles the default path and template execution
+func (as *AdminServer) LoginPages(w http.ResponseWriter, r *http.Request) {
+	params := newTemplateParams(r)
+	params.Title = "Login Pages"
+	getTemplate(w, "login_pages").ExecuteTemplate(w, "base", params)
 }
 
 // Redirectors handles the redirectors management page

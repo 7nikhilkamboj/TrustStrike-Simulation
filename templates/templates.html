@@ -1,15 +1,19 @@
 {{define "body"}}
+{{template "nav" .}}
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
     <div class="row">
-        <h1 class="page-header">
+        <h1 class="page-header" style="font-style: italic; font-weight: bold;">
             {{.Title}}
         </h1>
     </div>
     <div id="flashes" class="row"></div>
-    <div class="row">
+
+    <!-- Actions Row -->
+    <div class="row" style="margin-bottom: 20px;">
         <div class="col-md-6">
-            <button type="button" class="btn btn-primary" onclick="edit(-1)"><i class="fa fa-plus"></i> New
-                Template</button>
+            <button type="button" class="btn btn-primary" onclick="edit(-1)">
+                <i class="fa fa-plus"></i> New Template
+            </button>
             <div class="btn-group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
@@ -23,7 +27,6 @@
         </div>
         <div class="col-md-6 text-right">
             <div class="btn-group" data-toggle="buttons" id="templateTypeFilter">
-
                 <label class="btn btn-primary active" onclick="switchTemplateType('')">
                     <input type="radio" name="options" id="type_all" autocomplete="off"> All
                 </label>
@@ -39,40 +42,444 @@
             </div>
         </div>
     </div>
-    &nbsp;
-    <div id="loading">
+
+    <!-- Search Box -->
+    <div class="row" style="margin-bottom: 30px;">
+        <div class="col-md-12">
+            <div class="search-container">
+                <input type="text" class="form-control search-input" id="templateSearch"
+                    placeholder="Search templates...">
+                <button class="btn btn-search">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center" style="padding: 40px;">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
     </div>
+
+    <!-- Empty Message -->
     <div id="emptyMessage" class="row" style="display:none;">
         <div class="alert alert-info" id="emptyMessageText">
             No templates yet. Let's create one!
         </div>
     </div>
-    <div class="row">
-        <table id="templateTable" class="table" style="display:none;">
-            <thead>
-                <tr>
-                    <th class="no-sort" style="width: 20px;">
-                        <input type="checkbox" id="selectAllTemplates" onclick="toggleSelectAll()">
-                    </th>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Created By</th>
-                    <th>Modified Date</th>
-                    <th class="col-md-2 no-sort"></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+
+    <!-- Template Cards Container -->
+    <div id="templateCardsContainer" class="row" style="display:none;">
+        <!-- Cards populated by JavaScript -->
     </div>
 </div>
-<!-- Modal -->
+
+<style>
+    .search-container {
+        display: flex;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-input {
+        border: none;
+        border-radius: 0;
+        height: 50px;
+        font-size: 16px;
+        padding-left: 20px;
+        box-shadow: none;
+    }
+
+    .search-input:focus {
+        box-shadow: none;
+        border-color: transparent;
+    }
+
+    .btn-search {
+        background: #aaa;
+        color: #fff;
+        border: none;
+        border-radius: 0;
+        padding: 0 25px;
+        height: 50px;
+    }
+
+    .btn-search:hover {
+        background: #888;
+        color: #fff;
+    }
+
+    .template-card {
+        background: #fff;
+        border: 1px solid #e8e8e8;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .template-card-header {
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #f0f0f0;
+        background: #fafafa;
+    }
+
+    .template-card-title {
+        font-weight: bold;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .btn-full-preview {
+        background: #11998e;
+        color: #fff;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-full-preview:hover {
+        background: #0d7d73;
+        color: #fff;
+    }
+
+    .template-card-preview {
+        padding: 20px;
+        min-height: 200px;
+        max-height: 300px;
+        overflow: hidden;
+        background: #fff;
+        border-bottom: 1px solid #f0f0f0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 14px;
+        color: #333;
+        line-height: 1.6;
+    }
+
+    .template-card-preview iframe {
+        width: 100%;
+        height: 250px;
+        border: none;
+        pointer-events: none;
+    }
+
+    .template-card-actions {
+        padding: 15px 20px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        background: #fff;
+    }
+
+    .btn-action-card {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        border: none;
+        transition: all 0.2s;
+    }
+
+    .btn-action-card.btn-edit {
+        background: #11998e;
+        color: #fff;
+    }
+
+    .btn-action-card.btn-edit:hover {
+        background: #0d7d73;
+    }
+
+    .btn-action-card.btn-copy {
+        background: #11998e;
+        color: #fff;
+    }
+
+    .btn-action-card.btn-copy:hover {
+        background: #0d7d73;
+    }
+
+    .btn-action-card.btn-delete {
+        background: #e74c3c;
+        color: #fff;
+    }
+
+    .btn-action-card.btn-delete:hover {
+        background: #c0392b;
+    }
+
+    .template-checkbox-wrapper {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+    }
+
+    .template-card-wrapper {
+        position: relative;
+    }
+</style>
 
 {{end}}
 {{define "scripts"}}
 <script src="/js/src/vendor/ckeditor/ckeditor.js"></script>
 <script src="/js/src/vendor/ckeditor/adapters/jquery.js"></script>
 <script src="/js/dist/app/autocomplete.min.js"></script>
-<script src="/js/dist/app/templates.min.js?v=bulk_delete"></script>
+<script>
+    var templates = []
+    var templateType = "" // Default to all
+
+    // Switch template type view
+    function switchTemplateType(type) {
+        templateType = type
+
+        if (type == "") {
+            pageHeader = "All Templates"
+            $(".page-header").text(pageHeader)
+        } else if (type == "email") {
+            pageHeader = "Email Templates"
+            $(".page-header").text(pageHeader)
+        } else if (type == "sms") {
+            pageHeader = "SMS Templates"
+            $(".page-header").text(pageHeader)
+        } else if (type == "qr") {
+            pageHeader = "QR Templates"
+            $(".page-header").text(pageHeader)
+        }
+        $("#emptyMessageText").text("No " + (templateType || "templates") + " created yet. Let's create one!")
+        load()
+    }
+
+    function edit(idx) {
+        if (idx == -1) {
+            location.href = "/template"
+        } else {
+            location.href = "/template/" + templates[idx].id
+        }
+    }
+
+    function copy(idx) {
+        location.href = "/template?copy=" + templates[idx].id
+    }
+
+    function deleteTemplate(idx) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will delete the template. This can't be undone!",
+            type: "warning",
+            animation: false,
+            showCancelButton: true,
+            confirmButtonText: "Delete " + escapeHtml(templates[idx].name),
+            confirmButtonColor: "#428bca",
+            reverseButtons: true,
+            allowOutsideClick: false,
+            preConfirm: function () {
+                return new Promise(function (resolve, reject) {
+                    api.templateId.delete(templates[idx].id)
+                        .done(function (msg) {
+                            resolve(msg)
+                        })
+                        .fail(function (data) {
+                            var message = "An error occurred"
+                            if (data.responseJSON && data.responseJSON.message) {
+                                message = data.responseJSON.message
+                            } else if (data.responseText) {
+                                message = data.responseText
+                            }
+                            Swal.showValidationMessage(message)
+                            resolve(false)
+                        })
+                })
+            }
+        }).then(function (result) {
+            if (result.value) {
+                Swal.fire(
+                    'Template Deleted!',
+                    'This template has been deleted!',
+                    'success'
+                ).then(() => {
+                    location.reload()
+                });
+            }
+        })
+    }
+
+    function load() {
+        $("#templateCardsContainer").hide()
+        $("#emptyMessage").hide()
+        $("#loading").show()
+
+        api.templates.get()
+            .done(function (ts) {
+                templates = ts
+
+                // Filter based on templateType
+                if (templateType == "sms") {
+                    templates = templates.filter(t => t.type == "sms")
+                } else if (templateType == "qr") {
+                    templates = templates.filter(t => t.type == "qr")
+                } else if (templateType == "email") {
+                    templates = templates.filter(t => !t.type || t.type == "email")
+                }
+
+                $("#loading").hide()
+
+                if (templates.length > 0) {
+                    renderTemplateCards()
+                    $("#templateCardsContainer").show()
+                } else {
+                    $("#emptyMessage").show()
+                }
+            })
+            .fail(function () {
+                $("#loading").hide()
+                errorFlash("Error fetching templates")
+            })
+    }
+
+    function renderTemplateCards() {
+        var $container = $("#templateCardsContainer")
+        $container.empty()
+
+        templates.forEach(function (template, idx) {
+            var name = template.name || "Untitled"
+            var html = template.html || template.text || ""
+
+            // Sanitize HTML for preview (strip scripts, truncate)
+            var previewHtml = html.substring(0, 500)
+
+            var cardHtml = `
+        <div class="col-md-4 template-card-wrapper" data-name="${escapeHtml(name)}">
+            <div class="template-checkbox-wrapper">
+                <input type="checkbox" class="template-checkbox" value="${template.id}">
+            </div>
+            <div class="template-card">
+                <div class="template-card-header">
+                    <span class="template-card-title">${escapeHtml(name)}</span>
+                    <button class="btn btn-full-preview" onclick="showFullPreview(${idx})">
+                        FULL PREVIEW
+                    </button>
+                </div>
+                <div class="template-card-preview">
+                    <iframe srcdoc="${escapeHtml(html)}" sandbox="allow-same-origin"></iframe>
+                </div>
+                <div class="template-card-actions">
+                    <button class="btn btn-action-card btn-edit" onclick="edit(${idx})" title="Edit">
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                    <button class="btn btn-action-card btn-copy" onclick="copy(${idx})" title="Copy">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                    <button class="btn btn-action-card btn-delete" onclick="deleteTemplate(${idx})" title="Delete">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        `
+
+            $container.append(cardHtml)
+        })
+    }
+
+    function showFullPreview(idx) {
+        var template = templates[idx]
+        var html = template.html || template.text || ""
+
+        Swal.fire({
+            title: escapeHtml(template.name) + ' - Full Preview',
+            html: '<iframe srcdoc="' + escapeHtml(html) + '" style="width: 100%; height: 70vh; border: none;" sandbox="allow-same-origin"></iframe>',
+            width: '80%',
+            showCloseButton: true,
+            showConfirmButton: false
+        })
+    }
+
+    $(document).ready(function () {
+        // Determine template type from URL if necessary
+        switchTemplateType("")
+
+        if (window.location.pathname.indexOf("sms") !== -1) {
+            templateType = "sms"
+        } else if (window.location.pathname.indexOf("qr") !== -1) {
+            templateType = "qr"
+        }
+
+        // Set active button
+        $("#type_" + templateType).parent().addClass("active")
+
+        // Search filter
+        $("#templateSearch").on("keyup", function () {
+            var searchTerm = $(this).val().toLowerCase()
+            $(".template-card-wrapper").each(function () {
+                var name = $(this).data("name").toLowerCase()
+                if (name.indexOf(searchTerm) > -1) {
+                    $(this).show()
+                } else {
+                    $(this).hide()
+                }
+            })
+        })
+    })
+
+    /* --- Bulk Management --- */
+
+    function toggleSelectAll() {
+        var checked = $("#selectAllTemplates").is(":checked")
+        $(".template-checkbox").prop("checked", checked)
+    }
+
+    function bulkDeleteSelected() {
+        var ids = []
+        $(".template-checkbox:checked").each(function () {
+            ids.push($(this).val())
+        })
+
+        if (ids.length === 0) {
+            Swal.fire("No selection", "Please select at least one template to delete.", "info")
+            return
+        }
+
+        Swal.fire({
+            title: "Delete " + ids.length + " templates?",
+            text: "This action cannot be undone!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Delete",
+            confirmButtonColor: "#d9534f",
+            reverseButtons: true
+        }).then(function (result) {
+            if (result.value) {
+                Swal.fire({
+                    title: 'Deleting...',
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    }
+                })
+
+                var promises = ids.map(id => api.templateId.delete(id))
+                $.when.apply($, promises).then(function () {
+                    Swal.fire('Deleted!', 'The selected templates have been removed.', 'success').then(() => {
+                        location.reload()
+                    })
+                }).fail(function () {
+                    Swal.fire('Error', 'Some templates could not be deleted.', 'error').then(() => {
+                        location.reload()
+                    })
+                })
+            }
+        })
+    }
+</script>
 {{end}}

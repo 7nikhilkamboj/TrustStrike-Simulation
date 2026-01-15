@@ -1,0 +1,380 @@
+{{define "body"}}
+{{template "nav" .}}
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <h1 class="page-header">
+            <i class="fa fa-shield"></i> Login Page Templates
+        </h1>
+    </div>
+    <div id="flashes" class="row"></div>
+
+    <!-- Search Box -->
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-6">
+            <div class="phishlet-search-wrapper">
+                <i class="fa fa-search"></i>
+                <input type="text" class="form-control" id="phishletSearch"
+                    placeholder="Search for a phishlet (e.g. o365, google)...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center" style="padding: 40px;">
+        <i class="fa fa-spinner fa-spin fa-4x"></i>
+    </div>
+
+    <!-- Empty Message -->
+    <div id="emptyMessage" class="row" style="display:none;">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                No phishlets available. Please check your Simulation Server connection.
+            </div>
+        </div>
+    </div>
+
+    <!-- Phishlet Cards Grid -->
+    <div class="phishlet-grid-container" id="phishletGrid" style="display:none;">
+        <div class="row" id="phishletCardsRow">
+            <!-- Cards populated by JavaScript -->
+        </div>
+    </div>
+</div>
+
+<style>
+    .phishlet-card {
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0;
+        margin-bottom: 25px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        height: 100%;
+        border-radius: 12px;
+    }
+
+    .phishlet-preview-container {
+        width: 100%;
+        height: 140px;
+        overflow: hidden;
+        position: relative;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        background: #f8f9fa;
+    }
+
+    .phishlet-preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .phishlet-card:hover .phishlet-preview-img {
+        transform: scale(1.1);
+    }
+
+    .phishlet-card-content {
+        padding: 15px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .phishlet-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.4),
+                transparent);
+        transition: 0.5s;
+    }
+
+    .phishlet-card:hover::before {
+        left: 100%;
+    }
+
+    .phishlet-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        border-color: rgba(56, 239, 125, 0.5);
+        box-shadow: 0 15px 30px rgba(56, 239, 125, 0.15);
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .phishlet-card .phishlet-icon {
+        font-size: 32px;
+        color: #11998e;
+        margin-bottom: 8px;
+        transition: all 0.4s;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    }
+
+    /* Brand Specific Icon Colors */
+    .phishlet-icon.brand-google {
+        color: #4285F4 !important;
+    }
+
+    .phishlet-icon.brand-microsoft {
+        color: #00A4EF !important;
+    }
+
+    .phishlet-icon.brand-linkedin {
+        color: #0077B5 !important;
+    }
+
+    .phishlet-icon.brand-github {
+        color: #181717 !important;
+    }
+
+    .phishlet-icon.brand-amazon {
+        color: #FF9900 !important;
+    }
+
+    .phishlet-icon.brand-facebook {
+        color: #1877F2 !important;
+    }
+
+    .phishlet-icon.brand-twitter {
+        color: #1DA1F2 !important;
+    }
+
+    .phishlet-icon.brand-apple {
+        color: #000000 !important;
+    }
+
+    .phishlet-icon.brand-reddit {
+        color: #FF4500 !important;
+    }
+
+    .phishlet-icon.brand-slack {
+        color: #4A154B !important;
+    }
+
+    .phishlet-card .phishlet-name {
+        font-weight: bold;
+        color: #333;
+        font-size: 15px;
+        word-break: break-all;
+    }
+
+    .phishlet-grid-container {
+        max-height: 700px;
+        overflow-y: auto;
+        padding: 25px;
+        background: linear-gradient(135deg, rgba(246, 248, 251, 0.5) 0%, rgba(252, 252, 252, 0.5) 100%);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        margin-top: 20px;
+        margin-bottom: 30px;
+        box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .phishlet-search-wrapper {
+        position: relative;
+    }
+
+    .phishlet-search-wrapper i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999;
+    }
+
+    #phishletSearch {
+        height: 45px;
+        font-size: 15px;
+        border-radius: 25px;
+        padding-left: 45px;
+        border: 2px solid #eee;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+    #phishletSearch:focus {
+        border-color: #38ef7d;
+        box-shadow: 0 0 15px rgba(56, 239, 125, 0.15);
+        outline: none;
+    }
+
+    .phishlet-status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: bold;
+        border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        z-index: 2;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .phishlet-status-badge.enabled {
+        background: rgba(40, 167, 69, 0.9);
+        color: #fff;
+    }
+
+    .phishlet-status-badge.disabled {
+        background: rgba(108, 117, 125, 0.9);
+        color: #fff;
+    }
+</style>
+
+{{end}}
+
+{{define "scripts"}}
+<script>
+    var phishlets = [];
+
+    $(document).ready(function () {
+        loadPhishlets();
+
+        // Search filter
+        $("#phishletSearch").on("keyup", function () {
+            var searchTerm = $(this).val().toLowerCase();
+            $(".phishlet-card-wrapper").each(function () {
+                var name = $(this).data("name").toLowerCase();
+                if (name.indexOf(searchTerm) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+    });
+
+    function loadPhishlets() {
+        $.ajax({
+            url: "/api/simulationserver/modules",
+            method: "GET",
+            success: function (response) {
+                $("#loading").hide();
+                if (response && response.length > 0) {
+                    phishlets = response;
+                    renderPhishletCards();
+                    $("#phishletGrid").show();
+                } else {
+                    $("#emptyMessage").show();
+                }
+            },
+            error: function () {
+                $("#loading").hide();
+                $("#emptyMessage").show();
+            }
+        });
+    }
+
+    function renderPhishletCards() {
+        var $row = $("#phishletCardsRow");
+        $row.empty();
+
+        phishlets.forEach(function (phishlet) {
+            var name = phishlet.name || phishlet;
+            var enabled = phishlet.enabled || false;
+
+            // Get brand icon class
+            var iconClass = getBrandIconClass(name);
+            var brandClass = getBrandColorClass(name);
+
+            // Build preview image path
+            var previewImg = "/images/phishlets/" + name + ".png";
+            var fallbackImg = "/images/phishlets/generic_preview.png";
+
+            var statusBadge = enabled
+                ? '<span class="phishlet-status-badge enabled">Enabled</span>'
+                : '<span class="phishlet-status-badge disabled">Disabled</span>';
+
+            var cardHtml = `
+            <div class="col-md-3 phishlet-card-wrapper" data-name="${name}">
+                <div class="phishlet-card" onclick="viewPhishletDetails('${name}')">
+                    ${statusBadge}
+                    <div class="phishlet-preview-container">
+                        <img class="phishlet-preview-img" src="${previewImg}"
+                            onerror="this.src='${fallbackImg}'" alt="${name} preview">
+                    </div>
+                    <div class="phishlet-card-content">
+                        <img class="phishlet-icon ${brandClass}" src="/${name}.svg"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
+                            style="width: 32px; height: 32px;">
+                        <i class="${iconClass} phishlet-icon ${brandClass}" style="display: none;"></i>
+                        <span class="phishlet-name">${name}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            $row.append(cardHtml);
+        });
+    }
+
+    function getBrandIconClass(name) {
+        var iconMap = {
+            'google': 'fa fa-google',
+            'microsoft': 'fa fa-windows',
+            'o365': 'fa fa-windows',
+            'linkedin': 'fa fa-linkedin',
+            'github': 'fa fa-github',
+            'git': 'fa fa-github',
+            'amazon': 'fa fa-amazon',
+            'facebook': 'fa fa-facebook',
+            'twitter': 'fa fa-twitter',
+            'apple': 'fa fa-apple',
+            'reddit': 'fa fa-reddit',
+            'slack': 'fa fa-slack',
+            'example': 'fa fa-shield'
+        };
+        return iconMap[name.toLowerCase()] || 'fa fa-globe';
+    }
+
+    function getBrandColorClass(name) {
+        var colorMap = {
+            'google': 'brand-google',
+            'microsoft': 'brand-microsoft',
+            'o365': 'brand-microsoft',
+            'linkedin': 'brand-linkedin',
+            'github': 'brand-github',
+            'git': 'brand-github',
+            'amazon': 'brand-amazon',
+            'facebook': 'brand-facebook',
+            'twitter': 'brand-twitter',
+            'apple': 'brand-apple',
+            'reddit': 'brand-reddit',
+            'slack': 'brand-slack'
+        };
+        return colorMap[name.toLowerCase()] || '';
+    }
+
+    function viewPhishletDetails(name) {
+        // Navigate to phishlet details or show a modal
+        Swal.fire({
+            title: name,
+            html: '<p>Login page template for <strong>' + name + '</strong></p>',
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Configure',
+            cancelButtonText: 'Close'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Could navigate to configuration page
+                window.location.href = '/simulationserver?phishlet=' + encodeURIComponent(name);
+            }
+        });
+    }
+</script>
+{{end}}
