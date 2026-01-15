@@ -1,0 +1,417 @@
+{{define "body"}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+    <div class="row">
+        <h1 class="page-header"><i class="fa fa-globe"></i> DNS Configuration</h1>
+    </div>
+    <div id="flashes" class="row">
+        {{template "flashes" .Flashes}}
+    </div>
+
+    <div class="row" style="margin-bottom: 20px;">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">DNS Configuration</h3>
+                </div>
+
+                <div class="panel-body">
+                    <!-- All Domains -->
+                    <div class="form-group row" style="margin-bottom: 20px;">
+                        <label class="col-sm-3 control-label">All Domains</label>
+                        <div class="col-sm-9">
+                            <div class="table-responsive">
+                                <table class="table table-hover"
+                                    style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 15px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Domain name</th>
+                                            <th>Status</th>
+                                            <th>Name Servers</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="allDomainsListBody">
+                                        <tr>
+                                            <td colspan="3" class="text-center">Loading domains...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Onboard Domain -->
+                    <div class="form-group row" style="margin-bottom: 20px;">
+                        <label class="col-sm-3 control-label">Onboard Domain</label>
+                        <div class="col-sm-6">
+                            <input type="text" id="configDomainCF" class="form-control" placeholder="example.com">
+                        </div>
+                        <div class="col-sm-3">
+                            <button class="btn btn-success btn-block" onclick="setupCloudflare()">Set</button>
+                        </div>
+                    </div>
+
+                    <!-- Nameservers -->
+                    <div class="form-group row" style="margin-bottom: 20px;">
+                        <label class="col-sm-3 control-label">Nameservers</label>
+                        <div class="col-sm-9">
+                            <div id="nsContainer"></div>
+                        </div>
+                    </div>
+
+                    <!-- Nameserver Status -->
+                    <div class="form-group row" style="margin-bottom: 20px;">
+                        <label class="col-sm-3 control-label">Nameserver Status</label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="nameserverStatus" readonly>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Select Domain Dropdown -->
+                    <div class="form-group row" style="margin-bottom: 20px;">
+                        <label class="col-sm-3 control-label">Select Domain</label>
+                        <div class="col-sm-6">
+                            <select id="domainSelectDropdown" class="form-control" onchange="loadDNSRecords()">
+                                <option value="">Select a domain</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- DNS Records Table -->
+                    <div class="form-group row" id="dnsRecordsSection" style="display: none; margin-bottom: 20px;">
+                        <label class="col-sm-3 control-label">DNS Records</label>
+                        <div class="col-sm-9">
+                            <div class="table-responsive">
+                                <table class="table table-hover"
+                                    style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 15px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Name</th>
+                                            <th>Content</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dnsRecordsListBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Create Subdomain -->
+                    <div class="form-group row" style="margin-bottom: 20px;">
+                        <label class="col-sm-3 control-label">Create Subdomain</label>
+                        <div class="col-sm-3">
+                            <input type="text" id="newSubdomainName" class="form-control" placeholder="e.g. admin">
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" id="newSubdomainIP" class="form-control" placeholder="e.g. 1.2.3.4">
+                        </div>
+                        <div class="col-sm-2">
+                            <button class="btn btn-success btn-block" onclick="createDNSRecord()">Create</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ns-box {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 350px;
+        padding: 10px 14px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        background: #fff;
+        margin-bottom: 10px;
+    }
+
+    .ns-value {
+        font-family: monospace;
+        font-size: 14px;
+    }
+
+    .ns-copy {
+        font-size: 13px;
+        color: #1a73e8;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .ns-copy:hover {
+        text-decoration: underline;
+    }
+
+    .ns-cell-list {
+        font-size: 11px;
+        font-family: monospace;
+        color: #555;
+    }
+</style>
+{{end}}
+
+{{define "scripts"}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        background: '#fff',
+        color: '#fff',
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    function showToast(icon, title) {
+        let bgColor = '#28a745';
+        let textColor = '#ffffff';
+        if (icon === 'error' || icon === 'warning') {
+            bgColor = '#dc3545';
+        }
+        Toast.fire({
+            icon: icon,
+            title: title,
+            background: bgColor,
+            color: textColor,
+            iconColor: textColor
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadAllDomains();
+    });
+
+    async function loadAllDomains() {
+        try {
+            const response = await fetch('/api/simulationserver/config/fetch_alldomains');
+            if (!response.ok) {
+                console.error('Failed to fetch all domains');
+                return;
+            }
+            const data = await response.json();
+            if (data.success) {
+                renderAllDomains(data.data || []);
+            }
+        } catch (err) {
+            console.error('Error in loadAllDomains:', err);
+        }
+    }
+
+    function renderAllDomains(domains) {
+        const tbody = document.getElementById('allDomainsListBody');
+        const dropdown = document.getElementById('domainSelectDropdown');
+
+        tbody.innerHTML = "";
+        if (dropdown) dropdown.innerHTML = '<option value="">Select a domain</option>';
+
+        if (domains.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center">No domains found.</td></tr>';
+            return;
+        }
+
+        domains.forEach(domain => {
+            const tr = document.createElement('tr');
+            const nsList = domain.name_servers ? domain.name_servers.map(ns => `<div>${ns}</div>`).join('') : 'None';
+            const statusClass = domain.status === 'active' ? 'text-success' : 'text-warning';
+
+            tr.innerHTML = `
+                <td style="font-weight: 600;">${domain.name}</td>
+                <td><span class="${statusClass}" style="text-transform: capitalize;">${domain.status}</span></td>
+                <td class="ns-cell-list">${nsList}</td>
+            `;
+            tbody.appendChild(tr);
+
+            if (dropdown) {
+                const opt = document.createElement('option');
+                opt.value = domain.id;
+                opt.textContent = domain.name;
+                dropdown.appendChild(opt);
+            }
+        });
+    }
+
+    async function setupCloudflare() {
+        const domain = document.getElementById('configDomainCF').value.trim();
+        if (!domain) {
+            showToast('warning', 'Please enter a domain');
+            return;
+        }
+
+        showToast('info', 'Setting up domain...');
+
+        try {
+            const response = await fetch('/api/simulationserver/config/cloudflare_setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain: domain })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'Domain setup initiated. Check nameservers.');
+                if (data.data && data.data.name_servers) {
+                    renderNameservers(data.data.name_servers);
+                    document.getElementById('nameserverStatus').value = data.data.status || 'pending';
+                }
+                loadAllDomains();
+            } else {
+                showToast('error', data.message || 'Failed to setup domain');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    function renderNameservers(nameservers) {
+        const container = document.getElementById('nsContainer');
+        container.innerHTML = '';
+
+        nameservers.forEach(ns => {
+            const div = document.createElement('div');
+            div.className = 'ns-box';
+            div.innerHTML = `
+                <span class="ns-value">${ns}</span>
+                <a class="ns-copy" onclick="copyToClipboard('${ns}')">Copy</a>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('success', 'Copied!');
+        });
+    }
+
+    async function loadDNSRecords() {
+        const zoneId = document.getElementById('domainSelectDropdown').value;
+        if (!zoneId) {
+            document.getElementById('dnsRecordsSection').style.display = 'none';
+            return;
+        }
+
+        showToast('info', 'Loading DNS records...');
+
+        try {
+            const response = await fetch('/api/simulationserver/config/dns_records?zone_id=' + zoneId);
+            const data = await response.json();
+            if (data.success) {
+                renderDNSRecords(data.data || []);
+                document.getElementById('dnsRecordsSection').style.display = 'block';
+            } else {
+                showToast('error', 'Failed to load DNS records');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    function renderDNSRecords(records) {
+        const tbody = document.getElementById('dnsRecordsListBody');
+        tbody.innerHTML = '';
+
+        if (records.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">No DNS records found.</td></tr>';
+            return;
+        }
+
+        records.forEach(record => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><code>${record.type}</code></td>
+                <td>${record.name}</td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">${record.content}</td>
+                <td class="text-center">
+                    <button class="btn btn-danger btn-xs" onclick="deleteDNSRecord('${record.id}')" title="Delete">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function createDNSRecord() {
+        const zoneId = document.getElementById('domainSelectDropdown').value;
+        const name = document.getElementById('newSubdomainName').value.trim();
+        const content = document.getElementById('newSubdomainIP').value.trim();
+
+        if (!zoneId) {
+            showToast('warning', 'Please select a domain first');
+            return;
+        }
+        if (!name) {
+            showToast('warning', 'Please enter a subdomain name');
+            return;
+        }
+        if (!content) {
+            showToast('warning', 'Please enter an IP address');
+            return;
+        }
+
+        showToast('info', 'Creating DNS record...');
+
+        try {
+            const response = await fetch('/api/simulationserver/config/dns_records', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    zone_id: zoneId,
+                    type: 'A',
+                    name: name,
+                    content: content
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'DNS record created!');
+                document.getElementById('newSubdomainName').value = '';
+                document.getElementById('newSubdomainIP').value = '';
+                loadDNSRecords();
+            } else {
+                showToast('error', data.message || 'Failed to create DNS record');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+
+    async function deleteDNSRecord(recordId) {
+        if (!confirm('Are you sure you want to delete this DNS record?')) return;
+
+        const zoneId = document.getElementById('domainSelectDropdown').value;
+
+        showToast('info', 'Deleting DNS record...');
+
+        try {
+            const response = await fetch('/api/simulationserver/config/dns_records/' + recordId + '?zone_id=' + zoneId, {
+                method: 'DELETE'
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                showToast('success', 'DNS record deleted!');
+                loadDNSRecords();
+            } else {
+                showToast('error', data.message || 'Failed to delete DNS record');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to connect');
+        }
+    }
+</script>
+{{end}}
