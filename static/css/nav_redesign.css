@@ -1,0 +1,189 @@
+:root {
+    /* Color Tokens */
+    --nav-bg: #FFFFFF;
+    --nav-border: #E5E7EB;
+    --nav-text: #111827;
+    --nav-text-secondary: #6B7280;
+    --nav-text-muted: #9CA3AF;
+    --nav-hover-bg: #EEF2F7;
+    --nav-active-bg: #E5E7EB;
+    --nav-active-indicator: #2F3E4E;
+    --nav-header-bg-start: #2F3E4E;
+    --nav-header-bg-end: #1F2937;
+    --nav-badge-bg: #E5E7EB;
+    --nav-badge-text: #374151;
+    --nav-group-bg: #F9FAFB;
+    --nav-group-border: #E5E7EB;
+
+    /* Spacing (8pt system) */
+    --nav-space-item: 4px;
+    --nav-space-group: 16px;
+    --nav-space-section: 20px;
+}
+
+/* Global Layout Overrides */
+body {
+    overflow-x: hidden;
+}
+
+/* Sidebar Container */
+.sidebar {
+    position: fixed;
+    top: 50px;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    display: block;
+    width: 280px !important;
+    padding: 16px !important;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: var(--nav-bg) !important;
+    border-right: 1px solid var(--nav-border) !important;
+}
+
+/* Main Content Stabilization */
+.main {
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
+    left: 0 !important;
+    position: relative;
+    padding: 32px !important;
+    float: none !important;
+    min-height: calc(100vh - 50px);
+}
+
+@media (max-width: 767px) {
+    .sidebar {
+        position: static;
+        width: 100% !important;
+        display: none;
+        /* Hide for now to prioritize mobile flow if needed */
+    }
+
+    .main {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding: 15px !important;
+    }
+}
+
+/* Navigation List */
+.nav-sidebar {
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Section Header (Top - Dashboard) */
+.nav-section-header {
+    display: flex;
+    align-items: center;
+    height: 37px;
+    padding: 0 16px;
+    margin-bottom: var(--nav-space-section);
+    background: linear-gradient(135deg, var(--nav-header-bg-start), var(--nav-header-bg-end));
+    color: #FFFFFF !important;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 12px;
+    text-decoration: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Group Container */
+.nav-group-container {
+    background-color: var(--nav-group-bg);
+    border: 1px solid var(--nav-group-border);
+    border-radius: 12px;
+    padding: 8px;
+    margin-bottom: var(--nav-space-group);
+    display: flex;
+    flex-direction: column;
+    gap: var(--nav-space-item);
+}
+
+/* Section Label */
+.nav-section-label {
+    margin-bottom: 6px;
+    padding-left: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--nav-text-secondary);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+/* Navigation Item */
+.nav-item-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 40px;
+    padding: 0 12px;
+    color: var(--nav-text) !important;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none !important;
+    border-radius: 8px;
+    transition: background-color 120ms ease-out;
+    position: relative;
+}
+
+.nav-item-link:hover {
+    background-color: var(--nav-hover-bg) !important;
+}
+
+/* Active State */
+.nav-sidebar>li.active>.nav-item-link {
+    background-color: var(--nav-active-bg) !important;
+    font-weight: 600 !important;
+}
+
+.nav-sidebar>li.active>.nav-item-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    bottom: 10px;
+    width: 3px;
+    background-color: var(--nav-active-indicator);
+    border-radius: 0 4px 4px 0;
+    animation: slideIn 140ms ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-3px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Admin Badge */
+.nav-admin-badge {
+    height: 18px;
+    padding: 4px 8px;
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--nav-badge-bg);
+    color: var(--nav-badge-text);
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 999px;
+    margin-left: auto;
+}
+
+/* Impersonation Button */
+.nav-section-header.impersonation {
+    background: #e74c3c !important;
+    justify-content: center;
+    font-size: 14px;
+    margin-bottom: var(--nav-space-group);
+}
