@@ -3080,6 +3080,12 @@ $(document).ready(function () {
         if (type == "qr") labelText = "QR";
         $("#header_campaign_type").text(labelText);
 
+        // Update Step 2 title based on campaign type
+        var step2Title = "Email Template";
+        if (type == "sms") step2Title = "SMS Template";
+        if (type == "qr") step2Title = "QR Template";
+        $("#step2_title").text(step2Title);
+
         if (type == "email") {
             $("#template_label").text("Email Template:")
             $("#profile_label").text("Sending Profile:")
@@ -3118,10 +3124,18 @@ $(document).ready(function () {
 
         setupOptions()
 
+        // Update Step 3 labels based on campaign type
+        var mediumName = "Email";
+        if (type == "sms") mediumName = "SMS";
+        $("#redirectorDomainLabel").html('<i class="fa fa-link"></i> <span>Domain in ' + mediumName + '</span>');
+        $("#emailUrlPreviewLabelText").text("URL in " + mediumName);
+
+        // Update Step 5 labels based on campaign type
+        updateTrackingDomainLabel();
+
         // Update flow diagram with new campaign type
-        if (window.updateFlowDiagram) {
-            window.updateFlowDiagram();
-        }
+        var currentStep = parseInt($(".step-wizard-item.current-item").data("step")) || 1;
+        updateVisualFlow(currentStep);
     })
 
     // Import Email Function
@@ -3291,22 +3305,26 @@ $(document).ready(function () {
         updateVisualFlow(currentStep);
     });
 
-    // Function to update Step 5 Tracking Domain label based on redirector state
+    // Function to update Step 5 Tracking Domain label based on redirector state and campaign type
     function updateTrackingDomainLabel() {
         var useRedirector = $("#useRedirector").is(":checked");
+        var campaignType = $("#campaign_type").val() || "email";
+
+        // Determine the medium name based on campaign type
+        var mediumName = "Email";
+        if (campaignType === "sms") mediumName = "SMS";
+        if (campaignType === "qr") mediumName = "QR";
 
         if (useRedirector) {
             // Redirector ON: Step 5 label = "Domain in Redirector Page"
             $("#trackingDomainLabel").text("Domain in Redirector Page");
-            $("#trackingDomainHelpText").text("Select the domain to use for the redirector page.");
             // Update Tracking Lure URL label
             $("#trackingLureUrlLabelText").text("URL in Redirector Page");
         } else {
-            // Redirector OFF: Step 5 label = "Domain in Email"
-            $("#trackingDomainLabel").text("Domain in Email");
-            $("#trackingDomainHelpText").text("Select the domain to use for the email link.");
+            // Redirector OFF: Step 5 label = "Domain in [Email/SMS/QR]"
+            $("#trackingDomainLabel").text("Domain in " + mediumName);
             // Update Tracking Lure URL label
-            $("#trackingLureUrlLabelText").text("URL in Email");
+            $("#trackingLureUrlLabelText").text("URL in " + mediumName);
         }
     }
 
