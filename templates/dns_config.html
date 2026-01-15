@@ -411,8 +411,11 @@
 
     async function createDNSRecord() {
         const zoneId = document.getElementById('domainSelectDropdown').value;
-        const name = document.getElementById('newSubdomainName').value.trim();
+        let name = document.getElementById('newSubdomainName').value.trim();
+        const mainDomain = document.getElementById('domainSelectDropdown').options[document.getElementById('domainSelectDropdown').selectedIndex].text;
         const content = document.getElementById('newSubdomainIP').value.trim();
+
+        name = name + '.' + mainDomain;
 
         if (!zoneId) {
             showToast('warning', 'Please select a domain first');
