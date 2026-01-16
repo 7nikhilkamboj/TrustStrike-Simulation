@@ -49,9 +49,10 @@
                     <li>
                         {{if .User}}
                         <div class="btn-group" id="navbar-dropdown">
-                            <a class="btn btn-primary" href="/settings"><i class="fa fa-user"></i>
+                            <a class="btn btn-primary" href="/settings" style="background-color: #000;"><i
+                                    class="fa fa-user"></i>
                                 {{.User.Username}}</a>
-                            <a class="btn btn-primary dropdown-toggle" href="/logout">
+                            <a class="btn btn-primary dropdown-toggle" href="/logout" style="background-color: #000;">
                                 <i class="fa fa-sign-out"></i>
                             </a>
                         </div>
@@ -89,7 +90,6 @@
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="/js/dist/vendor.min.js"></script>
     <script src="/js/dist/app/trust_strike.min.js?v=20260101"></script>
-    <script src="/js/dist/app/nav.min.js"></script>
     {{template "scripts" .}}
 </body>
 
