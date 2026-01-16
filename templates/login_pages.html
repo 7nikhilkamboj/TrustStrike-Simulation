@@ -41,7 +41,7 @@
 
     <!-- Phishlet Cards Grid -->
     <div class="phishlet-grid-container" id="phishletGrid" style="display:none;">
-        <div class="row" id="phishletCardsRow">
+        <div id="phishletCardsRow">
             <!-- Cards populated by JavaScript -->
         </div>
     </div>
@@ -93,7 +93,6 @@
     }
 
     .phishlet-grid-container {
-        max-height: 700px;
         overflow-y: auto;
         padding: 24px;
         background: #F9FAFB;
@@ -104,10 +103,25 @@
         box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
+    #phishletCardsRow {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 24px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .phishlet-card-wrapper {
+        width: auto !important;
+        max-width: none !important;
+        flex: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
     .phishlet-card {
         border: 1px solid #E5E7EB;
         padding: 0;
-        margin-bottom: 24px;
         cursor: pointer;
         transition: all 0.3s ease;
         background: #FFFFFF;
@@ -118,7 +132,8 @@
         position: relative;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         overflow: hidden;
-        height: 100%;
+        width: 100%;
+        height: 330px;
         border-radius: 12px;
     }
 
@@ -130,7 +145,7 @@
 
     .phishlet-preview-container {
         width: 100%;
-        height: 140px;
+        height: 250px;
         overflow: hidden;
         position: relative;
         border-bottom: 1px solid #F3F4F6;
@@ -141,6 +156,7 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: top;
         transition: transform 0.4s ease;
     }
 
@@ -148,8 +164,52 @@
         transform: scale(1.05);
     }
 
+    .phishlet-preview-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .phishlet-card:hover .phishlet-preview-overlay {
+        opacity: 1;
+    }
+
+    .btn-preview {
+        background: white;
+        color: #111827;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .phishlet-card:hover .btn-preview {
+        transform: translateY(0);
+    }
+
+    .btn-preview:hover {
+        background: #F3F4F6;
+        transform: scale(1.05);
+    }
+
     .phishlet-card-content {
-        padding: 16px;
+        padding: 12px;
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -301,12 +361,17 @@
                 : '<span class="phishlet-status-badge disabled">Disabled</span>';
 
             var cardHtml = `
-            <div class="col-md-3 phishlet-card-wrapper" data-name="${name}">
-                <div class="phishlet-card" onclick="viewPhishletDetails('${name}')">
+            <div class="phishlet-card-wrapper" data-name="${name}">
+                <div class="phishlet-card"">
                     ${statusBadge}
                     <div class="phishlet-preview-container">
                         <img class="phishlet-preview-img" src="${previewImg}"
                             onerror="this.src='${fallbackImg}'" alt="${name} preview">
+                        <div class="phishlet-preview-overlay">
+                            <button class="btn-preview" onclick="openPreview(event, '${name}')">
+                                <i class="fa fa-eye"></i> Full Preview
+                            </button>
+                        </div>
                     </div>
                     <div class="phishlet-card-content">
                         <img class="phishlet-icon ${brandClass}" src="/${name}.svg"
@@ -321,6 +386,27 @@
 
             $row.append(cardHtml);
         });
+    }
+
+    function openPreview(event, name) {
+        event.stopPropagation();
+        var imgPath = "/images/phishlets/" + name + ".png";
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: name,
+                imageUrl: imgPath,
+                imageAlt: name + ' preview',
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: 600,
+                padding: '20px',
+                background: '#fff'
+            });
+        } else {
+            // Fallback if Swal is not loaded
+            window.open(imgPath, '_blank');
+        }
     }
 
     function getBrandIconClass(name) {
