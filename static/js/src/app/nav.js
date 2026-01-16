@@ -1,6 +1,18 @@
 $(document).ready(function () {
-    // Fade In Sidebar for 'Lazy Load' feel
-    $('.sidebar').hide().fadeIn(400);
+    // Initial State: Collapse all groups that don't have an active item
+    $('.nav-group-container').each(function () {
+        var $group = $(this);
+        var $activeItem = $group.find('.nav-item-wrapper.active');
+
+        if ($activeItem.length > 0) {
+            $group.addClass('open');
+            $group.prev('.nav-section-label').addClass('open');
+        } else {
+            $group.hide(); // Allow jQuery .hide() for animation logic
+            $group.removeClass('open');
+            $group.prev('.nav-section-label').removeClass('open');
+        }
+    });
 
     // Toggle Handler
     $('.nav-section-label').on('click', function () {
