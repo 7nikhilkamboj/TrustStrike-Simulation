@@ -19,9 +19,8 @@
         <!-- CAMPAIGN SECTION -->
         <div class="nav-section-label">
             CAMPAIGN
-            <i class="fa fa-chevron-down toggle-icon"></i>
         </div>
-        <div class="nav-group-container">
+        <div class="nav-group-container" style="display: block;">
             <div class="nav-item-wrapper {{ if or (eq .Title " Email Campaigns") (eq .Title "Email Campaigns" )
                 }}active{{ end }}">
                 <a href="/campaigns" class="nav-item-link">Campaigns</a>
@@ -35,9 +34,8 @@
         <!-- TEMPLATES SECTION -->
         <div class="nav-section-label">
             TEMPLATES
-            <i class="fa fa-chevron-down toggle-icon"></i>
         </div>
-        <div class="nav-group-container">
+        <div class="nav-group-container" style="display: block;">
             <div class="nav-item-wrapper {{ if or (eq .Title " Email Templates") (eq .Title "Email Templates" )
                 }}active{{ end }}">
                 <a href="/templates" class="nav-item-link">Email/QR/SMS Templates</a>
@@ -55,9 +53,8 @@
         <!-- CONFIGURATION SECTION -->
         <div class="nav-section-label">
             CONFIGURATION
-            <i class="fa fa-chevron-down toggle-icon"></i>
         </div>
-        <div class="nav-group-container">
+        <div class="nav-group-container" style="display: block;">
             <div class="nav-item-wrapper {{ if or (eq .Title " Email Sending Profiles") (eq
                 .Title "Email Sending Profiles" ) (eq .Title " SMS Sending Profiles" ) (eq .Title "SMS Sending Profiles"
                 ) }}active{{ end }}">
@@ -81,9 +78,8 @@
         {{if .ModifySystem}}
         <div class="nav-section-label">
             ADMIN
-            <i class="fa fa-chevron-down toggle-icon"></i>
         </div>
-        <div class="nav-group-container">
+        <div class="nav-group-container" style="display: block;">
             <div class="nav-item-wrapper {{ if or (eq .Title " User Management") (eq .Title "User Management" )
                 }}active{{ end }}">
                 <a href="/users" class="nav-item-link">
