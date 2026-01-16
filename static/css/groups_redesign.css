@@ -200,15 +200,16 @@
 .groups-page #profileTypeFilter {
     display: flex !important;
     gap: 4px !important;
-    background-color: var(--gp-neutral-100) !important;
+    background-color: #DEDEDE !important;
     padding: 4px !important;
     border-radius: var(--gp-radius-full) !important;
 }
 
-.groups-page #profileTypeFilter .btn {
-    background-color: transparent !important;
+.groups-page #profileTypeFilter .btn,
+.groups-page #profileTypeFilter .btn.btn-primary {
+    background: transparent !important;
     border: none !important;
-    color: #FFF !important;
+    color: var(--gp-neutral-600) !important;
     font-weight: 500 !important;
     padding: 8px 16px !important;
     border-radius: var(--gp-radius-full) !important;
@@ -216,15 +217,18 @@
     box-shadow: none !important;
 }
 
-.groups-page #profileTypeFilter .btn:hover {
-    color: #FFF !important;
+.groups-page #profileTypeFilter .btn:hover,
+.groups-page #profileTypeFilter .btn.btn-primary:hover {
+    color: var(--gp-neutral-800) !important;
     background-color: var(--gp-neutral-200) !important;
 }
 
 .groups-page #profileTypeFilter .btn.active,
-.groups-page #profileTypeFilter .btn:active {
-    background-color: #FFFFFF !important;
-    color: #FFF !important;
+.groups-page #profileTypeFilter .btn:active,
+.groups-page #profileTypeFilter .btn.btn-primary.active,
+.groups-page #profileTypeFilter .btn.btn-primary:active {
+    background-color: #4338CA !important;
+    color: #FFFFFF !important;
     font-weight: 600 !important;
     box-shadow: var(--gp-shadow-sm) !important;
 }

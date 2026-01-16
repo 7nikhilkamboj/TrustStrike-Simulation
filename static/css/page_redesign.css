@@ -228,7 +228,7 @@
 .redesign-page #profileTypeFilter {
     display: flex !important;
     gap: 4px !important;
-    background-color: var(--page-neutral-100) !important;
+    background-color: #DEDEDE !important;
     padding: 4px !important;
     border-radius: var(--page-radius-full) !important;
 }
@@ -260,8 +260,24 @@
 .redesign-page #profileTypeFilter .btn.active,
 .redesign-page #profileTypeFilter .btn:active {
     background-color: #FFFFFF !important;
-    color: var(--page-neutral-800) !important;
+    color: #111827 !important;
     font-weight: 600 !important;
+    box-shadow: var(--page-shadow-sm) !important;
+}
+
+/* Override btn-primary styles inside filter pills */
+.redesign-page #campaignTypeFilter .btn-primary,
+.redesign-page #profileTypeFilter .btn-primary {
+    background: transparent !important;
+    border: none !important;
+    color: var(--page-neutral-600) !important;
+    box-shadow: none !important;
+}
+
+.redesign-page #campaignTypeFilter .btn-primary.active,
+.redesign-page #profileTypeFilter .btn-primary.active {
+    background-color: #4338CA !important;
+    color: #fff !important;
     box-shadow: var(--page-shadow-sm) !important;
 }
 

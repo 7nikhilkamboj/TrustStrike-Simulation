@@ -188,15 +188,16 @@
 .campaigns-page #campaignTypeFilter {
     display: flex !important;
     gap: 4px !important;
-    background-color: var(--cp-neutral-100) !important;
+    background-color: #DEDEDE !important;
     padding: 4px !important;
     border-radius: var(--cp-radius-full) !important;
 }
 
-.campaigns-page #campaignTypeFilter .btn {
-    background-color: transparent !important;
+.campaigns-page #campaignTypeFilter .btn,
+.campaigns-page #campaignTypeFilter .btn.btn-primary {
+    background: transparent !important;
     border: none !important;
-    color: #FFF !important;
+    color: var(--cp-neutral-600) !important;
     font-weight: 500 !important;
     padding: 8px 16px !important;
     border-radius: var(--cp-radius-full) !important;
@@ -204,15 +205,18 @@
     box-shadow: none !important;
 }
 
-.campaigns-page #campaignTypeFilter .btn:hover {
-    color: #FFF !important;
+.campaigns-page #campaignTypeFilter .btn:hover,
+.campaigns-page #campaignTypeFilter .btn.btn-primary:hover {
+    color: var(--cp-neutral-800) !important;
     background-color: var(--cp-neutral-200) !important;
 }
 
 .campaigns-page #campaignTypeFilter .btn.active,
-.campaigns-page #campaignTypeFilter .btn:active {
-    background-color: #FFFFFF !important;
-    color: #FFF !important;
+.campaigns-page #campaignTypeFilter .btn:active,
+.campaigns-page #campaignTypeFilter .btn.btn-primary.active,
+.campaigns-page #campaignTypeFilter .btn.btn-primary:active {
+    background-color: #4338CA !important;
+    color: #FFFFFF !important;
     font-weight: 600 !important;
     box-shadow: var(--cp-shadow-sm) !important;
 }
