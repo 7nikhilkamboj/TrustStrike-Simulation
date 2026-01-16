@@ -1,1 +1,5 @@
 node_modules/
+TrustStrike-Simulation
+trust_strike.db
+key.pem
+config.json

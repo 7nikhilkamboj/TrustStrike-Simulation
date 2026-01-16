@@ -1,9 +1,9 @@
 {
 	"admin_server": {
-		"listen_url": "0.0.0.0:443",
-        "use_tls": true,
-        "cert_path": "ca.crt",
-        "key_path": "ca.key",
+		"listen_url": "0.0.0.0:3334",
+		"use_tls": true,
+		"cert_path": "ca.crt",
+		"key_path": "ca.key",
 		"trusted_origins": []
 	},
 	"phish_server": {
@@ -27,13 +27,13 @@
 		"discovery_url": "http://localhost:8080/realms/truststrike",
 		"redirect_url": "https://127.0.0.1:3334/login/keycloak/callback"
 	},
-	"simulation_server_url": "https://domain.com/api/",
-	"cloudflare_token": "",
+	"simulation_server_url": "https://api.prprzo.com/api/",
+	"cloudflare_token": "pfReMPLhjEDsZU1E_3Mq8clGYOA-9v3okaIRRVB-",
 	"ec2": {
-		"aws_access_key_id": "",
-		"aws_secret_access_key": "",
+		"aws_access_key_id": "AKIA4SZHNS5MHS533P4S",
+		"aws_secret_access_key": "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",
 		"aws_region": "eu-north-1",
-		"instance_id": "i-asdasdss",
+		"instance_id": "i-0a499c29d30a1c777",
 		"ssh_user": "ubuntu",
 		"ssh_key_path": "key.pem",
 		"remote_dir": "/home/ubuntu/TrustStrike-Evil",
