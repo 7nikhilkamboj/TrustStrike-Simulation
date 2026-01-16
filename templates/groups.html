@@ -1,19 +1,25 @@
 {{define "body"}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main groups-page">
+    <!-- Page Header -->
     <div class="row">
         <h1 class="page-header">
-            Users &amp; Groups
+            All Users &amp; Groups
         </h1>
     </div>
+
+    <!-- Flash Messages -->
     <div id="flashes" class="row"></div>
-    <div class="row">
-        <div class="col-md-6">
+
+    <!-- Action Bar -->
+    <div class="groups-action-bar">
+        <div class="groups-action-left">
             <button type="button" class="btn btn-primary" onclick="edit(-1)">
-                <i class="fa fa-plus"></i> New Group</button>
+                <i class="fa fa-plus"></i> New Group
+            </button>
             <div class="btn-group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
-                    Bulk Actions <span class="caret"></span>
+                    <i class="fa fa-ellipsis-h"></i> Bulk Actions <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
                     <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
@@ -21,7 +27,7 @@
                 </ul>
             </div>
         </div>
-        <div class="col-md-6 text-right">
+        <div class="groups-action-right">
             <div class="btn-group" data-toggle="buttons" id="profileTypeFilter">
                 <label class="btn btn-primary active" onclick="switchProfileType('')">
                     <input type="radio" name="options" id="type_all" autocomplete="off" checked> All
@@ -35,37 +41,44 @@
             </div>
         </div>
     </div>
-    &nbsp;
+
+    <!-- Loading State -->
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
     </div>
+
+    <!-- Empty State -->
     <div id="emptyMessage" class="row" style="display:none;">
         <div class="alert alert-info">
             No groups created yet. Let's create one!
         </div>
     </div>
+
+    <!-- Groups Table -->
     <div class="row">
-        <table id="groupTable" class="table" style="display:none;">
-            <thead>
-                <tr>
-                    <th class="no-sort" style="width: 20px;">
-                        <input type="checkbox" id="selectAllGroups" onclick="toggleSelectAll()">
-                    </th>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Created By</th>
-                    <th style="width: 150px;">No. of Members</th>
-                    <th style="width: 265px;">Modified Date</th>
-                    <th style="width: 150px;" class="col-md-1 no-sort"></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="groupTable" class="table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th class="no-sort" style="width: 20px;">
+                            <input type="checkbox" id="selectAllGroups" onclick="toggleSelectAll()">
+                        </th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Created By</th>
+                        <th style="width: 150px;">No. of Members</th>
+                        <th style="width: 265px;">Modified Date</th>
+                        <th style="width: 150px;" class="col-md-1 no-sort">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 <!-- Modal -->
 
 {{end}} {{define "scripts"}}
-<script src="/js/dist/app/groups.min.js?v=bulk_delete"></script>
+<script src="/js/dist/app/groups.min.js"></script>
 {{end}}
