@@ -323,11 +323,13 @@ function previewFull(name) {
         }
     }
 
-    // Open in new window
-    var win = window.open("", "_blank");
-    win.document.open();
-    win.document.write(html);
-    win.document.close();
+    // Open in modal
+    $("#previewModalTitle").text("Preview: " + name);
+    var iframe = document.getElementById("previewFrame");
+    iframe.srcdoc = html;
+
+    // Show modal
+    $("#previewModal").modal("show");
 }
 
 // Helper: Escape HTML
