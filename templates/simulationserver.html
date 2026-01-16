@@ -1,7 +1,7 @@
 {{define "body"}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <div class="row">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main redesign-page">
+    <div class="page-action-bar">
         <h1 class="page-header">Simulation Server</h1>
     </div>
     <div id="flashes" class="row">
@@ -59,171 +59,148 @@
 
     <div id="phishletView">
         <!-- Config Panel -->
-        <div class="row" style="margin-bottom: 20px;">
-            <div class="col-md-10 col-md-offset-1">
-                <div class="panel panel-inverse"
-                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
-                    <div class="panel-heading" style="background-color: #fff; border-bottom: 1px solid #cacaca;">
-                        <h3 class="panel-title">Config</h3>
-                    </div>
-                    <div class="panel-body">
+        <!-- Config Panel -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-container" style="margin-bottom: 30px; padding: 25px;">
+                    <h4 style="margin-top: 0; margin-bottom: 25px; font-weight: 600; color: #333;">Config</h4>
 
-                        <!-- Domain -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Domain</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="form-control" id="configDomain"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setConfigDomain()"
-                                    class="btn btn-primary btn-block">Set</button>
-                            </div>
-                        </div>
-
-                        <!-- External IPv4 -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">External IPv4</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="form-control" id="configIPv4"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setConfigIPv4()"
-                                    class="btn btn-primary btn-block">Set</button>
-                            </div>
-                        </div>
-
-                        <!-- Unauth URL -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Unauth URL</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="form-control" id="configUnauthUrl"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setConfigUnauthUrl()"
-                                    class="btn btn-primary btn-block">Set</button>
-                            </div>
-                        </div>
-
-                        <hr style="border-top: 1px solid #cacaca;">
-
-                        <!-- Gophish Admin URL -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Gophish Admin URL</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="form-control" id="gophishAdminUrl"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setGophish()"
-                                    class="btn btn-primary btn-block">Set</button>
-                            </div>
-                        </div>
-
-                        <!-- Gophish API Key -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Gophish API Key</label>
-                            <div class="col-sm-6">
-                                <div style="position: relative;">
-                                    <input type="password" class="form-control" id="gophishApiKey"
-                                        style="background-color:#fff; color:#000; border:1px solid #000; padding-right:60px;">
-                                    <button type="button" onclick="toggleSecret('gophishApiKey', this)"
-                                        style="position:absolute; right:5px; top:50%; transform:translateY(-50%); background:none; border:none;">
-                                        <i class="fa fa-eye"></i>
-                                    </button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <!-- LEFT COLUMN -->
+                        <div>
+                            <!-- Domain -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Domain</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="configDomain" style="flex: 1;">
+                                    <button type="button" onclick="setConfigDomain()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
                                 </div>
                             </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setGophish()"
-                                    class="btn btn-primary btn-block">Set</button>
+
+                            <!-- External IPv4 -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">External IPv4</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="configIPv4" style="flex: 1;">
+                                    <button type="button" onclick="setConfigIPv4()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
+                                </div>
+                            </div>
+
+                            <!-- Unauth URL -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Unauth URL</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="configUnauthUrl" style="flex: 1;">
+                                    <button type="button" onclick="setConfigUnauthUrl()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Gophish Insecure -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Insecure (Gophish)</label>
-                            <div class="col-sm-6">
-                                <select id="gophishInsecure" class="form-control"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
-                                    <option value="false">False</option>
-                                    <option value="true">True</option>
-                                </select>
+                        <!-- RIGHT COLUMN -->
+                        <div>
+                            <!-- Gophish Admin URL -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Gophish Admin URL</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="gophishAdminUrl" style="flex: 1;">
+                                    <button type="button" onclick="setGophish()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
+                                </div>
                             </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setGophish()"
-                                    class="btn btn-primary btn-block">Set</button>
+
+                            <!-- Gophish API Key -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Gophish API Key</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <div style="flex: 1; position: relative;">
+                                        <input type="password" class="form-control" id="gophishApiKey"
+                                            style="padding-right: 40px;">
+                                        <button type="button" onclick="toggleSecret('gophishApiKey', this)"
+                                            style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #666;">
+                                            <i class="fa fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <button type="button" onclick="setGophish()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
+                                </div>
+                            </div>
+
+                            <!-- Gophish Insecure -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Insecure (Gophish)</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <select id="gophishInsecure" class="form-control" style="flex: 1;">
+                                        <option value="false">False</option>
+                                        <option value="true">True</option>
+                                    </select>
+                                    <button type="button" onclick="setGophish()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
+                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Phishlet Panel -->
-        <div class="row" style="margin-bottom: 20px;">
-            <div class="col-md-10 col-md-offset-1">
-                <div class="panel panel-inverse"
-                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
-                    <div class="panel-heading" style="background-color: #fff; border-bottom: 1px solid #cacaca;">
-                        <h3 class="panel-title">Phishlet</h3>
-                    </div>
-                    <div class="panel-body">
+        <!-- Phishlet Panel -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-container" style="margin-bottom: 30px; padding: 25px;">
+                    <h4 style="margin-top: 0; margin-bottom: 25px; font-weight: 600; color: #333;">Phishlet
+                        Configuration</h4>
 
-                        <!-- Phishlet Select -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Phishlet Select</label>
-                            <div class="col-sm-8">
-                                <select id="phishletSelect" class="form-control"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                        <!-- LEFT COLUMN -->
+                        <div>
+                            <!-- Phishlet Select -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Select Phishlet</label>
+                                <select id="phishletSelect" class="form-control">
                                     <option value="">Select a phishlet...</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <!-- Phishlet Hostname -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Phishlet Hostname</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="form-control" id="phishletHostname"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;">
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setPhishletHostname()"
-                                    class="btn btn-primary btn-block">Set</button>
-                            </div>
-                        </div>
-
-                        <!-- Phishlet Landing Domain -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Redirector Domain</label>
-                            <div class="col-sm-6">
-                                <input type="text" class="form-control" id="phishletLandingDomain"
-                                    style="background-color: #fff; color: #000; border: 1px solid #000;"
-                                    placeholder="e.g. aadcdn.localhost.com">
-                            </div>
-                            <div class="col-sm-2">
-                                <button type="button" onclick="setPhishletLandingDomain()"
-                                    class="btn btn-info btn-block">Set</button>
-                            </div>
-                        </div>
-
-                        <!-- Phishlet Enabled -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <label class="col-sm-4 control-label" style="padding-top: 7px;">Phishlet Enabled</label>
-                            <div class="col-sm-8">
-                                <div style="display:flex; align-items:center; gap:10px;">
-                                    <label class="switch">
-                                        <input type="checkbox" id="phishletEnabled" onchange="togglePhishlet()">
-                                        <span class="slider round"></span>
-                                    </label>
-                                    <span id="enabledStatusText" style="font-weight:bold; color: #333;">OFF</span>
+                            <!-- Phishlet Hostname -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Phishlet Hostname</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="phishletHostname" style="flex: 1;">
+                                    <button type="button" onclick="setPhishletHostname()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- RIGHT COLUMN -->
+                        <div>
+                            <!-- Redirector Domain -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Redirector Domain</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="text" class="form-control" id="phishletLandingDomain"
+                                        placeholder="e.g. aadcdn.localhost.com" style="flex: 1;">
+                                    <button type="button" onclick="setPhishletLandingDomain()" class="btn btn-primary"
+                                        style="width: auto;">Set</button>
+                                </div>
+                            </div>
+
+                            <!-- Phishlet Enabled -->
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label style="margin-bottom: 8px; color: #666;">Phishlet Enabled</label>
+                                <div style="display: flex; align-items: center; gap: 15px; height: 34px;">
+                                    <label class="switch" style="margin-bottom: 0;">
+                                        <input type="checkbox" id="phishletEnabled" onchange="togglePhishlet()">
+                                        <span class="slider round"></span>
+                                    </label>
+                                    <span id="enabledStatusText" style="font-weight: bold; color: #333;">OFF</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -231,60 +208,38 @@
 
         <!-- Lures Panel -->
         <div class="row">
-            <div class="col-md-10 col-md-offset-1">
-                <div class="panel panel-inverse"
-                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
-                    <div class="panel-heading" style="background-color: #fff; border-bottom: 1px solid #cacaca;">
-                        <h3 class="panel-title">Lures List</h3>
+            <div class="col-md-12">
+                <div class="table-container" style="margin-bottom: 30px; padding: 25px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h4 style="margin: 0; font-weight: 600; color: #333;">Lures List</h4>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" onclick="openCreateLureModal()" class="btn btn-primary">
+                                <i class="fa fa-plus"></i> Create New Lure
+                            </button>
+                            <button type="button" onclick="deleteAllLures()" class="btn btn-danger">
+                                <i class="fa fa-trash"></i> Delete All
+                            </button>
+                        </div>
                     </div>
-                    <div class="panel-body">
 
-                        <!-- Create Lures -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-                            <div class="col-sm-12">
-                                <button type="button" onclick="openCreateLureModal()" id="createBtn"
-                                    class="btn btn-primary">
-                                    <i class="fa fa-plus"></i> Create New Lure
-                                </button>
-                                <button type="button" onclick="openRedirectorsModal()" class="btn btn-success"
-                                    style="margin-left: 10px;">
-                                    <i class="fa fa-file-code-o"></i> Show Redirectors
-                                </button>
-                                <button type="button" onclick="deleteAllLures()" class="btn btn-danger"
-                                    style="margin-left: 10px;">
-                                    <i class="fa fa-trash"></i> Delete All Lures
-                                </button>
-                            </div>
-                        </div>
-
-
-
-                        <!-- Lures Table -->
-                        <div class="form-group row" style="margin-bottom: 20px;">
-
-                            <div class="col-sm-12">
-                                <div class="table-responsive">
-                                    <table class="table table-hover"
-                                        style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 15px;">
-                                        <thead>
-                                            <tr>
-                                                <th>S.No</th>
-                                                <th>URL</th>
-                                                <th>Redirector</th>
-                                                <th>Final Destination</th>
-                                                <th class="text-center">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="luresListBody">
-                                            <tr>
-                                                <td colspan="4" class="text-center">No lures found.</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>S.No</th>
+                                    <th>URL</th>
+                                    <th>Redirector</th>
+                                    <th>Final Destination</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="luresListBody">
+                                <tr>
+                                    <td colspan="5" class="text-center">No lures found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -292,149 +247,133 @@
     </div>
 
     <div id="dnsView" style="display: none;">
-        <div class="row" style="margin-bottom: 20px;">
-            <div class="col-md-10 col-md-offset-1">
-                <div class="panel panel-inverse"
-                    style="background-color: #fff; color: #000; border: 1px solid #312f2f;">
-                    <!-- Start DNS View -->
-                    <div class="panel panel-default dns-panel">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">DNS Configuration</h3>
-                        </div>
 
-                        <div class="panel-body">
-                            <!-- <div class="form-group row dns-row">
-                                <label class="col-sm-3 control-label">Cloudflare API token</label>
-                                <div class="col-sm-6">
-                                    <input type="password" class="form-control dns-input" id="cloudflare_token"
-                                        style="background-color:#fff; color:#000; border:1px solid #000; padding-right:60px;"
-                                        value="">
-                                    <button type="button" onclick="toggleSecret('cloudflare_token', this)"
-                                        style="position:absolute; right:20px; top:50%; transform:translateY(-50%); background:none; border:none;">
-                                        <i class="fa fa-eye"></i>
-                                    </button>
-                                </div>
-                                <div class="col-sm-3">
-                                    <button class="btn btn-success btn-block" onclick="setCloudflare()">Set</button>
-                                </div>
+        <!-- SECTION 1 & 2: DOMAINS & ONBOARDING (SIDE BY SIDE) -->
+        <div class="row">
+            <!-- LEFT COLUMN: ALL DOMAINS -->
+            <div class="col-md-8">
+                <div class="table-container" style="margin-bottom: 30px; padding: 25px; height: 100%;">
+                    <h4 style="margin-top: 0; margin-bottom: 20px; font-weight: 600; color: #333;">Your Domains</h4>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Domain name</th>
+                                    <th>Status</th>
+                                    <th>Name Servers</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allDomainsListBody">
+                                <tr>
+                                    <td colspan="3" class="text-center">Loading domains...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-                            </div> -->
-                            <!-- All Domains -->
-                            <div class="form-group row dns-row">
-                                <label class="col-sm-3 control-label">All Domains</label>
-                                <div class="col-sm-9">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover dns-table"
-                                            style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 17px; ">
-                                            <thead>
-                                                <tr>
-                                                    <th>Domain name</th>
-                                                    <th>Status</th>
-                                                    <th>Name Servers</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="allDomainsListBody">
-                                                <tr>
-                                                    <td colspan="3" class="text-center">Loading domains...</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
+            <!-- RIGHT COLUMN: ONBOARD NEW DOMAIN -->
+            <div class="col-md-4">
+                <div class="table-container" style="margin-bottom: 30px; padding: 25px; height: 100%;">
+                    <h4 style="margin-top: 0; margin-bottom: 20px; font-weight: 600; color: #333;">Onboard New Domain
+                    </h4>
 
-
-                            <!-- Domain -->
-                            <div class="form-group row dns-row">
-                                <label class="col-sm-3 control-label">Onboard Domain</label>
-                                <div class="col-sm-6">
-                                    <input type="text" id="configDomainCF" class="form-control dns-input" value="">
-                                </div>
-                                <div class="col-sm-3">
-                                    <button class="btn btn-success btn-block" onclick="setupCloudflare()">Set</button>
-                                </div>
-                            </div>
-
-                            <!-- Nameservers -->
-                            <div class="form-group row dns-row">
-                                <label class="col-sm-3 control-label">Nameservers</label>
-
-                                <div class="col-sm-9">
-                                    <div id="nsContainer"></div>
-                                </div>
-                            </div>
-
-                            <!-- Status -->
-                            <div class="form-group row dns-row">
-                                <label class="col-sm-3 control-label">Nameserver Status</label>
-                                <div class="col-sm-9">
-                                    <input type="text" class="form-control dns-input" id="nameserverStatus" value=""
-                                        readonly>
-                                </div>
-                            </div>
-
-                            <hr>
-                            <!-- Select Domain Dropdown -->
-                            <div class="form-group row dns-row">
-                                <label class="col-sm-3 control-label">Select Domain</label>
-                                <div class="col-sm-6">
-                                    <select id="domainSelectDropdown" class="form-control dns-input"
-                                        style="background-color: #fff; color: #000; border: 1px solid #000;"
-                                        onchange="loadDNSRecords()">
-                                        <option value="">Select a domain</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- DNS Records Table -->
-                            <div class="form-group row dns-row" id="dnsRecordsSection" style="display: none;">
-                                <label class="col-sm-3 control-label">DNS Records</label>
-                                <div class="col-sm-9">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover dns-table"
-                                            style="background-color: #fff; color: #333; border: 1px solid #ddd; font-size: 17px;">
-                                            <thead>
-                                                <tr>
-                                                    <th>Type</th>
-                                                    <th>Name</th>
-                                                    <th>Content</th>
-                                                    <th class="text-center">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="dnsRecordsListBody">
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Create Subdomain -->
-                            <div class="form-group row dns-row">
-                                <label class="col-sm-3 control-label">Create Subdomain</label>
-                                <div class="col-sm-3">
-                                    <input type="text" id="newSubdomainName" class="form-control dns-input"
-                                        placeholder="e.g. admin">
-                                </div>
-                                <div class="col-sm-4">
-                                    <input type="text" id="newSubdomainIP" class="form-control dns-input"
-                                        placeholder="e.g. 1.2.3.4">
-                                </div>
-                                <div class="col-sm-2">
-                                    <button class="btn btn-success btn-block"
-                                        onclick="createDNSRecord()">Create</button>
-                                </div>
-                            </div>
-                            <hr>
-
-                            <button class="btn btn-success btn-lg btn-block dns-revoke">
-                                Revoke all current certificates and setup new
-                            </button>
-
+                    <div class="form-group">
+                        <label style="margin-bottom: 8px; color: #666;">Domain Name</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="configDomainCF" class="form-control" placeholder="example.com"
+                                style="flex: 1;">
+                            <button class="btn btn-primary" onclick="setupCloudflare()"
+                                style="width: auto;">Set</button>
                         </div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label style="margin-bottom: 8px; color: #666;">Nameservers</label>
+                                <div id="nsContainer" style="min-height: 40px; padding-top: 5px;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label style="margin-bottom: 8px; color: #666;">Nameserver Status</label>
+                                <input type="text" class="form-control" id="nameserverStatus" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: MANAGE DNS RECORDS -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-container" style="margin-bottom: 30px; padding: 25px;">
+                    <h4 style="margin-top: 0; margin-bottom: 20px; font-weight: 600; color: #333;">Manage DNS Records
+                    </h4>
+
+                    <div class="form-group" style="margin-bottom: 30px;">
+                        <label style="margin-bottom: 8px; color: #666;">Select Domain to Manage</label>
+                        <select id="domainSelectDropdown" class="form-control" onchange="loadDNSRecords()">
+                            <option value="">Select a domain</option>
+                        </select>
+                    </div>
+
+                    <!-- DNS Records Table (Hidden by default) -->
+                    <div id="dnsRecordsSection" style="display: none;">
+                        <h5 style="margin-bottom: 15px; font-weight: 600; color: #555;">Current Records</h5>
+                        <div class="table-responsive" style="margin-bottom: 30px;">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Name</th>
+                                        <th>Content</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dnsRecordsListBody">
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                            <h5 style="margin-top: 0; margin-bottom: 15px; font-weight: 600; color: #555;">Create
+                                Subdomain</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label style="font-size: 12px; color: #777;">Subdomain Name</label>
+                                        <input type="text" id="newSubdomainName" class="form-control"
+                                            placeholder="e.g. admin">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label style="font-size: 12px; color: #777;">IP Address / Content</label>
+                                        <input type="text" id="newSubdomainIP" class="form-control"
+                                            placeholder="e.g. 1.2.3.4">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group text-center">
+                                        <label
+                                            style="font-size: 12px; visibility: hidden; display: block;">Spacer</label>
+                                        <button class="btn btn-primary" onclick="createDNSRecord()">Create</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
 
                 </div>
             </div>
         </div>
+
     </div>
 
     <div id="twilioView" style="display: none;">
@@ -708,25 +647,6 @@
                         </div>
                     </div>
 
-                    <!-- Right Side: Create New Redirector -->
-                    <div class="col-md-7">
-                        <h5 style="font-weight: bold; margin-bottom: 15px;"><i class="fa fa-plus"></i> Create New
-                            Redirector</h5>
-                        <div class="form-group">
-                            <label class="control-label" for="newRedirectorName">Name:</label>
-                            <input type="text" class="form-control" id="newRedirectorName"
-                                placeholder="my_landing_page">
-                            <small class="help-block">A unique name (no spaces). Use <code>{strike_url_html}</code> in
-                                HTML for the lure URL.</small>
-                        </div>
-                        <div class="form-group">
-                            <label class="control-label">HTML Content:</label>
-                            <textarea class="form-control" id="newRedirectorHtml" rows="8"></textarea>
-                        </div>
-                        <button type="button" class="btn btn-success" onclick="createNewRedirector()">
-                            <i class="fa fa-plus"></i> Create Redirector
-                        </button>
-                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -902,30 +822,6 @@
 
     // Redirectors Management Modal Functions
     var redirectorEditor = null;
-
-    async function openRedirectorsModal() {
-        await loadRedirectors();
-        renderRedirectorsTable();
-        document.getElementById('newRedirectorName').value = '';
-
-        // Initialize CKEditor if not already done
-        if (!redirectorEditor) {
-            $('#newRedirectorHtml').ckeditor(function () {
-                redirectorEditor = this;
-                this.setData('');
-            }, {
-                height: 200,
-                allowedContent: true,
-                extraAllowedContent: '*(*);*{*}',
-                fullPage: true
-            });
-        } else {
-            redirectorEditor.setData('');
-        }
-
-
-        $('#redirectorsModal').modal('show');
-    }
 
     function renderRedirectorsTable() {
         const tbody = document.getElementById('redirectorsTableBody');
