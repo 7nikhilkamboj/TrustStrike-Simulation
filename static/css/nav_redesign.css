@@ -72,7 +72,6 @@ body {
 .nav-sidebar {
     margin: 0 !important;
     padding: 0 !important;
-    list-style: none;
     display: flex;
     flex-direction: column;
 }
@@ -108,12 +107,40 @@ body {
 /* Section Label */
 .nav-section-label {
     margin-bottom: 6px;
-    padding-left: 12px;
+    padding: 8px 12px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--nav-text-secondary);
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 6px;
+    transition: background-color 0.2s, color 0.2s;
+    user-select: none;
+}
+
+.nav-section-label:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+    color: var(--nav-text);
+}
+
+.nav-section-label i.toggle-icon {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+    opacity: 0.6;
+}
+
+.nav-section-label.open i.toggle-icon {
+    transform: rotate(180deg);
+}
+
+/* Navigation Item Wrapper */
+.nav-item-wrapper {
+    position: relative;
+    border-radius: 8px;
 }
 
 /* Navigation Item */
@@ -137,12 +164,12 @@ body {
 }
 
 /* Active State */
-.nav-sidebar>li.active>.nav-item-link {
+.nav-item-wrapper.active>.nav-item-link {
     background-color: var(--nav-active-bg) !important;
     font-weight: 600 !important;
 }
 
-.nav-sidebar>li.active>.nav-item-link::before {
+.nav-item-wrapper.active>.nav-item-link::before {
     content: '';
     position: absolute;
     left: 0;
@@ -153,6 +180,7 @@ body {
     border-radius: 0 4px 4px 0;
     animation: slideIn 140ms ease-out;
 }
+
 
 @keyframes slideIn {
     from {

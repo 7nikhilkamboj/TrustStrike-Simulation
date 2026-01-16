@@ -1,88 +1,111 @@
 {{define "nav"}}
 <div class="sidebar">
-    <ul class="nav-sidebar">
+    <div class="nav-sidebar">
         {{ if .IsImpersonating }}
-        <li>
+        <div class="nav-item-wrapper">
             <a href="/stop_impersonating" class="nav-section-header impersonation">
                 <i class="fa fa-times-circle" style="margin-right: 8px;"></i> Stop Impersonating
             </a>
-        </li>
+        </div>
         {{ end }}
 
         <!-- Dashboard Header -->
-        <li class="{{ if eq .Title " Dashboard" }}active{{ end }}">
+        <div class="nav-item-wrapper {{ if eq .Title " Dashboard" }}active{{ end }}">
             <a href="/" class="nav-section-header">
                 Dashboard
             </a>
-        </li>
+        </div>
 
         <!-- CAMPAIGN SECTION -->
-        <div class="nav-section-label">CAMPAIGN</div>
+        <div class="nav-section-label">
+            CAMPAIGN
+            <i class="fa fa-chevron-down toggle-icon"></i>
+        </div>
         <div class="nav-group-container">
-            <li class="{{ if eq .Title " Email Campaigns" }}active{{ end }}">
+            <div class="nav-item-wrapper {{ if or (eq .Title " Email Campaigns") (eq .Title "Email Campaigns" )
+                }}active{{ end }}">
                 <a href="/campaigns" class="nav-item-link">Campaigns</a>
-            </li>
-            <li class="{{ if eq .Title " Users & Groups" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " Users & Groups") (eq .Title "Users & Groups" ) }}active{{
+                end }}">
                 <a href="/groups" class="nav-item-link">Users & Groups</a>
-            </li>
+            </div>
         </div>
 
         <!-- TEMPLATES SECTION -->
-        <div class="nav-section-label">TEMPLATES</div>
+        <div class="nav-section-label">
+            TEMPLATES
+            <i class="fa fa-chevron-down toggle-icon"></i>
+        </div>
         <div class="nav-group-container">
-            <li class="{{ if eq .Title " Email Templates" }}active{{ end }}">
+            <div class="nav-item-wrapper {{ if or (eq .Title " Email Templates") (eq .Title "Email Templates" )
+                }}active{{ end }}">
                 <a href="/templates" class="nav-item-link">Email/QR/SMS Templates</a>
-            </li>
-            <li class="{{ if eq .Title " Redirector Templates" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " Redirector Templates") (eq .Title "Redirector Templates"
+                ) }}active{{ end }}">
                 <a href="/redirectors" class="nav-item-link">Redirector Page Templates</a>
-            </li>
-            <li class="{{ if eq .Title " Landing Pages" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " Landing Pages") (eq .Title "Landing Pages" ) }}active{{
+                end }}">
                 <a href="/login_pages" class="nav-item-link">Login Page Templates</a>
-            </li>
+            </div>
         </div>
 
         <!-- CONFIGURATION SECTION -->
-        <div class="nav-section-label">CONFIGURATION</div>
+        <div class="nav-section-label">
+            CONFIGURATION
+            <i class="fa fa-chevron-down toggle-icon"></i>
+        </div>
         <div class="nav-group-container">
-            <li class="{{ if or (eq .Title " Email Sending Profiles" ) (eq .Title "SMS Sending Profiles" ) }}active{{
-                end }}">
+            <div class="nav-item-wrapper {{ if or (eq .Title " Email Sending Profiles") (eq
+                .Title "Email Sending Profiles" ) (eq .Title " SMS Sending Profiles" ) (eq .Title "SMS Sending Profiles"
+                ) }}active{{ end }}">
                 <a href="/sending_profiles" class="nav-item-link">Sending Profiles</a>
-            </li>
-            <li class="{{ if eq .Title " Account Settings" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " Account Settings") (eq .Title "Account Settings" )
+                }}active{{ end }}">
                 <a href="/settings" class="nav-item-link">Account Settings</a>
-            </li>
-            <li class="{{ if eq .Title " DNS Configuration" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " DNS Configuration") (eq .Title "DNS Configuration" )
+                }}active{{ end }}">
                 <a href="/dns_config" class="nav-item-link">DNS Configuration</a>
-            </li>
-            <li class="{{ if eq .Title " SimulationServer Integration" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " SimulationServer Integration") (eq
+                .Title "SimulationServer Integration" ) }}active{{ end }}">
                 <a href="/simulationserver" class="nav-item-link">Simulation Server</a>
-            </li>
+            </div>
         </div>
 
         <!-- ADMIN SECTION -->
         {{if .ModifySystem}}
-        <div class="nav-section-label">ADMIN</div>
+        <div class="nav-section-label">
+            ADMIN
+            <i class="fa fa-chevron-down toggle-icon"></i>
+        </div>
         <div class="nav-group-container">
-            <li class="{{ if eq .Title " User Management" }}active{{ end }}">
+            <div class="nav-item-wrapper {{ if or (eq .Title " User Management") (eq .Title "User Management" )
+                }}active{{ end }}">
                 <a href="/users" class="nav-item-link">
                     User Management
                     <span class="nav-admin-badge">Admin</span>
                 </a>
-            </li>
-            <li class="{{ if eq .Title " User Groups" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " User Groups") (eq .Title "User Groups" ) }}active{{ end
+                }}">
                 <a href="/user_groups" class="nav-item-link">
                     User Groups
                     <span class="nav-admin-badge">Admin</span>
                 </a>
-            </li>
-            <li class="{{ if eq .Title " Webhooks" }}active{{ end }}">
+            </div>
+            <div class="nav-item-wrapper {{ if or (eq .Title " Webhooks") (eq .Title "Webhooks" ) }}active{{ end }}">
                 <a href="/webhooks" class="nav-item-link">
                     Webhooks
                     <span class="nav-admin-badge">Admin</span>
                 </a>
-            </li>
+            </div>
         </div>
         {{end}}
-    </ul>
+    </div>
 </div>
 {{end}}
