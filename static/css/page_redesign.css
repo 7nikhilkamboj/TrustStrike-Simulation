@@ -137,7 +137,6 @@
     border-radius: var(--page-radius) !important;
     box-shadow: var(--page-shadow-md) !important;
     transition: all 0.2s ease !important;
-    display: inline-flex !important;
     align-items: center !important;
     gap: 8px !important;
 }
@@ -830,4 +829,236 @@
     padding: 0 !important;
     border: none !important;
     letter-spacing: -0.5px;
+}
+
+/* ==========================================================================
+   CAMPAIGN EDIT PAGE - Wizard Steps Redesign
+   ========================================================================== */
+
+/* Add campaign-edit-page to the alias list */
+.campaign-edit-page {
+    background-color: var(--page-neutral-50);
+    min-height: calc(100vh - 50px);
+    padding: 32px 40px !important;
+}
+
+/* Wizard Step Container */
+.redesign-page .wizard-step {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Wizard Step Header */
+.redesign-page .wizard-step .page-header,
+.redesign-page .wizard-step h4.page-header {
+    font-size: 20px !important;
+    font-weight: 600 !important;
+    color: var(--page-neutral-800) !important;
+    margin: 0 0 24px 0 !important;
+    padding: 0 0 16px 0 !important;
+    border-bottom: 1px solid var(--page-neutral-200) !important;
+}
+
+/* Panel Redesign */
+.redesign-page .panel {
+    border: 1px solid var(--page-neutral-200) !important;
+    border-radius: var(--page-radius-lg) !important;
+    box-shadow: var(--page-shadow) !important;
+    background-color: #FFFFFF !important;
+    margin-bottom: 24px !important;
+}
+
+.redesign-page .panel-default>.panel-heading {
+    background: linear-gradient(to bottom, #FFFFFF, var(--page-neutral-50)) !important;
+    border-bottom: 1px solid var(--page-neutral-200) !important;
+    border-radius: var(--page-radius-lg) var(--page-radius-lg) 0 0 !important;
+    padding: 16px 20px !important;
+}
+
+.redesign-page .panel-title {
+    font-weight: 600 !important;
+    font-size: 16px !important;
+    color: var(--page-neutral-800) !important;
+}
+
+.redesign-page .panel-body {
+    padding: 24px !important;
+}
+
+/* Form Controls */
+.redesign-page .form-control {
+    border: 1px solid var(--page-neutral-300) !important;
+    border-radius: var(--page-radius) !important;
+    padding: 10px 14px !important;
+    font-size: 14px !important;
+    color: var(--page-neutral-700) !important;
+    transition: all 0.2s ease !important;
+    height: auto !important;
+}
+
+.redesign-page .form-control:focus {
+    border-color: var(--page-accent) !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+    outline: none !important;
+}
+
+.redesign-page .form-group {
+    margin-bottom: 20px !important;
+}
+
+.redesign-page .form-group>label,
+.redesign-page .control-label {
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    color: var(--page-neutral-700) !important;
+    margin-bottom: 8px !important;
+}
+
+/* Keep labels with icons inline */
+.redesign-page .control-label i {
+    margin-right: 6px;
+    color: var(--page-accent);
+}
+
+/* Select2 Integration */
+.redesign-page .select2-container--default .select2-selection--single {
+    border: 1px solid var(--page-neutral-300) !important;
+    border-radius: var(--page-radius) !important;
+    height: 42px !important;
+    padding: 6px 12px !important;
+}
+
+.redesign-page .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 28px !important;
+    color: var(--page-neutral-700) !important;
+}
+
+.redesign-page .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px !important;
+}
+
+.redesign-page .select2-dropdown {
+    border: 1px solid var(--page-neutral-200) !important;
+    border-radius: var(--page-radius) !important;
+    box-shadow: var(--page-shadow-lg) !important;
+}
+
+/* Wizard Navigation Buttons */
+.redesign-page .wizard-nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 24px;
+    border-top: 1px solid var(--page-neutral-200);
+    margin-top: 24px;
+}
+
+.redesign-page .btn-wizard-prev {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--page-neutral-300) !important;
+    color: var(--page-neutral-700) !important;
+    font-weight: 500 !important;
+    padding: 12px 24px !important;
+    border-radius: var(--page-radius) !important;
+    transition: all 0.2s ease !important;
+}
+
+.redesign-page .btn-wizard-prev:hover {
+    background-color: var(--page-neutral-50) !important;
+    border-color: var(--page-neutral-400) !important;
+}
+
+.redesign-page .btn-wizard-next,
+.redesign-page .btn-wizard-launch {
+    background: linear-gradient(135deg, var(--page-accent) 0%, var(--page-accent-hover) 100%) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    padding: 12px 32px !important;
+    border-radius: var(--page-radius) !important;
+    box-shadow: var(--page-shadow-md) !important;
+    transition: all 0.2s ease !important;
+}
+
+.redesign-page .btn-wizard-next:hover,
+.redesign-page .btn-wizard-launch:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: var(--page-shadow-lg), 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
+}
+
+/* Success Button Style */
+.redesign-page .btn-success {
+    background: linear-gradient(135deg, var(--page-secondary) 0%, var(--page-secondary-hover) 100%) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    border-radius: var(--page-radius) !important;
+    box-shadow: var(--page-shadow-sm) !important;
+    transition: all 0.2s ease !important;
+}
+
+.redesign-page .btn-success:hover {
+    background: linear-gradient(135deg, var(--page-secondary-hover) 0%, #12B8A8 100%) !important;
+    box-shadow: var(--page-shadow-md) !important;
+}
+
+/* Help Text */
+.redesign-page .help-block {
+    font-size: 12px !important;
+    color: var(--page-neutral-500) !important;
+    margin-top: 6px !important;
+}
+
+/* Well (Info boxes) */
+.redesign-page .well {
+    background-color: var(--page-neutral-50) !important;
+    border: 1px solid var(--page-neutral-200) !important;
+    border-radius: var(--page-radius) !important;
+    box-shadow: none !important;
+    padding: 16px !important;
+}
+
+/* Alert Messages */
+.redesign-page .alert-warning {
+    background-color: var(--page-warning-light) !important;
+    border: 1px solid #FDE68A !important;
+    border-radius: var(--page-radius) !important;
+    color: #92400E !important;
+    padding: 14px 18px !important;
+}
+
+.redesign-page .alert-success {
+    background-color: var(--page-success-light) !important;
+    border: 1px solid #A7F3D0 !important;
+    border-radius: var(--page-radius) !important;
+    color: #065F46 !important;
+    padding: 14px 18px !important;
+}
+
+/* Input Groups */
+.redesign-page .input-group {
+    display: flex !important;
+}
+
+.redesign-page .input-group .form-control {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.redesign-page .input-group-btn .btn {
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    height: 42px !important;
 }

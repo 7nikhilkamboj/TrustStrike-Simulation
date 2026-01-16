@@ -70,7 +70,6 @@ scripts = function () {
         app_directory + 'simulationserver.js',
         app_directory + 'phishlets.js',
         app_directory + 'redirectors.js',
-        app_directory + 'nav.js'
     ])
         .pipe(rename({
             suffix: '.min'

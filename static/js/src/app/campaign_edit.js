@@ -91,11 +91,11 @@ window.renderProfileTable = function () {
         var actionTd = $("<td class='text-right'>");
 
         // Edit
-        var editBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px;"><i class="fa fa-pencil"></i></button>`);
+        var editBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px; color: #FFF !important;"><i class="fa fa-pencil"></i></button>`);
         editBtn.click(function (e) { e.stopPropagation(); editProfile(p.id, iType); });
 
         // Copy
-        var copyBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px;" title="Copy Profile"><i class="fa fa-copy"></i></button>`);
+        var copyBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px; color: #FFF !important;" title="Copy Profile"><i class="fa fa-copy"></i></button>`);
         copyBtn.click(function (e) {
             e.stopPropagation();
             window.copyProfile(p.id, iType);
@@ -4017,7 +4017,7 @@ window.renderLureTable = function (strikes) {
         // Action Column: Edit & Delete
         var actionTd = $("<td class='text-center'>");
 
-        var editBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px;" title="Edit"><i class="fa fa-pencil"></i></button>`);
+        var editBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px; color: #FFF !important;" title="Edit"><i class="fa fa-pencil"></i></button>`);
         editBtn.click(function (e) {
             e.stopPropagation();
             window.openEditLureModal(id);
@@ -4529,7 +4529,7 @@ window.renderGroupTable = function (groups) {
         // Actions
         var actionTd = $("<td class='text-right'>");
         // Edit
-        var editBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px;"><i class="fa fa-pencil"></i></button>`);
+        var editBtn = $(`<button class="btn btn-success btn-xs" style="margin-right: 5px; color: #FFF !important;"><i class="fa fa-pencil"></i></button>`);
         editBtn.click(function (e) {
             e.stopPropagation();
             window.editGroup(g.id);
