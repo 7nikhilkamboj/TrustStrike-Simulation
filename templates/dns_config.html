@@ -42,7 +42,7 @@
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="configDomainCF" class="form-control" placeholder="example.com"
                             style="flex: 1;">
-                        <button class="btn btn-success" onclick="setupCloudflare()" style="width: auto;">Set</button>
+                        <button class="btn btn-primary" onclick="setupCloudflare()" style="width: auto;">Set</button>
                     </div>
                 </div>
 
@@ -113,8 +113,11 @@
                                         placeholder="e.g. 1.2.3.4">
                                 </div>
                             </div>
-                            <div class="col-md-2" style="display: flex; align-items: flex-end; margin-top: 34px;">
-                                <button class="btn btn-success btn-block" onclick="createDNSRecord()">Create</button>
+                            <div class="col-md-2">
+                                <div class="form-group text-center">
+                                    <label style="font-size: 12px; visibility: hidden; display: block;">Spacer</label>
+                                    <button class="btn btn-primary" onclick="createDNSRecord()">Create</button>
+                                </div>
                             </div>
                         </div>
                     </div>
