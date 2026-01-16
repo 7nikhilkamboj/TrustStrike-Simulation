@@ -1,0 +1,455 @@
+/* ==========================================================================
+   DASHBOARD PAGE REDESIGN
+   Modern, premium UI with sophisticated color palette
+   ========================================================================== */
+
+/* Color Tokens */
+:root {
+    /* Primary Colors - Dark/Neutral theme */
+    --db-primary: #161616;
+    --db-primary-hover: #19191A;
+    --db-primary-light: #EEF2FF;
+
+    /* Secondary Colors */
+    --db-secondary: #0D7D73;
+    --db-secondary-hover: #10A091;
+
+    /* Semantic Colors */
+    --db-danger: #DC2626;
+    --db-warning: #F59E0B;
+    --db-success: #10B981;
+    --db-info: #3B82F6;
+
+    /* Chart Colors */
+    --db-chart-sent: #1abc9c;
+    --db-chart-opened: #f9bf3b;
+    --db-chart-clicked: #F39C12;
+    --db-chart-submitted: #f05b4f;
+
+    /* Neutral Colors */
+    --db-neutral-50: #F9FAFB;
+    --db-neutral-100: #F3F4F6;
+    --db-neutral-200: #E5E7EB;
+    --db-neutral-300: #D1D5DB;
+    --db-neutral-400: #9CA3AF;
+    --db-neutral-500: #6B7280;
+    --db-neutral-600: #4B5563;
+    --db-neutral-700: #374151;
+    --db-neutral-800: #1F2937;
+    --db-neutral-900: #111827;
+
+    /* Shadows */
+    --db-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --db-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --db-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --db-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+    /* Border Radius */
+    --db-radius-sm: 6px;
+    --db-radius: 8px;
+    --db-radius-lg: 12px;
+    --db-radius-xl: 16px;
+    --db-radius-full: 9999px;
+}
+
+/* ==========================================================================
+   PAGE CONTAINER
+   ========================================================================== */
+
+.dashboard-page {
+    background-color: var(--db-neutral-50);
+    min-height: calc(100vh - 50px);
+    padding: 32px 40px !important;
+}
+
+/* ==========================================================================
+   PAGE HEADER
+   ========================================================================== */
+
+.dashboard-page .page-header {
+    border-bottom: none !important;
+    margin: 0 0 28px 0 !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dashboard-page .page-header h1,
+.dashboard-page h1.page-header {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: var(--db-neutral-900) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    letter-spacing: -0.5px;
+}
+
+/* ==========================================================================
+   CHARTS SECTION
+   ========================================================================== */
+
+.dashboard-page #dashboard-charts {
+    background-color: #FFFFFF;
+    border: 1px solid var(--db-neutral-200);
+    border-radius: var(--db-radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--db-shadow);
+}
+
+.dashboard-page #overview_chart {
+    margin-bottom: 20px;
+}
+
+/* Chart Cards */
+.dashboard-page #sent_chart,
+.dashboard-page #opened_chart,
+.dashboard-page #clicked_chart,
+.dashboard-page #submitted_data_chart {
+    background-color: var(--db-neutral-50);
+    border: 1px solid var(--db-neutral-200);
+    border-radius: var(--db-radius);
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.dashboard-page #sent_chart:hover,
+.dashboard-page #opened_chart:hover,
+.dashboard-page #clicked_chart:hover,
+.dashboard-page #submitted_data_chart:hover {
+    box-shadow: var(--db-shadow-md);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   ACTION BAR
+   ========================================================================== */
+
+.dashboard-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.dashboard-action-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard-action-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   BUTTONS - PRIMARY (VIEW ALL)
+   ========================================================================== */
+
+.dashboard-page .btn-primary {
+    background: linear-gradient(135deg, #161616 0%, #19191A 100%) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    padding: 10px 20px !important;
+    border-radius: var(--db-radius) !important;
+    box-shadow: var(--db-shadow-md) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.dashboard-page .btn-primary:hover {
+    background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%) !important;
+    box-shadow: var(--db-shadow-md) !important;
+    transform: translateY(-1px) !important;
+}
+
+.dashboard-page .btn-primary:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--db-shadow) !important;
+}
+
+/* ==========================================================================
+   FILTER PILLS (All, Email, QR, SMS)
+   ========================================================================== */
+
+.dashboard-page #campaignTypeFilter {
+    display: flex !important;
+    gap: 4px !important;
+    background-color: var(--db-neutral-100) !important;
+    padding: 4px !important;
+    border-radius: var(--db-radius-full) !important;
+}
+
+.dashboard-page #campaignTypeFilter .btn {
+    background-color: transparent !important;
+    border: none !important;
+    color: #FFF !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border-radius: var(--db-radius-full) !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.dashboard-page #campaignTypeFilter .btn:hover {
+    color: #FFF !important;
+    background-color: var(--db-neutral-200) !important;
+}
+
+.dashboard-page #campaignTypeFilter .btn.active,
+.dashboard-page #campaignTypeFilter .btn:active {
+    background-color: #FFFFFF !important;
+    color: #FFF !important;
+    font-weight: 600 !important;
+    box-shadow: var(--db-shadow-sm) !important;
+}
+
+/* ==========================================================================
+   TABLE CARD
+   ========================================================================== */
+
+.dashboard-page #dashboard-table {
+    background-color: #FFFFFF;
+    border: 1px solid var(--db-neutral-200);
+    border-radius: var(--db-radius-lg);
+    padding: 0;
+    box-shadow: var(--db-shadow);
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   TABLE STYLING
+   ========================================================================== */
+
+.dashboard-page .table {
+    margin-bottom: 0 !important;
+}
+
+.dashboard-page .table>thead>tr>th {
+    background-color: var(--db-neutral-50) !important;
+    border-bottom: 2px solid var(--db-neutral-200) !important;
+    color: var(--db-neutral-600) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 16px !important;
+}
+
+.dashboard-page .table>tbody>tr>td {
+    padding: 16px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid var(--db-neutral-100) !important;
+    color: var(--db-neutral-700) !important;
+}
+
+.dashboard-page .table>tbody>tr:hover {
+    background-color: var(--db-neutral-50) !important;
+}
+
+.dashboard-page .table>tbody>tr:last-child>td {
+    border-bottom: none !important;
+}
+
+/* Status Labels */
+.dashboard-page .label {
+    padding: 6px 12px !important;
+    border-radius: var(--db-radius-full) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+}
+
+.dashboard-page .label-success {
+    background-color: #ECFDF5 !important;
+    color: #059669 !important;
+}
+
+.dashboard-page .label-info {
+    background-color: #EFF6FF !important;
+    color: #2563EB !important;
+}
+
+.dashboard-page .label-warning {
+    background-color: #FFFBEB !important;
+    color: #D97706 !important;
+}
+
+.dashboard-page .label-danger {
+    background-color: #FEF2F2 !important;
+    color: var(--db-danger) !important;
+}
+
+/* Action Buttons in Table */
+.dashboard-page .table .btn-xs {
+    padding: 6px 10px !important;
+    border-radius: var(--db-radius-sm) !important;
+    font-size: 12px !important;
+    margin-right: 4px !important;
+}
+
+.dashboard-page .table .btn-info {
+    background-color: #EFF6FF !important;
+    color: var(--db-info) !important;
+    border: 1px solid transparent !important;
+}
+
+.dashboard-page .table .btn-info:hover {
+    background-color: var(--db-info) !important;
+    color: #FFFFFF !important;
+}
+
+.dashboard-page .table .btn-danger {
+    background-color: #FEF2F2 !important;
+    color: var(--db-danger) !important;
+    border: 1px solid transparent !important;
+}
+
+.dashboard-page .table .btn-danger:hover {
+    background-color: var(--db-danger) !important;
+    color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   EMPTY STATE
+   ========================================================================== */
+
+.dashboard-page .alert-info,
+.dashboard-empty-state {
+    background: linear-gradient(135deg, var(--db-primary-light) 0%, #F0F4FF 100%) !important;
+    border: 1px dashed #4F46E5 !important;
+    border-radius: var(--db-radius-lg) !important;
+    color: #3730A3 !important;
+    padding: 40px !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+.dashboard-page .alert-info::before,
+.dashboard-empty-state::before {
+    content: '📊' !important;
+    display: block !important;
+    font-size: 48px !important;
+    margin-bottom: 16px !important;
+}
+
+/* ==========================================================================
+   LOADING STATE
+   ========================================================================== */
+
+.dashboard-page #loading {
+    text-align: center !important;
+    padding: 60px !important;
+}
+
+.dashboard-page #loading i {
+    color: var(--db-primary) !important;
+}
+
+/* ==========================================================================
+   STAT CARDS (for metrics display)
+   ========================================================================== */
+
+.dashboard-stat-card {
+    background-color: #FFFFFF;
+    border: 1px solid var(--db-neutral-200);
+    border-radius: var(--db-radius-lg);
+    padding: 24px;
+    box-shadow: var(--db-shadow);
+    transition: all 0.2s ease;
+}
+
+.dashboard-stat-card:hover {
+    box-shadow: var(--db-shadow-md);
+    transform: translateY(-2px);
+}
+
+.dashboard-stat-card .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--db-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.dashboard-stat-card .stat-icon.sent {
+    background-color: rgba(26, 188, 156, 0.15);
+    color: var(--db-chart-sent);
+}
+
+.dashboard-stat-card .stat-icon.opened {
+    background-color: rgba(249, 191, 59, 0.15);
+    color: var(--db-chart-opened);
+}
+
+.dashboard-stat-card .stat-icon.clicked {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: var(--db-chart-clicked);
+}
+
+.dashboard-stat-card .stat-icon.submitted {
+    background-color: rgba(240, 91, 79, 0.15);
+    color: var(--db-chart-submitted);
+}
+
+.dashboard-stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--db-neutral-900);
+    margin-bottom: 4px;
+}
+
+.dashboard-stat-card .stat-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--db-neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 991px) {
+    .dashboard-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-action-left,
+    .dashboard-action-right {
+        justify-content: center;
+    }
+
+    .dashboard-page #campaignTypeFilter {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .dashboard-page {
+        padding: 20px 16px !important;
+    }
+
+    .dashboard-page .page-header h1,
+    .dashboard-page h1.page-header {
+        font-size: 24px !important;
+    }
+
+    .dashboard-page #dashboard-charts {
+        padding: 16px !important;
+    }
+}

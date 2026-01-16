@@ -1,31 +1,44 @@
 {{define "body"}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main redesign-page">
+    <!-- Page Header -->
     <h1 class="page-header">
         {{.Title}}
     </h1>
+
+    <!-- Flash Messages -->
     <div id="flashes" class="row"></div>
-    <div class="row">
-        <button type="button" class="btn btn-primary" id="new_button" data-toggle="modal" data-backdrop="static"
-            data-webhook-id="-1" data-target="#modal">
-            <i class="fa fa-plus"></i> New Webhook</button>
+
+    <!-- Action Bar -->
+    <div class="page-action-bar">
+        <div class="page-action-left">
+            <button type="button" class="btn btn-primary" id="new_button" data-toggle="modal" data-backdrop="static"
+                data-webhook-id="-1" data-target="#modal">
+                <i class="fa fa-plus"></i> New Webhook
+            </button>
+        </div>
     </div>
-    &nbsp;
+
+    <!-- Loading State -->
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
     </div>
+
+    <!-- Webhooks Table -->
     <div class="row">
-        <table id="webhookTable" class="table" style="display:none;">
-            <thead>
-                <tr>
-                    <th class="col-md-2 no-sort">Title</th>
-                    <th class="col-md-2 no-sort">Url</th>
-                    <th class="col-md-2 no-">Is active</th>
-                    <th class="col-md-2 no-sort"></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div class="table-container">
+            <table id="webhookTable" class="table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>URL</th>
+                        <th>Status</th>
+                        <th style="width: 150px;" class="no-sort">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -48,7 +61,8 @@
 
                 <label class="control-label" for="url">URL:</label>
                 <div class="form-group">
-                    <input type="text" class="form-control" placeholder="https://example.com/webhook1" id="url" required />
+                    <input type="text" class="form-control" placeholder="https://example.com/webhook1" id="url"
+                        required />
                 </div>
 
                 <label class="control-label" for="secret">Secret:</label>
@@ -58,9 +72,8 @@
 
                 <div class="checkbox checkbox-primary">
                     <input type="checkbox" id="is_active" value="true" />
-                    <label for="is_active">Is active <i class="fa fa-question-circle"
-                            data-toggle="tooltip" data-placement="right"
-                            title="Data is sent only to the active webhooks"></i>
+                    <label for="is_active">Is active <i class="fa fa-question-circle" data-toggle="tooltip"
+                            data-placement="right" title="Data is sent only to the active webhooks"></i>
                     </label>
                 </div>
             </div>

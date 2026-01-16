@@ -1,19 +1,25 @@
 {{define "body"}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main campaigns-page">
+    <!-- Page Header -->
     <div class="row">
-        <h1 class="page-header" id="page-header">
-            Campaigns
-        </h1>
+        <div class="page-header">
+            <h1>All Campaigns</h1>
+        </div>
     </div>
+
+    <!-- Flash Messages -->
     <div id="flashes" class="row"></div>
-    <div class="row">
-        <div class="col-md-6">
+
+    <!-- Action Bar -->
+    <div class="campaigns-action-bar">
+        <div class="campaigns-action-left">
             <button type="button" class="btn btn-primary" onclick="startNewCampaign()">
-                <i class="fa fa-plus"></i> New Campaign</button>
+                <i class="fa fa-plus"></i> New Campaign
+            </button>
             <div class="btn-group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
-                    Bulk Actions <span class="caret"></span>
+                    <i class="fa fa-ellipsis-h" style="margin-right: 6px;"></i> Bulk Actions <span class="caret"></span>
                 </button>
                 <ul class="dropdown-menu">
                     <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
@@ -21,14 +27,17 @@
                     <li><a href="#" onclick="bulkCompleteSelected()"><i class="fa fa-check text-success"></i> Complete
                             Selected</a></li>
                     <li role="separator" class="divider"></li>
-                    <li><a href="#" onclick="bulkActionAll('In progress', 'delete')">Delete All Ongoing</a></li>
-                    <li><a href="#" onclick="bulkActionAll('In progress', 'complete')">Complete All Ongoing</a></li>
+                    <li><a href="#" onclick="bulkActionAll('In progress', 'delete')"><i class="fa fa-times"
+                                style="color: #9CA3AF;"></i> Delete All Ongoing</a></li>
+                    <li><a href="#" onclick="bulkActionAll('In progress', 'complete')"><i class="fa fa-check-circle"
+                                style="color: #9CA3AF;"></i> Complete All Ongoing</a></li>
                     <li role="separator" class="divider"></li>
-                    <li><a href="#" onclick="bulkActionAll('Completed', 'delete')">Delete All Completed</a></li>
+                    <li><a href="#" onclick="bulkActionAll('Completed', 'delete')"><i class="fa fa-archive"
+                                style="color: #9CA3AF;"></i> Delete All Completed</a></li>
                 </ul>
             </div>
         </div>
-        <div class="col-md-6 text-right">
+        <div class="campaigns-action-right">
             <div class="btn-group" data-toggle="buttons" id="campaignTypeFilter">
                 <label class="btn btn-primary active" onclick="switchCampaignType('')">
                     <input type="radio" name="options" id="type_all" autocomplete="off" checked> All
@@ -45,40 +54,46 @@
             </div>
         </div>
     </div>
-    &nbsp;
 
+    <!-- Tab Navigation -->
     <ul class="nav nav-tabs" role="tablist">
-        <li class="active" role="activeCampaigns"><a href="#activeCampaigns" aria-controls="activeCampaigns" role="tab"
-                data-toggle="tab">Active Campaigns</a></li>
-        <li role="archivedCampaigns"><a href="#archivedCampaigns" aria-controls="archivedCampaigns" role="tab"
-                data-toggle="tab">Completed Campaigns</a></li>
+        <li class="active" role="activeCampaigns">
+            <a href="#activeCampaigns" aria-controls="activeCampaigns" role="tab" data-toggle="tab">
+                <i class="fa fa-play-circle" style="margin-right: 8px; opacity: 0.7;"></i>Active Campaigns
+            </a>
+        </li>
+        <li role="archivedCampaigns">
+            <a href="#archivedCampaigns" aria-controls="archivedCampaigns" role="tab" data-toggle="tab">
+                <i class="fa fa-check-circle" style="margin-right: 8px; opacity: 0.7;"></i>Completed Campaigns
+            </a>
+        </li>
     </ul>
-    </br>
+
+    <!-- Tab Content -->
     <div class="tab-content">
+        <!-- Active Campaigns Tab -->
         <div role="tabpanel" class="tab-pane active" id="activeCampaigns">
-            <div id="flashes" class="row"></div>
-            &nbsp;
             <div id="loading">
                 <i class="fa fa-spinner fa-spin fa-4x"></i>
             </div>
             <div id="emptyMessage" class="row" style="display:none;">
                 <div class="alert alert-info" id="emptyMessageText">
-                    No campaigns created yet. Let's create one!
+                    No active campaigns created yet. Let's create one!
                 </div>
             </div>
             <div class="row">
                 <table id="campaignTable" class="table" style="display:none;">
                     <thead>
                         <tr>
-                            <th class="no-sort" style="width: 20px;">
+                            <th class="no-sort" style="width: 40px;">
                                 <input type="checkbox" id="selectAllActive" onclick="toggleSelectAll('active')">
                             </th>
                             <th class="col-md-3">Name</th>
                             <th>Type</th>
                             <th class="col-md-3">Created By</th>
-                            <th class="col-md-4">Created Date</th>
+                            <th class="col-md-3">Created Date</th>
                             <th class="col-md-2">Status</th>
-                            <th class="no-sort"></th>
+                            <th class="no-sort" style="width: 120px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,26 +101,26 @@
                 </table>
             </div>
         </div>
+
+        <!-- Completed Campaigns Tab -->
         <div role="tabpanel" class="tab-pane" id="archivedCampaigns">
-            </br>
             <div id="emptyMessage" class="row" style="display:none;">
-                </br>
                 <div class="alert alert-info">
-                    No completed campaigns.
+                    No completed campaigns yet. Complete a campaign to see it here.
                 </div>
             </div>
             <div class="row">
                 <table id="campaignTableArchive" class="table" style="display:none;">
                     <thead>
                         <tr>
-                            <th class="no-sort" style="width: 20px;">
+                            <th class="no-sort" style="width: 40px;">
                                 <input type="checkbox" id="selectAllArchived" onclick="toggleSelectAll('archived')">
                             </th>
                             <th class="col-md-3">Name</th>
                             <th class="col-md-3">Created By</th>
-                            <th class="col-md-4">Created Date</th>
+                            <th class="col-md-3">Created Date</th>
                             <th class="col-md-2">Status</th>
-                            <th class="col-md-3 no-sort"></th>
+                            <th class="col-md-2 no-sort">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

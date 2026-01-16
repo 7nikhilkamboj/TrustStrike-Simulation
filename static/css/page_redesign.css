@@ -1,0 +1,818 @@
+/* ==========================================================================
+   UNIFIED PAGE REDESIGN
+   Modern, premium UI with sophisticated color palette
+   Single CSS file for all pages: Dashboard, Campaigns, Groups, Webhooks, etc.
+   ========================================================================== */
+
+/* ==========================================================================
+   DESIGN TOKENS (Shared across all pages)
+   ========================================================================== */
+
+:root {
+    /* Primary Colors - Dark/Neutral theme */
+    --page-primary: #161616;
+    --page-primary-hover: #19191A;
+    --page-primary-light: #EEF2FF;
+
+    /* Accent Colors (Indigo) */
+    --page-accent: #4F46E5;
+    --page-accent-hover: #4338CA;
+    --page-accent-dark: #3730A3;
+
+    /* Secondary Colors (Teal) */
+    --page-secondary: #0D7D73;
+    --page-secondary-hover: #10A091;
+
+    /* Semantic Colors */
+    --page-danger: #DC2626;
+    --page-danger-light: #FEF2F2;
+    --page-warning: #F59E0B;
+    --page-warning-light: #FFFBEB;
+    --page-success: #10B981;
+    --page-success-light: #ECFDF5;
+    --page-info: #3B82F6;
+    --page-info-light: #EFF6FF;
+
+    /* Chart Colors */
+    --page-chart-sent: #1abc9c;
+    --page-chart-opened: #f9bf3b;
+    --page-chart-clicked: #F39C12;
+    --page-chart-submitted: #f05b4f;
+
+    /* Neutral Colors */
+    --page-neutral-50: #F9FAFB;
+    --page-neutral-100: #F3F4F6;
+    --page-neutral-200: #E5E7EB;
+    --page-neutral-300: #D1D5DB;
+    --page-neutral-400: #9CA3AF;
+    --page-neutral-500: #6B7280;
+    --page-neutral-600: #4B5563;
+    --page-neutral-700: #374151;
+    --page-neutral-800: #1F2937;
+    --page-neutral-900: #111827;
+
+    /* Shadows */
+    --page-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --page-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --page-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --page-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+    /* Border Radius */
+    --page-radius-sm: 6px;
+    --page-radius: 8px;
+    --page-radius-lg: 12px;
+    --page-radius-xl: 16px;
+    --page-radius-full: 9999px;
+}
+
+/* ==========================================================================
+   BASE PAGE CONTAINER (Apply to any page needing redesign)
+   ========================================================================== */
+
+.redesign-page {
+    background-color: var(--page-neutral-50);
+    min-height: calc(100vh - 50px);
+    padding: 32px 40px !important;
+}
+
+/* ==========================================================================
+   PAGE HEADER
+   ========================================================================== */
+
+.redesign-page .page-header {
+    border-bottom: none !important;
+    margin: 0 0 28px 0 !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.redesign-page .page-header h1,
+.redesign-page h1.page-header {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: var(--page-neutral-900) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    letter-spacing: -0.5px;
+}
+
+/* ==========================================================================
+   ACTION BAR (Buttons and Filters row)
+   ========================================================================== */
+
+.page-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 26px;
+    margin-bottom: 30px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.page-action-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-action-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   PRIMARY BUTTONS (New Campaign, New Group, etc.)
+   ========================================================================== */
+
+.redesign-page .btn-primary {
+    background: linear-gradient(135deg, #161616 0%, #19191A 100%) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    padding: 12px 20px !important;
+    border-radius: var(--page-radius) !important;
+    box-shadow: var(--page-shadow-md) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.redesign-page .btn-primary:hover {
+    background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%) !important;
+    box-shadow: var(--page-shadow-lg), 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
+    transform: translateY(-1px) !important;
+}
+
+.redesign-page .btn-primary:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--page-shadow) !important;
+}
+
+.redesign-page .btn-primary i {
+    font-size: 14px !important;
+}
+
+/* ==========================================================================
+   DEFAULT BUTTONS (Bulk Actions, Secondary actions)
+   ========================================================================== */
+
+.redesign-page .btn-default {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--page-neutral-300) !important;
+    color: var(--page-neutral-700) !important;
+    font-weight: 500 !important;
+    padding: 10px 16px !important;
+    border-radius: var(--page-radius) !important;
+    box-shadow: var(--page-shadow-sm) !important;
+    transition: all 0.2s ease !important;
+}
+
+.redesign-page .btn-default:hover {
+    background-color: var(--page-neutral-50) !important;
+    border-color: var(--page-neutral-400) !important;
+    color: var(--page-neutral-800) !important;
+}
+
+.redesign-page .btn-default:focus {
+    box-shadow: var(--page-shadow-sm), 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+    border-color: var(--page-accent) !important;
+}
+
+/* ==========================================================================
+   DROPDOWN MENUS
+   ========================================================================== */
+
+.redesign-page .dropdown-menu {
+    border: 1px solid var(--page-neutral-200) !important;
+    border-radius: var(--page-radius) !important;
+    box-shadow: var(--page-shadow-lg) !important;
+    padding: 8px !important;
+    margin-top: 8px !important;
+}
+
+.redesign-page .dropdown-menu>li>a {
+    padding: 10px 16px !important;
+    border-radius: var(--page-radius-sm) !important;
+    color: var(--page-neutral-700) !important;
+    font-weight: 500 !important;
+    transition: all 0.15s ease !important;
+}
+
+.redesign-page .dropdown-menu>li>a:hover {
+    background-color: var(--page-neutral-100) !important;
+    color: var(--page-neutral-900) !important;
+}
+
+.redesign-page .dropdown-menu>li>a i {
+    margin-right: 10px !important;
+    width: 16px !important;
+}
+
+.redesign-page .dropdown-menu .divider {
+    margin: 8px 0 !important;
+    background-color: var(--page-neutral-200) !important;
+}
+
+/* ==========================================================================
+   FILTER PILLS (All, Email, QR, SMS, etc.)
+   ========================================================================== */
+
+.redesign-page .filter-pills,
+.redesign-page #campaignTypeFilter,
+.redesign-page #profileTypeFilter {
+    display: flex !important;
+    gap: 4px !important;
+    background-color: var(--page-neutral-100) !important;
+    padding: 4px !important;
+    border-radius: var(--page-radius-full) !important;
+}
+
+.redesign-page .filter-pills .btn,
+.redesign-page #campaignTypeFilter .btn,
+.redesign-page #profileTypeFilter .btn {
+    background-color: transparent !important;
+    border: none !important;
+    color: var(--page-neutral-600) !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border-radius: var(--page-radius-full) !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.redesign-page .filter-pills .btn:hover,
+.redesign-page #campaignTypeFilter .btn:hover,
+.redesign-page #profileTypeFilter .btn:hover {
+    color: var(--page-neutral-800) !important;
+    background-color: var(--page-neutral-200) !important;
+}
+
+.redesign-page .filter-pills .btn.active,
+.redesign-page .filter-pills .btn:active,
+.redesign-page #campaignTypeFilter .btn.active,
+.redesign-page #campaignTypeFilter .btn:active,
+.redesign-page #profileTypeFilter .btn.active,
+.redesign-page #profileTypeFilter .btn:active {
+    background-color: #FFFFFF !important;
+    color: var(--page-neutral-800) !important;
+    font-weight: 600 !important;
+    box-shadow: var(--page-shadow-sm) !important;
+}
+
+/* ==========================================================================
+   CHARTS SECTION (Dashboard)
+   ========================================================================== */
+
+.redesign-page #dashboard-charts {
+    background-color: #FFFFFF;
+    border: 1px solid var(--page-neutral-200);
+    border-radius: var(--page-radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--page-shadow);
+}
+
+.redesign-page #overview_chart {
+    margin-bottom: 20px;
+}
+
+.redesign-page #sent_chart,
+.redesign-page #opened_chart,
+.redesign-page #clicked_chart,
+.redesign-page #submitted_data_chart {
+    background-color: var(--page-neutral-50);
+    border: 1px solid var(--page-neutral-200);
+    border-radius: var(--page-radius);
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.redesign-page #sent_chart:hover,
+.redesign-page #opened_chart:hover,
+.redesign-page #clicked_chart:hover,
+.redesign-page #submitted_data_chart:hover {
+    box-shadow: var(--page-shadow-md);
+    transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   TABLE CONTAINER (Card wrapper for tables)
+   ========================================================================== */
+
+.redesign-page .table-container,
+.redesign-page .dataTables_wrapper {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--page-neutral-200) !important;
+    border-radius: var(--page-radius-lg) !important;
+    box-shadow: var(--page-shadow) !important;
+    padding: 20px !important;
+}
+
+/* Remove double borders when nested */
+.redesign-page .table-container .dataTables_wrapper {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* ==========================================================================
+   TABLE STYLING
+   ========================================================================== */
+
+.redesign-page .table {
+    margin-bottom: 0 !important;
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.redesign-page .table>thead>tr>th {
+    background-color: var(--page-neutral-50) !important;
+    border-bottom: 2px solid var(--page-neutral-200) !important;
+    border-top: none !important;
+    color: var(--page-neutral-600) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 16px !important;
+}
+
+.redesign-page .table>thead>tr>th:first-child {
+    border-top-left-radius: var(--page-radius) !important;
+}
+
+.redesign-page .table>thead>tr>th:last-child {
+    border-top-right-radius: var(--page-radius) !important;
+}
+
+.redesign-page .table>tbody>tr>td {
+    padding: 16px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid var(--page-neutral-100) !important;
+    border-top: none !important;
+    color: var(--page-neutral-700) !important;
+    background-color: #FFFFFF !important;
+}
+
+.redesign-page .table>tbody>tr:hover>td {
+    background-color: var(--page-neutral-50) !important;
+}
+
+.redesign-page .table>tbody>tr:last-child>td {
+    border-bottom: none !important;
+}
+
+.redesign-page .table>tbody>tr:last-child>td:first-child {
+    border-bottom-left-radius: var(--page-radius) !important;
+}
+
+.redesign-page .table>tbody>tr:last-child>td:last-child {
+    border-bottom-right-radius: var(--page-radius) !important;
+}
+
+/* Checkbox Styling */
+.redesign-page .table input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    accent-color: var(--page-accent) !important;
+    cursor: pointer !important;
+}
+
+/* ==========================================================================
+   STATUS LABELS
+   ========================================================================== */
+
+.redesign-page .label {
+    padding: 6px 12px !important;
+    border-radius: var(--page-radius-full) !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+}
+
+.redesign-page .label-success {
+    background-color: var(--page-success-light) !important;
+    color: #059669 !important;
+}
+
+.redesign-page .label-info {
+    background-color: var(--page-info-light) !important;
+    color: #2563EB !important;
+}
+
+.redesign-page .label-warning {
+    background-color: var(--page-warning-light) !important;
+    color: #D97706 !important;
+}
+
+.redesign-page .label-danger {
+    background-color: var(--page-danger-light) !important;
+    color: var(--page-danger) !important;
+}
+
+.redesign-page .label-primary {
+    background-color: var(--page-primary-light) !important;
+    color: var(--page-accent) !important;
+}
+
+/* ==========================================================================
+   TABLE ACTION BUTTONS
+   ========================================================================== */
+
+.redesign-page .table .btn-xs,
+.redesign-page .table .btn-sm {
+    padding: 8px 12px !important;
+    border-radius: var(--page-radius-sm) !important;
+    font-size: 12px !important;
+    margin-right: 4px !important;
+    transition: all 0.2s ease !important;
+}
+
+.redesign-page .table .btn-info {
+    background-color: var(--page-info-light) !important;
+    color: var(--page-info) !important;
+    border: 1px solid transparent !important;
+}
+
+.redesign-page .table .btn-info:hover {
+    background-color: var(--page-info) !important;
+    color: #FFFFFF !important;
+}
+
+.redesign-page .table .btn-success {
+    background-color: var(--page-success-light) !important;
+    color: var(--page-secondary) !important;
+    border: 1px solid transparent !important;
+}
+
+.redesign-page .table .btn-success:hover {
+    background-color: var(--page-secondary) !important;
+    color: #FFFFFF !important;
+}
+
+.redesign-page .table .btn-danger {
+    background-color: var(--page-danger-light) !important;
+    color: var(--page-danger) !important;
+    border: 1px solid transparent !important;
+}
+
+.redesign-page .table .btn-danger:hover {
+    background-color: var(--page-danger) !important;
+    color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   EMPTY STATE
+   ========================================================================== */
+
+.redesign-page .alert-info,
+.page-empty-state {
+    background: linear-gradient(135deg, var(--page-primary-light) 0%, #F0F4FF 100%) !important;
+    border: 1px dashed var(--page-accent) !important;
+    border-radius: var(--page-radius-lg) !important;
+    color: var(--page-accent-dark) !important;
+    padding: 40px !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+.redesign-page .alert-info::before,
+.page-empty-state::before {
+    content: '📋' !important;
+    display: block !important;
+    font-size: 48px !important;
+    margin-bottom: 16px !important;
+}
+
+/* ==========================================================================
+   LOADING STATE
+   ========================================================================== */
+
+.redesign-page #loading {
+    text-align: center !important;
+    padding: 60px !important;
+}
+
+.redesign-page #loading i {
+    color: var(--page-accent) !important;
+}
+
+/* ==========================================================================
+   DATATABLES ADJUSTMENTS
+   ========================================================================== */
+
+.redesign-page .dataTables_wrapper .dataTables_length,
+.redesign-page .dataTables_wrapper .dataTables_filter {
+    margin-bottom: 16px !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_length label,
+.redesign-page .dataTables_wrapper .dataTables_filter label {
+    color: var(--page-neutral-600) !important;
+    font-weight: 500 !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_length select,
+.redesign-page .dataTables_wrapper .dataTables_filter input {
+    border: 1px solid var(--page-neutral-300) !important;
+    border-radius: var(--page-radius-sm) !important;
+    padding: 6px 12px !important;
+    color: var(--page-neutral-700) !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--page-accent) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_info {
+    color: var(--page-neutral-500) !important;
+    padding-top: 16px !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_paginate {
+    padding-top: 16px !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 8px 14px !important;
+    margin-left: 4px !important;
+    border-radius: var(--page-radius-sm) !important;
+    border: 1px solid var(--page-neutral-200) !important;
+    background-color: #FFFFFF !important;
+    color: var(--page-neutral-700) !important;
+    transition: all 0.2s ease !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: var(--page-neutral-100) !important;
+    border-color: var(--page-neutral-300) !important;
+    color: var(--page-neutral-900) !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: var(--page-accent) !important;
+    border-color: var(--page-accent) !important;
+    color: #FFFFFF !important;
+}
+
+.redesign-page .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* ==========================================================================
+   TABS (Campaigns page)
+   ========================================================================== */
+
+.redesign-page .nav-tabs {
+    border-bottom: 2px solid var(--page-neutral-200) !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    gap: 0 !important;
+}
+
+.redesign-page .nav-tabs>li {
+    margin-bottom: -2px !important;
+    float: none !important;
+}
+
+.redesign-page .nav-tabs>li>a {
+    border: none !important;
+    border-radius: 0 !important;
+    color: var(--page-neutral-500) !important;
+    font-weight: 500 !important;
+    padding: 16px 24px !important;
+    margin-right: 0 !important;
+    position: relative !important;
+    background: transparent !important;
+    transition: color 0.2s ease !important;
+}
+
+.redesign-page .nav-tabs>li>a:hover {
+    background: transparent !important;
+    border: none !important;
+    color: var(--page-neutral-700) !important;
+}
+
+.redesign-page .nav-tabs>li.active>a,
+.redesign-page .nav-tabs>li.active>a:focus,
+.redesign-page .nav-tabs>li.active>a:hover {
+    background: transparent !important;
+    border: none !important;
+    color: var(--page-accent) !important;
+    font-weight: 600 !important;
+}
+
+.redesign-page .nav-tabs>li.active>a::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 2px !important;
+    background-color: var(--page-accent) !important;
+    border-radius: 2px 2px 0 0 !important;
+}
+
+.redesign-page .tab-content {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--page-neutral-200) !important;
+    border-top: none !important;
+    border-radius: 0 0 var(--page-radius-lg) var(--page-radius-lg) !important;
+    padding: 24px !important;
+    box-shadow: var(--page-shadow) !important;
+}
+
+/* ==========================================================================
+   STAT CARDS (Dashboard)
+   ========================================================================== */
+
+.page-stat-card {
+    background-color: #FFFFFF;
+    border: 1px solid var(--page-neutral-200);
+    border-radius: var(--page-radius-lg);
+    padding: 24px;
+    box-shadow: var(--page-shadow);
+    transition: all 0.2s ease;
+}
+
+.page-stat-card:hover {
+    box-shadow: var(--page-shadow-md);
+    transform: translateY(-2px);
+}
+
+.page-stat-card .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--page-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.page-stat-card .stat-icon.sent {
+    background-color: rgba(26, 188, 156, 0.15);
+    color: var(--page-chart-sent);
+}
+
+.page-stat-card .stat-icon.opened {
+    background-color: rgba(249, 191, 59, 0.15);
+    color: var(--page-chart-opened);
+}
+
+.page-stat-card .stat-icon.clicked {
+    background-color: rgba(243, 156, 18, 0.15);
+    color: var(--page-chart-clicked);
+}
+
+.page-stat-card .stat-icon.submitted {
+    background-color: rgba(240, 91, 79, 0.15);
+    color: var(--page-chart-submitted);
+}
+
+.page-stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--page-neutral-900);
+    margin-bottom: 4px;
+}
+
+.page-stat-card .stat-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--page-neutral-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   MODALS (Consistent styling)
+   ========================================================================== */
+
+.redesign-page .modal-content {
+    border: none !important;
+    border-radius: var(--page-radius-lg) !important;
+    box-shadow: var(--page-shadow-lg) !important;
+}
+
+.redesign-page .modal-header {
+    border-bottom: 1px solid var(--page-neutral-200) !important;
+    padding: 20px 24px !important;
+}
+
+.redesign-page .modal-title {
+    font-weight: 600 !important;
+    font-size: 18px !important;
+    color: var(--page-neutral-900) !important;
+}
+
+.redesign-page .modal-body {
+    padding: 24px !important;
+}
+
+.redesign-page .modal-footer {
+    border-top: 1px solid var(--page-neutral-200) !important;
+    padding: 16px 24px !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 991px) {
+    .page-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-action-left,
+    .page-action-right {
+        justify-content: center;
+    }
+
+    .redesign-page .filter-pills,
+    .redesign-page #campaignTypeFilter,
+    .redesign-page #profileTypeFilter {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .redesign-page {
+        padding: 20px 16px !important;
+    }
+
+    .redesign-page .page-header h1,
+    .redesign-page h1.page-header {
+        font-size: 24px !important;
+    }
+
+    .redesign-page .nav-tabs>li>a {
+        padding: 12px 16px !important;
+    }
+
+    .redesign-page .tab-content {
+        padding: 16px !important;
+    }
+
+    .redesign-page #dashboard-charts {
+        padding: 16px !important;
+    }
+}
+
+/* ==========================================================================
+   PAGE-SPECIFIC ALIASES (For backward compatibility)
+   Classes like .campaigns-page, .dashboard-page, .groups-page, .webhooks-page
+   all inherit from .redesign-page
+   ========================================================================== */
+
+.campaigns-page,
+.dashboard-page,
+.groups-page,
+.webhooks-page,
+.templates-page,
+.sending-profiles-page,
+.landing-pages-page {
+    background-color: var(--page-neutral-50);
+    min-height: calc(100vh - 50px);
+    padding: 32px 40px !important;
+}
+
+/* Inherit all redesign-page styles */
+.campaigns-page .page-header,
+.dashboard-page .page-header,
+.groups-page .page-header,
+.webhooks-page .page-header {
+    border-bottom: none !important;
+    margin: 0 0 28px 0 !important;
+    padding: 0 !important;
+}
+
+.campaigns-page .page-header h1,
+.campaigns-page h1.page-header,
+.dashboard-page .page-header h1,
+.dashboard-page h1.page-header,
+.groups-page .page-header h1,
+.groups-page h1.page-header,
+.webhooks-page .page-header h1,
+.webhooks-page h1.page-header {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: var(--page-neutral-900) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    letter-spacing: -0.5px;
+}

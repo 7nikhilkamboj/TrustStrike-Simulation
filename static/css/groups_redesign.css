@@ -1,0 +1,511 @@
+/* ==========================================================================
+   GROUPS PAGE REDESIGN
+   Modern, premium UI with sophisticated color palette
+   ========================================================================== */
+
+/* Color Tokens */
+:root {
+    /* Primary Colors */
+    --gp-primary: #4F46E5;
+    --gp-primary-hover: #4338CA;
+    --gp-primary-light: #EEF2FF;
+    --gp-primary-dark: #3730A3;
+
+    /* Secondary Colors */
+    --gp-secondary: #0D7D73;
+    --gp-secondary-hover: #10A091;
+
+    /* Semantic Colors */
+    --gp-danger: #DC2626;
+    --gp-warning: #F59E0B;
+    --gp-success: #10B981;
+    --gp-info: #3B82F6;
+
+    /* Neutral Colors */
+    --gp-neutral-50: #F9FAFB;
+    --gp-neutral-100: #F3F4F6;
+    --gp-neutral-200: #E5E7EB;
+    --gp-neutral-300: #D1D5DB;
+    --gp-neutral-400: #9CA3AF;
+    --gp-neutral-500: #6B7280;
+    --gp-neutral-600: #4B5563;
+    --gp-neutral-700: #374151;
+    --gp-neutral-800: #1F2937;
+    --gp-neutral-900: #111827;
+
+    /* Shadows */
+    --gp-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --gp-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --gp-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --gp-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+    /* Border Radius */
+    --gp-radius-sm: 6px;
+    --gp-radius: 8px;
+    --gp-radius-lg: 12px;
+    --gp-radius-xl: 16px;
+    --gp-radius-full: 9999px;
+}
+
+/* ==========================================================================
+   PAGE CONTAINER
+   ========================================================================== */
+
+.groups-page {
+    background-color: var(--gp-neutral-50);
+    min-height: calc(100vh - 50px);
+    padding: 32px 40px !important;
+}
+
+/* ==========================================================================
+   PAGE HEADER
+   ========================================================================== */
+
+.groups-page .page-header {
+    border-bottom: none !important;
+    margin: 0 0 28px 0 !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.groups-page .page-header h1,
+.groups-page h1.page-header {
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: var(--gp-neutral-900) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    letter-spacing: -0.5px;
+}
+
+/* ==========================================================================
+   ACTION BAR
+   ========================================================================== */
+
+.groups-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 26px;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 30px;
+    margin-left: -14px;
+    margin-right: 5px;
+}
+
+.groups-action-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.groups-action-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ==========================================================================
+   BUTTONS - PRIMARY (NEW GROUP)
+   ========================================================================== */
+
+.groups-page .btn-primary {
+    background: linear-gradient(135deg, #161616 0%, #19191A 100%) !important;
+    border: none !important;
+    color: #FFFFFF !important;
+    font-weight: 624 !important;
+    padding: 16px 20px !important;
+    border-radius: var(--gp-radius) !important;
+    box-shadow: var(--gp-shadow-md) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.groups-page .btn-primary:hover {
+    background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%) !important;
+    box-shadow: var(--gp-shadow-lg), 0 0 0 4px rgba(79, 70, 229, 0.15) !important;
+    transform: translateY(-1px) !important;
+}
+
+.groups-page .btn-primary:active {
+    transform: translateY(0) !important;
+    box-shadow: var(--gp-shadow) !important;
+}
+
+.groups-page .btn-primary i {
+    font-size: 14px !important;
+}
+
+/* ==========================================================================
+   BUTTONS - DEFAULT (BULK ACTIONS)
+   ========================================================================== */
+
+.groups-page .btn-default {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--gp-neutral-300) !important;
+    color: var(--gp-neutral-700) !important;
+    font-weight: 500 !important;
+    padding: 10px 16px !important;
+    border-radius: var(--gp-radius) !important;
+    box-shadow: var(--gp-shadow-sm) !important;
+    transition: all 0.2s ease !important;
+}
+
+.groups-page .btn-default:hover {
+    background-color: var(--gp-neutral-50) !important;
+    border-color: var(--gp-neutral-400) !important;
+    color: var(--gp-neutral-800) !important;
+}
+
+/* ==========================================================================
+   DROPDOWN MENU
+   ========================================================================== */
+
+.groups-page .dropdown-menu {
+    border: 1px solid var(--gp-neutral-200) !important;
+    border-radius: var(--gp-radius) !important;
+    box-shadow: var(--gp-shadow-lg) !important;
+    padding: 8px !important;
+    margin-top: 8px !important;
+}
+
+.groups-page .dropdown-menu>li>a {
+    padding: 10px 16px !important;
+    border-radius: var(--gp-radius-sm) !important;
+    color: var(--gp-neutral-700) !important;
+    font-weight: 500 !important;
+    transition: all 0.15s ease !important;
+}
+
+.groups-page .dropdown-menu>li>a:hover {
+    background-color: var(--gp-neutral-100) !important;
+    color: var(--gp-neutral-900) !important;
+}
+
+.groups-page .dropdown-menu>li>a i {
+    margin-right: 10px !important;
+    width: 16px !important;
+}
+
+/* ==========================================================================
+   FILTER PILLS (All, Email, SMS)
+   ========================================================================== */
+
+.groups-page #profileTypeFilter {
+    display: flex !important;
+    gap: 4px !important;
+    background-color: var(--gp-neutral-100) !important;
+    padding: 4px !important;
+    border-radius: var(--gp-radius-full) !important;
+}
+
+.groups-page #profileTypeFilter .btn {
+    background-color: transparent !important;
+    border: none !important;
+    color: #FFF !important;
+    font-weight: 500 !important;
+    padding: 8px 16px !important;
+    border-radius: var(--gp-radius-full) !important;
+    transition: all 0.2s ease !important;
+    box-shadow: none !important;
+}
+
+.groups-page #profileTypeFilter .btn:hover {
+    color: #FFF !important;
+    background-color: var(--gp-neutral-200) !important;
+}
+
+.groups-page #profileTypeFilter .btn.active,
+.groups-page #profileTypeFilter .btn:active {
+    background-color: #FFFFFF !important;
+    color: #FFF !important;
+    font-weight: 600 !important;
+    box-shadow: var(--gp-shadow-sm) !important;
+}
+
+/* ==========================================================================
+   TABLE CARD - Wrap the entire DataTables component
+   ========================================================================== */
+
+.groups-page .table-container,
+.groups-page .dataTables_wrapper {
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--gp-neutral-200) !important;
+    border-radius: var(--gp-radius-lg) !important;
+    box-shadow: var(--gp-shadow) !important;
+    padding: 20px !important;
+    margin-left: -14px;
+    margin-right: 5px;
+}
+
+/* Remove double borders when nested */
+.groups-page .table-container .dataTables_wrapper {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* ==========================================================================
+   TABLE STYLING
+   ========================================================================== */
+
+.groups-page .table {
+    margin-bottom: 0 !important;
+    width: 100% !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.groups-page .table>thead>tr>th {
+    background-color: var(--gp-neutral-50) !important;
+    border-bottom: 2px solid var(--gp-neutral-200) !important;
+    border-top: none !important;
+    color: var(--gp-neutral-600) !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 14px 16px !important;
+}
+
+.groups-page .table>thead>tr>th:first-child {
+    border-top-left-radius: var(--gp-radius) !important;
+}
+
+.groups-page .table>thead>tr>th:last-child {
+    border-top-right-radius: var(--gp-radius) !important;
+}
+
+.groups-page .table>tbody>tr>td {
+    padding: 16px !important;
+    vertical-align: middle !important;
+    border-bottom: 1px solid var(--gp-neutral-100) !important;
+    border-top: none !important;
+    color: var(--gp-neutral-700) !important;
+    background-color: #FFFFFF !important;
+}
+
+.groups-page .table>tbody>tr:hover>td {
+    background-color: var(--gp-neutral-50) !important;
+}
+
+.groups-page .table>tbody>tr:last-child>td {
+    border-bottom: none !important;
+}
+
+.groups-page .table>tbody>tr:last-child>td:first-child {
+    border-bottom-left-radius: var(--gp-radius) !important;
+}
+
+.groups-page .table>tbody>tr:last-child>td:last-child {
+    border-bottom-right-radius: var(--gp-radius) !important;
+}
+
+/* Checkbox Styling */
+.groups-page .table input[type="checkbox"] {
+    width: 18px !important;
+    height: 18px !important;
+    accent-color: var(--gp-primary) !important;
+    cursor: pointer !important;
+}
+
+/* Type Labels */
+.groups-page .label {
+    padding: 6px 12px !important;
+    border-radius: var(--gp-radius-full) !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.02em !important;
+}
+
+.groups-page .label-success {
+    background-color: #ECFDF5 !important;
+    color: #059669 !important;
+}
+
+.groups-page .label-info {
+    background-color: #EFF6FF !important;
+    color: #2563EB !important;
+}
+
+.groups-page .label-warning {
+    background-color: #FFFBEB !important;
+    color: #D97706 !important;
+}
+
+.groups-page .label-primary {
+    background-color: var(--gp-primary-light) !important;
+    color: var(--gp-primary) !important;
+}
+
+/* Action Buttons in Table */
+.groups-page .table .btn-xs,
+.groups-page .table .btn-sm {
+    padding: 8px 12px !important;
+    border-radius: var(--gp-radius-sm) !important;
+    font-size: 12px !important;
+    margin-right: 4px !important;
+    transition: all 0.2s ease !important;
+}
+
+.groups-page .table .btn-success {
+    background-color: #ECFDF5 !important;
+    color: var(--gp-secondary) !important;
+    border: 1px solid transparent !important;
+}
+
+.groups-page .table .btn-success:hover {
+    background-color: var(--gp-secondary) !important;
+    color: #FFFFFF !important;
+}
+
+.groups-page .table .btn-danger {
+    background-color: #FEF2F2 !important;
+    color: #F00 !important;
+    border: 6px solid transparent !important;
+}
+
+.groups-page .table .btn-danger:hover {
+    background-color: var(--gp-danger) !important;
+    color: #FFFFFF !important;
+}
+
+/* ==========================================================================
+   EMPTY STATE
+   ========================================================================== */
+
+.groups-page .alert-info,
+.groups-empty-state {
+    background: linear-gradient(135deg, var(--gp-primary-light) 0%, #F0F4FF 100%) !important;
+    border: 1px dashed var(--gp-primary) !important;
+    border-radius: var(--gp-radius-lg) !important;
+    color: var(--gp-primary-dark) !important;
+    padding: 40px !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+.groups-page .alert-info::before,
+.groups-empty-state::before {
+    content: '👥' !important;
+    display: block !important;
+    font-size: 48px !important;
+    margin-bottom: 16px !important;
+}
+
+/* ==========================================================================
+   LOADING STATE
+   ========================================================================== */
+
+.groups-page #loading {
+    text-align: center !important;
+    padding: 60px !important;
+}
+
+.groups-page #loading i {
+    color: var(--gp-primary) !important;
+}
+
+/* ==========================================================================
+   DATATABLE ADJUSTMENTS
+   ========================================================================== */
+
+.groups-page .dataTables_wrapper .dataTables_length,
+.groups-page .dataTables_wrapper .dataTables_filter {
+    margin-bottom: 16px !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_length label,
+.groups-page .dataTables_wrapper .dataTables_filter label {
+    color: var(--gp-neutral-600) !important;
+    font-weight: 476 !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_length select,
+.groups-page .dataTables_wrapper .dataTables_filter input {
+    border: 1px solid var(--gp-neutral-300) !important;
+    border-radius: var(--gp-radius-sm) !important;
+    padding: 6px 12px !important;
+    color: var(--gp-neutral-700) !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_filter input:focus {
+    border-color: var(--gp-primary) !important;
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1) !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_info {
+    color: var(--gp-neutral-500) !important;
+    padding-top: 16px !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_paginate {
+    padding-top: 16px !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 8px 14px !important;
+    margin-left: 4px !important;
+    border-radius: var(--gp-radius-sm) !important;
+    border: 1px solid var(--gp-neutral-200) !important;
+    background-color: #FFFFFF !important;
+    color: var(--gp-neutral-700) !important;
+    transition: all 0.2s ease !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: var(--gp-neutral-100) !important;
+    border-color: var(--gp-neutral-300) !important;
+    color: var(--gp-neutral-900) !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: var(--gp-primary) !important;
+    border-color: var(--gp-primary) !important;
+    color: #FFFFFF !important;
+}
+
+.groups-page .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================================== */
+
+@media (max-width: 991px) {
+    .groups-action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .groups-action-left,
+    .groups-action-right {
+        justify-content: center;
+    }
+
+    .groups-page #profileTypeFilter {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767px) {
+    .groups-page {
+        padding: 20px 16px !important;
+    }
+
+    .groups-page .page-header h1,
+    .groups-page h1.page-header {
+        font-size: 24px !important;
+    }
+}

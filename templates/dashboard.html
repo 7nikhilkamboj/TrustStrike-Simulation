@@ -1,13 +1,19 @@
 {{define "body"}}
-<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-    <h1 class="page-header">
-        Dashboard
-    </h1>
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main dashboard-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1>Dashboard</h1>
+    </div>
+
+    <!-- Loading State -->
     <div id="loading">
         <i class="fa fa-spinner fa-spin fa-4x"></i>
     </div>
+
     {{template "flashes" .Flashes}}
+
     <div id="dashboard-view" style="display:none;">
+        <!-- Charts Section -->
         <div id="dashboard-charts">
             <div class="row">
                 <div id="overview_chart" style="height:200px;" class="col-lg-12 col-md-12 col-sm-12 col-xs-12"></div>
@@ -23,13 +29,16 @@
             </div>
         </div>
 
-        <div class="row">
-            <div class="col-md-6">
+        <!-- Action Bar -->
+        <div class="dashboard-action-bar">
+            <div class="dashboard-action-left">
                 <a href="/campaigns">
-                    <button type="button" class="btn btn-primary">View All</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa fa-list-ul"></i> View All Campaigns
+                    </button>
                 </a>
             </div>
-            <div class="col-md-6 text-right">
+            <div class="dashboard-action-right">
                 <div class="btn-group" data-toggle="buttons" id="campaignTypeFilter">
                     <label class="btn btn-primary active" onclick="switchCampaignType('')">
                         <input type="radio" name="options" id="type_all" autocomplete="off" checked> All
@@ -46,12 +55,15 @@
                 </div>
             </div>
         </div>
-        &nbsp;&nbsp;
+
+        <!-- Empty State -->
         <div id="emptyMessage" style="display:none;">
             <div class="alert alert-info">
                 No campaigns created yet. Let's create one!
             </div>
         </div>
+
+        <!-- Campaign Table -->
         <div id="dashboard-table" class="row">
             <table id="campaignTable" class="table">
                 <thead>
@@ -61,19 +73,19 @@
                         <th class="col-md-1 col-sm-1" style="width: 100px; min-width: 100px;">Created By</th>
                         <th class="col-md-2 col-sm-2">Created Date</th>
                         <th class="col-md-1 col-sm-1">
-                            <i class="fa fa-envelope-o"></i>
+                            <i class="fa fa-envelope-o" title="Sent"></i>
                         </th>
                         <th class="col-md-1 col-sm-1">
-                            <i class="fa fa-envelope-open-o"></i>
+                            <i class="fa fa-envelope-open-o" title="Opened"></i>
                         </th>
                         <th class="col-md-1 col-sm-1">
-                            <i class="fa fa-mouse-pointer"></i>
+                            <i class="fa fa-mouse-pointer" title="Clicked"></i>
                         </th>
                         <th class="col-md-1 col-sm-1">
-                            <i class="fa fa-exclamation-circle"></i>
+                            <i class="fa fa-exclamation-circle" title="Submitted"></i>
                         </th>
                         <th class="col-md-1 col-sm-1">Status</th>
-                        <th class="no-sort" style="width: 140px; min-width: 140px;"></th>
+                        <th class="no-sort" style="width: 140px; min-width: 140px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
