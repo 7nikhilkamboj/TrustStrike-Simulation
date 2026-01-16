@@ -83,9 +83,7 @@
     border-bottom: none !important;
     margin: 0 0 28px 0 !important;
     padding: 0 !important;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: block !important;
 }
 
 .redesign-page .page-header h1,
@@ -97,6 +95,7 @@
     padding: 0 !important;
     border: none !important;
     letter-spacing: -0.5px;
+    display: block !important;
 }
 
 /* ==========================================================================
