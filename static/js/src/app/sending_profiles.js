@@ -236,6 +236,7 @@ function load() {
             $("#profileTable").show()
             profileTable = $("#profileTable").DataTable({
                 destroy: true,
+                autoWidth: false,
                 columnDefs: [{
                     orderable: false,
                     targets: "no-sort"
@@ -257,10 +258,10 @@ function load() {
                     "<span class='label " + rowClass + "'>" + (profile.interface_type || "EMAIL").toUpperCase() + "</span>",
                     escapeHtml(profile.created_by || ""),
                     moment(profile.modified_date).format('MMMM Do YYYY, h:mm:ss a'),
-                    "<div class='pull-right'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Profile' onclick='edit(" + i + ")'>\
+                    "<div style='white-space: nowrap;'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Profile' style='margin-right: 4px;' onclick='edit(" + i + ")'>\
                     <i class='fa fa-pencil'></i>\
                     </button>\
-		    <button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Profile' onclick='copy(" + i + ")'>\
+                    <button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Profile' style='margin-right: 4px;' onclick='copy(" + i + ")'>\
                     <i class='fa fa-copy'></i>\
                     </button>\
                     <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' title='Delete Profile' onclick='deleteProfile(" + i + ")'>\
