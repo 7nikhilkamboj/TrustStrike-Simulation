@@ -114,7 +114,7 @@ function renderRedirectorCards() {
                 <div class="redirector-card" id="card-${escapeHtml(name)}">
                     <div class="redirector-header">
                         <div class="redirector-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
-                        <button class="btn btn-success btn-xs" onclick="previewFull('${escapeHtml(name)}'); event.stopPropagation();" 
+                        <button class="btn btn-success btn-xs btn-action-preview" onclick="previewFull('${escapeHtml(name)}'); event.stopPropagation();" 
                                 style="padding: 4px 8px; font-size: 14px; font-weight: bold;">
                             FULL PREVIEW
                         </button>
