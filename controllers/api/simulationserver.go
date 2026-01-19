@@ -25,6 +25,63 @@ const (
 	CLOUDFLARE_URL = "https://api.cloudflare.com"
 )
 
+// Cache type constants
+const (
+	CacheTypeModules     = "modules"
+	CacheTypeRedirectors = "redirectors"
+)
+
+// fetchFromSimulationServer makes an authenticated GET request to the simulation server
+func (as *Server) fetchFromSimulationServer(endpoint string) ([]byte, error) {
+	url := as.config.SimulationServerURL + endpoint
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	tokenString, err := auth.GenerateToken(1, "system_admin", "admin")
+	if err == nil {
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("server returned status %d", resp.StatusCode)
+	}
+
+	return io.ReadAll(resp.Body)
+}
+
+// fetchWithCache tries to fetch fresh data, caches on success, falls back to cache on failure
+func (as *Server) fetchWithCache(cacheType string) ([]byte, bool, error) {
+	// Try to fetch fresh data
+	data, err := as.fetchFromSimulationServer(cacheType)
+	if err == nil {
+		// Save to cache
+		if cacheErr := models.SetCache(cacheType, "", string(data)); cacheErr != nil {
+			log.Errorf("Failed to cache %s: %v", cacheType, cacheErr)
+		}
+		return data, false, nil // fresh data, not from cache
+	}
+
+	// Fetch failed, try cache
+	log.Warnf("Simulation server offline for %s, trying cache: %v", cacheType, err)
+	cachedData, cacheErr := models.GetCache(cacheType, "")
+	if cacheErr != nil {
+		return nil, false, fmt.Errorf("server offline and no cache available")
+	}
+
+	return []byte(cachedData), true, nil // cached data
+}
+
 // CallSimulationServer makes an authenticated call to the TrustStrike server
 func (as *Server) CallSimulationServer(campaign string) error {
 	// 1. Generate the JWT
@@ -232,10 +289,21 @@ func (as *Server) GetConfig(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// GetModules proxies the request to get available modules
+// GetModules returns available modules with caching fallback
 func (as *Server) GetModules(w http.ResponseWriter, r *http.Request) {
-	url := as.config.SimulationServerURL + "modules"
-	proxyRequest(w, "GET", url, nil)
+	data, fromCache, err := as.fetchWithCache(CacheTypeModules)
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if fromCache {
+		w.Header().Set("X-Cache-Status", "cached")
+	} else {
+		w.Header().Set("X-Cache-Status", "fresh")
+	}
+	w.Write(data)
 }
 
 // CreateStrike proxies the request to create a new strike
@@ -1101,10 +1169,63 @@ func proxyRequest(w http.ResponseWriter, method, url string, body io.Reader) {
 	w.Write(respBody)
 }
 
-// GetRedirectors proxies the request to get all available redirectors
+// proxyRequestWithCacheInvalidation proxies a request and invalidates cache on success
+func proxyRequestWithCacheInvalidation(w http.ResponseWriter, method, url string, body io.Reader, cacheType string) {
+	client := &http.Client{}
+	req, err := http.NewRequest(method, url, body)
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Server offline"}, http.StatusInternalServerError)
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	tokenString, err := auth.GenerateToken(1, "system_admin", "admin")
+	if err == nil {
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Server offline"}, http.StatusBadGateway)
+		return
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: "Server offline"}, http.StatusInternalServerError)
+		return
+	}
+
+	// Invalidate cache on successful write operation
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		if cacheErr := models.DeleteCache(cacheType, ""); cacheErr != nil {
+			log.Warnf("Failed to invalidate %s cache: %v", cacheType, cacheErr)
+		}
+	}
+
+	// Forward the status code and body
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(resp.StatusCode)
+	w.Write(respBody)
+}
+
+// GetRedirectors returns available redirectors with caching fallback
 func (as *Server) GetRedirectors(w http.ResponseWriter, r *http.Request) {
-	url := as.config.SimulationServerURL + "redirectors"
-	proxyRequest(w, "GET", url, nil)
+	data, fromCache, err := as.fetchWithCache(CacheTypeRedirectors)
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadGateway)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if fromCache {
+		w.Header().Set("X-Cache-Status", "cached")
+	} else {
+		w.Header().Set("X-Cache-Status", "fresh")
+	}
+	w.Write(data)
 }
 
 // GetRedirector proxies the request to get a single redirector's details
@@ -1115,26 +1236,26 @@ func (as *Server) GetRedirector(w http.ResponseWriter, r *http.Request) {
 	proxyRequest(w, "GET", url, nil)
 }
 
-// CreateRedirector proxies the request to create a new redirector
+// CreateRedirector proxies the request to create a new redirector and invalidates cache
 func (as *Server) CreateRedirector(w http.ResponseWriter, r *http.Request) {
 	url := as.config.SimulationServerURL + "redirectors"
-	proxyRequest(w, "POST", url, r.Body)
+	proxyRequestWithCacheInvalidation(w, "POST", url, r.Body, CacheTypeRedirectors)
 }
 
-// DeleteRedirector proxies the request to delete a redirector
+// DeleteRedirector proxies the request to delete a redirector and invalidates cache
 func (as *Server) DeleteRedirector(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 	url := fmt.Sprintf("%sredirectors/%s", as.config.SimulationServerURL, name)
-	proxyRequest(w, "DELETE", url, nil)
+	proxyRequestWithCacheInvalidation(w, "DELETE", url, nil, CacheTypeRedirectors)
 }
 
-// UpdateRedirector proxies the request to update a redirector
+// UpdateRedirector proxies the request to update a redirector and invalidates cache
 func (as *Server) UpdateRedirector(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
 	url := fmt.Sprintf("%sredirectors/%s", as.config.SimulationServerURL, name)
-	proxyRequest(w, "PUT", url, r.Body)
+	proxyRequestWithCacheInvalidation(w, "PUT", url, r.Body, CacheTypeRedirectors)
 }
 
 // SetPhishletLandingDomain proxies the request to set the landing domain for a phishlet

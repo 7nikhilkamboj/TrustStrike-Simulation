@@ -1093,12 +1093,19 @@
         $("#redirectorLoading").show();
         $("#redirectorGrid").hide();
         $("#redirectorEmptyMessage").hide();
+        $("#redirectorCacheNotice").hide();
 
         $.ajax({
             url: REDIRECTOR_API_BASE,
             method: "GET",
-            success: function (response) {
+            success: function (response, textStatus, xhr) {
                 $("#redirectorLoading").hide();
+
+                // Check if data is from cache
+                var cacheStatus = xhr.getResponseHeader("X-Cache-Status");
+                if (cacheStatus === "cached") {
+                    $("#redirectorCacheNotice").show();
+                }
 
                 if (response.success && Array.isArray(response.redirectors)) {
                     redirectors = response.redirectors;
@@ -1396,12 +1403,20 @@
         $("#loginPageLoading").show();
         $("#phishletGrid").hide();
         $("#loginPageEmptyMessage").hide();
+        $("#loginPageCacheNotice").hide();
 
         $.ajax({
             url: "/api/simulationserver/modules",
             method: "GET",
-            success: function (response) {
+            success: function (response, textStatus, xhr) {
                 $("#loginPageLoading").hide();
+
+                // Check if data is from cache
+                var cacheStatus = xhr.getResponseHeader("X-Cache-Status");
+                if (cacheStatus === "cached") {
+                    $("#loginPageCacheNotice").show();
+                }
+
                 if (response && response.length > 0) {
                     phishlets = response;
                     renderPhishletCards();
@@ -1431,14 +1446,9 @@
             var previewImg = "/images/phishlets/" + name + ".png";
             var fallbackImg = "/images/phishlets/generic_preview.png";
 
-            var statusBadge = enabled
-                ? '<span class="phishlet-status-badge enabled">Enabled</span>'
-                : '<span class="phishlet-status-badge disabled">Disabled</span>';
-
             var cardHtml = `
             <div class="phishlet-card-wrapper" data-name="${name}">
                 <div class="phishlet-card"">
-                    ${statusBadge}
                     <div class="phishlet-preview-container">
                         <img class="phishlet-preview-img" src="${previewImg}"
                             onerror="this.src='${fallbackImg}'" alt="${name} preview">
