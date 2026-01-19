@@ -44,6 +44,7 @@ type AdminServer struct {
 	keycloak     config.Keycloak
 	limiter      *ratelimit.PostLimiter
 	globalConfig *config.Config
+	apiServer    *api.Server
 }
 
 var defaultTLSConfig = &tls.Config{
@@ -185,12 +186,12 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/impersonate", mid.Use(as.Impersonate, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/stop_impersonating", mid.Use(as.StopImpersonating, mid.RequireLogin))
 	// Create the API routes
-	api := api.NewServer(
+	as.apiServer = api.NewServer(
 		api.WithWorker(as.worker),
 		api.WithLimiter(as.limiter),
 		api.WithConfig(as.globalConfig),
 	)
-	router.PathPrefix("/api/").Handler(api)
+	router.PathPrefix("/api/").Handler(as.apiServer)
 
 	// Setup static file serving
 	router.PathPrefix("/").Handler(http.FileServer(unindexed.Dir("./static/")))
@@ -220,6 +221,13 @@ func (as *AdminServer) registerRoutes() {
 	// Setup logging
 	adminHandler = handlers.CombinedLoggingHandler(log.Writer(), adminHandler)
 	as.server.Handler = adminHandler
+}
+
+// StartEC2Scheduler starts the background EC2 auto-shutdown scheduler
+func (as *AdminServer) StartEC2Scheduler() {
+	if as.apiServer != nil {
+		as.apiServer.StartEC2ShutdownScheduler()
+	}
 }
 
 // handleCSRFError handles the error returned by the CSRF middleware

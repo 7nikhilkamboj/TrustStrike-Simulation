@@ -450,7 +450,7 @@ function startEC2WithProgressBar() {
                 url: "/api/simulationserver/ec2/start",
                 method: "POST",
                 contentType: "application/json",
-                data: JSON.stringify({ start_evil: true }),
+                data: JSON.stringify({ start_evil: true, ignore_throttle: true }),
                 timeout: 300000, // 5 minute timeout
                 success: function (response) {
                     clearInterval(progressInterval);

@@ -878,9 +878,9 @@
             if (tab === 'email-qr-sms') {
                 load();
             } else if (tab === 'redirector') {
-                loadRedirectors();
+                loadEC2Data('redirector');
             } else if (tab === 'login-page') {
-                loadPhishlets();
+                loadEC2Data('login-page');
             }
             tabsLoaded[tab] = true;
         }
@@ -1088,6 +1088,51 @@
     var redirectorCurrentPage = 1;
     var redirectorItemsPerPage = 6;
     const REDIRECTOR_API_BASE = "/api/simulationserver/redirectors";
+    const EC2_STATUS_API = "/api/simulationserver/ec2/status";
+
+    function loadEC2Data(tab) {
+        $.ajax({
+            url: EC2_STATUS_API,
+            method: "GET",
+            success: function (response) {
+                if (response.success && response.data.state === "stopped") {
+                    $.ajax({
+                        url: "/api/simulationserver/ec2/start",
+                        method: "POST",
+                        contentType: "application/json",
+                        data: JSON.stringify({ start_evil: true, ignore_throttle: false }),
+                        timeout: 300000,
+                        success: function (response) {
+                            console.log("EC2 auto-start triggered");
+                        },
+                        error: function (xhr) {
+                            if (xhr.status === 429) {
+                                console.log("EC2 auto-start throttled (24h limit)");
+                            } else {
+                                console.error("Failed to auto-start EC2", xhr);
+                            }
+                        },
+                        complete: function () {
+                            // Always load data regardless of start success (cache fallback will handle it)
+                            if (tab === 'redirector') loadRedirectors();
+                            else if (tab === 'login-page') loadPhishlets();
+                            tabsLoaded[tab] = true;
+                        }
+                    });
+                } else {
+                    if (tab === 'redirector') loadRedirectors();
+                    else if (tab === 'login-page') loadPhishlets();
+                    tabsLoaded[tab] = true;
+                }
+            },
+            error: function (xhr) {
+                console.error("Failed to load EC2 status", xhr);
+                if (tab === 'redirector') loadRedirectors();
+                else if (tab === 'login-page') loadPhishlets();
+                tabsLoaded[tab] = true;
+            }
+        });
+    }
 
     function loadRedirectors() {
         $("#redirectorLoading").show();

@@ -101,6 +101,7 @@ func main() {
 		if *mode == "admin" || *mode == "all" {
 			go server.Start()
 			go monitor.Start()
+			server.StartEC2Scheduler()
 		}
 		return server, monitor
 	}

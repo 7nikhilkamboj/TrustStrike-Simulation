@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
@@ -91,8 +92,9 @@ func (as *Server) GetEC2Status(w http.ResponseWriter, r *http.Request) {
 // StartEC2Instance starts the EC2 instance and optionally starts evil
 func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		StartEvilginx bool   `json:"start_evil"`
-		Domain        string `json:"domain"`
+		StartEvilginx  bool   `json:"start_evil"`
+		Domain         string `json:"domain"`
+		IgnoreThrottle bool   `json:"ignore_throttle"`
 	}
 	json.NewDecoder(r.Body).Decode(&req)
 
@@ -105,13 +107,43 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	cfg := as.config.EC2
 	ctx := context.Background()
 
+	// Check if we need to throttle (24-hour rule)
+	if !req.IgnoreThrottle {
+		allowed, err := models.IsEC2SyncAllowed("templates_auto_start")
+		if err == nil && !allowed {
+			// Check if it's already running. If so, we can continue without starting.
+			status, err := client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
+				InstanceIds: []string{cfg.InstanceID},
+			})
+			if err == nil && len(status.Reservations) > 0 && len(status.Reservations[0].Instances) > 0 {
+				state := status.Reservations[0].Instances[0].State.Name
+				if state != types.InstanceStateNameRunning && state != types.InstanceStateNamePending {
+					JSONResponse(w, models.Response{
+						Success: false,
+						Message: "EC2 auto-start is throttled (24-hour limit). Please start manually or wait.",
+					}, http.StatusTooManyRequests)
+					return
+				}
+				// If running, we just fall through to the "already started" logic below
+			}
+		}
+	}
+
 	// Start the instance
 	_, err = client.StartInstances(ctx, &ec2.StartInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: "Failed to start instance: " + err.Error()}, http.StatusInternalServerError)
-		return
+		// Log error but check if it's because it's already running/pending
+		if !strings.Contains(err.Error(), "IncorrectInstanceState") {
+			JSONResponse(w, models.Response{Success: false, Message: "Failed to start instance: " + err.Error()}, http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Update sync log only if we triggered it via templates (not ignored)
+	if !req.IgnoreThrottle {
+		models.UpdateEC2Sync("templates_auto_start", "success")
 	}
 
 	// Wait for running state
@@ -180,6 +212,12 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 		"ssh_result":  sshMessage,
 	}
 
+	// Record the start time in the database for the auto-shutdown scheduler
+	models.SetEC2StartTime(time.Now().UTC())
+
+	// Force refresh redirector and module caches now that EC2 is up
+	as.RefreshAllCaches()
+
 	JSONResponse(w, models.Response{
 		Success: true,
 		Message: "EC2 instance started successfully",
@@ -240,10 +278,55 @@ func (as *Server) startEvilginxViaSSH(publicIP string, domain string) string {
 
 // StopEC2Instance stops the EC2 instance
 func (as *Server) StopEC2Instance(w http.ResponseWriter, r *http.Request) {
+	err := as.internalStopEC2()
+	if err != nil {
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
+		return
+	}
+
+	cfg := as.config.EC2
+	JSONResponse(w, models.Response{
+		Success: true,
+		Message: "EC2 instance stopped successfully",
+		Data: map[string]interface{}{
+			"instance_id": cfg.InstanceID,
+			"state":       string(types.InstanceStateNameStopped),
+		},
+	}, http.StatusOK)
+}
+
+// internalStartEC2 starts the EC2 instance without waiting for it to be ready
+func (as *Server) internalStartEC2() (*ec2.Client, error) {
 	client, err := as.getEC2Client()
 	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
-		return
+		return nil, err
+	}
+
+	cfg := as.config.EC2
+	ctx := context.Background()
+
+	// Start the instance
+	_, err = client.StartInstances(ctx, &ec2.StartInstancesInput{
+		InstanceIds: []string{cfg.InstanceID},
+	})
+	if err != nil {
+		// If it's already running/pending, we don't treat it as a hard error for start logic
+		if !strings.Contains(err.Error(), "IncorrectInstanceState") {
+			return nil, fmt.Errorf("failed to trigger start: %w", err)
+		}
+	}
+
+	// Update start time for scheduler tracking
+	models.SetEC2StartTime(time.Now().UTC())
+
+	return client, nil
+}
+
+// internalStopEC2 is the core logic to stop the EC2 instance without HTTP dependency
+func (as *Server) internalStopEC2() error {
+	client, err := as.getEC2Client()
+	if err != nil {
+		return err
 	}
 
 	cfg := as.config.EC2
@@ -254,8 +337,12 @@ func (as *Server) StopEC2Instance(w http.ResponseWriter, r *http.Request) {
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: "Failed to stop instance: " + err.Error()}, http.StatusInternalServerError)
-		return
+		// Ignore if already stopped or stopping
+		if strings.Contains(err.Error(), "IncorrectInstanceState") {
+			log.Infof("EC2 instance already stopping or stopped: %s", cfg.InstanceID)
+			return nil
+		}
+		return fmt.Errorf("failed to stop instance: %w", err)
 	}
 
 	// Wait for stopped state
@@ -264,17 +351,80 @@ func (as *Server) StopEC2Instance(w http.ResponseWriter, r *http.Request) {
 		InstanceIds: []string{cfg.InstanceID},
 	}, 5*time.Minute)
 	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: "Instance stopping but wait failed: " + err.Error()}, http.StatusInternalServerError)
+		return fmt.Errorf("instance stopping but wait failed: %w", err)
+	}
+
+	// Clear the start time when stopped
+	models.SetSimulationConfig(models.ConfigKeyEC2StartTime, "")
+
+	return nil
+}
+
+// StartEC2ShutdownScheduler runs a background goroutine that checks if EC2 should be shut down
+func (as *Server) StartEC2ShutdownScheduler() {
+	log.Info("Starting EC2 auto-shutdown scheduler")
+	go func() {
+		ticker := time.NewTicker(time.Minute)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			as.checkEC2Shutdown()
+		}
+	}()
+}
+
+func (as *Server) checkEC2Shutdown() {
+	startTime, err := models.GetEC2StartTime()
+	if err != nil || startTime.IsZero() {
+		return // Not started or error reading
+	}
+
+	// Check if 10 minutes have passed
+	if time.Since(startTime) < 10*time.Minute {
 		return
 	}
 
-	JSONResponse(w, models.Response{
-		Success: true,
-		Message: "EC2 instance stopped successfully",
-		Data: map[string]interface{}{
-			"instance_id": cfg.InstanceID,
-			"state":       string(types.InstanceStateNameStopped),
-		},
-	}, http.StatusOK)
+	// Verify instance is actually running before proceeding
+	client, err := as.getEC2Client()
+	if err != nil {
+		return
+	}
+
+	cfg := as.config.EC2
+	ctx := context.Background()
+	result, err := client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
+		InstanceIds: []string{cfg.InstanceID},
+	})
+	if err != nil || len(result.Reservations) == 0 || len(result.Reservations[0].Instances) == 0 {
+		return
+	}
+
+	instance := result.Reservations[0].Instances[0]
+	if instance.State.Name != types.InstanceStateNameRunning {
+		// Not running, clear start time if it was erroneously set
+		if instance.State.Name == types.InstanceStateNameStopped {
+			models.SetSimulationConfig(models.ConfigKeyEC2StartTime, "")
+		}
+		return
+	}
+
+	// Check for active campaigns
+	hasActive, err := models.HasActiveCampaigns()
+	if err != nil {
+		log.Errorf("EC2 Scheduler: Error checking for active campaigns: %v", err)
+		return // Erring on side of caution
+	}
+
+	if hasActive {
+		// log.Debug("EC2 Scheduler: Active campaigns found, skipping auto-shutdown")
+		return
+	}
+
+	log.Infof("EC2 Scheduler: Auto-stopping EC2 instance %s (10 minute limit reached with no active campaigns)", cfg.InstanceID)
+	err = as.internalStopEC2()
+	if err != nil {
+		log.Errorf("EC2 Scheduler: Failed to auto-stop instance: %v", err)
+	}
 }
+
 

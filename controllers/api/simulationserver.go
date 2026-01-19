@@ -17,8 +17,8 @@ import (
 
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
-	"github.com/gorilla/mux"
 	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/gorilla/mux"
 )
 
 const (
@@ -60,27 +60,6 @@ func (as *Server) fetchFromSimulationServer(endpoint string) ([]byte, error) {
 	return io.ReadAll(resp.Body)
 }
 
-// fetchWithCache tries to fetch fresh data, caches on success, falls back to cache on failure
-func (as *Server) fetchWithCache(cacheType string) ([]byte, bool, error) {
-	// Try to fetch fresh data
-	data, err := as.fetchFromSimulationServer(cacheType)
-	if err == nil {
-		// Save to cache
-		if cacheErr := models.SetCache(cacheType, "", string(data)); cacheErr != nil {
-			log.Errorf("Failed to cache %s: %v", cacheType, cacheErr)
-		}
-		return data, false, nil // fresh data, not from cache
-	}
-
-	// Fetch failed, try cache
-	log.Warnf("Simulation server offline for %s, trying cache: %v", cacheType, err)
-	cachedData, cacheErr := models.GetCache(cacheType, "")
-	if cacheErr != nil {
-		return nil, false, fmt.Errorf("server offline and no cache available")
-	}
-
-	return []byte(cachedData), true, nil // cached data
-}
 
 // CallSimulationServer makes an authenticated call to the TrustStrike server
 func (as *Server) CallSimulationServer(campaign string) error {
@@ -289,24 +268,84 @@ func (as *Server) GetConfig(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// GetModules returns available modules with caching fallback
+// GetModules returns modules exclusively from the database cache while triggering a background sync/stop sequence
 func (as *Server) GetModules(w http.ResponseWriter, r *http.Request) {
-	data, fromCache, err := as.fetchWithCache(CacheTypeModules)
+	as.serveFromCacheOnly(w, CacheTypeModules)
+}
+
+// GetRedirectors returns available redirectors exclusively from the database cache while triggering a background refresh
+func (as *Server) GetRedirectors(w http.ResponseWriter, r *http.Request) {
+	as.serveFromCacheOnly(w, CacheTypeRedirectors)
+}
+
+// RefreshAllCaches forces an update of redirectors and modules from the simulation server.
+func (as *Server) RefreshAllCaches() {
+	log.Info("Refreshing simulation server caches...")
+	
+	// Refresh modules in background
+	go as.updateCacheBackground(CacheTypeModules)
+
+	// Refresh redirectors in background
+	go as.updateCacheBackground(CacheTypeRedirectors)
+}
+
+// serveFromCacheOnly serves data from the local database and triggers a background update if available
+func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string) {
+	// 1. Get from database
+	cachedData, err := models.GetCache(cacheType, "")
+	
+	// 2. Trigger background update if server is likely available
+	go as.updateCacheBackground(cacheType)
+
 	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadGateway)
+		// If nothing in DB, return error
+		JSONResponse(w, models.Response{Success: false, Message: "Data not found in cache. Refreshing in background..."}, http.StatusNotFound)
 		return
 	}
 
+	// 3. Serve cached data
 	w.Header().Set("Content-Type", "application/json")
-	if fromCache {
-		w.Header().Set("X-Cache-Status", "cached")
-	} else {
-		w.Header().Set("X-Cache-Status", "fresh")
-	}
-	w.Write(data)
+	w.Header().Set("X-Served-From", "database")
+	w.Write([]byte(cachedData))
 }
 
-// CreateStrike proxies the request to create a new strike
+// updateCacheBackground attempts to fetch fresh data and update the database without blocking
+func (as *Server) updateCacheBackground(cacheType string) {
+	data, err := as.fetchFromSimulationServer(cacheType)
+	if err != nil {
+		//log.Warnf("Background sync failed for %s (server might still be starting): %v", cacheType, err)
+		return
+	}
+
+	// Save to cache table
+	if cacheErr := models.SetCache(cacheType, "", string(data)); cacheErr != nil {
+		log.Errorf("Failed to update cache for %s: %v", cacheType, cacheErr)
+	} else {
+		log.Infof("Successfully updated cache for %s. Checking if infrastructure can be stopped...", cacheType)
+		
+		// THE HOOK: Stop the server only if no active campaigns and grace period passed
+		go func() {
+			// 1. Check for active campaigns
+			hasActive, err := models.HasActiveCampaigns()
+			if err != nil || hasActive {
+				log.Infof("Auto-stop skipped for %s: Active campaigns detected or error checking (%v)", cacheType, err)
+				return
+			}
+
+			// 2. Check 5-minute grace period to protect "New Campaign" wizard
+			startTime, err := models.GetEC2StartTime()
+			if err == nil && !startTime.IsZero() {
+				if time.Since(startTime) < 60*time.Minute {
+					log.Infof("Auto-stop skipped for %s: Within 60-minute safety window", cacheType)
+					return
+				}
+			}
+
+			log.Infof("Auto-stop criteria met for %s. Shutting down infrastructure.", cacheType)
+			as.internalStopEC2()
+		}()
+	}
+}
 func (as *Server) CreateStrike(w http.ResponseWriter, r *http.Request) {
 	url := as.config.SimulationServerURL + "strikes/create"
 	proxyRequest(w, "POST", url, r.Body)
@@ -1209,23 +1248,6 @@ func proxyRequestWithCacheInvalidation(w http.ResponseWriter, method, url string
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(resp.StatusCode)
 	w.Write(respBody)
-}
-
-// GetRedirectors returns available redirectors with caching fallback
-func (as *Server) GetRedirectors(w http.ResponseWriter, r *http.Request) {
-	data, fromCache, err := as.fetchWithCache(CacheTypeRedirectors)
-	if err != nil {
-		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadGateway)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if fromCache {
-		w.Header().Set("X-Cache-Status", "cached")
-	} else {
-		w.Header().Set("X-Cache-Status", "fresh")
-	}
-	w.Write(data)
 }
 
 // GetRedirector proxies the request to get a single redirector's details
