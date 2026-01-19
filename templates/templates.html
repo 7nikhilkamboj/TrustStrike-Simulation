@@ -2,80 +2,286 @@
 {{template "nav" .}}
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main redesign-page">
     <!-- Page Header -->
-    <h1 class="page-header">
-        {{.Title}}
-    </h1>
+    <h1 class="page-header">Templates</h1>
 
     <!-- Flash Messages -->
     <div id="flashes" class="row"></div>
 
-    <!-- Action Bar -->
-    <div class="page-action-bar">
-        <div class="page-action-left">
-            <button type="button" class="btn btn-primary" onclick="edit(-1)">
-                <i class="fa fa-plus"></i> New Template
-            </button>
-            <div class="btn-group">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false">
-                    <i class="fa fa-ellipsis-h"></i> Bulk Actions <span class="caret"></span>
+    <!-- Main Template Type Tabs -->
+    <div class="template-main-tabs">
+        <button class="template-main-tab active" data-tab="email-qr-sms" onclick="switchMainTab('email-qr-sms')">
+            <i class="fa fa-envelope"></i> Email/QR/SMS
+        </button>
+        <button class="template-main-tab" data-tab="redirector" onclick="switchMainTab('redirector')">
+            <i class="fa fa-external-link"></i> Redirector Page
+        </button>
+        <button class="template-main-tab" data-tab="login-page" onclick="switchMainTab('login-page')">
+            <i class="fa fa-sign-in"></i> Login Page
+        </button>
+    </div>
+
+    <!-- ================== EMAIL/QR/SMS TEMPLATES TAB ================== -->
+    <div id="tab-email-qr-sms" class="template-tab-content active">
+        <!-- Action Bar -->
+        <div class="page-action-bar">
+            <div class="page-action-left">
+                <button type="button" class="btn btn-primary" onclick="edit(-1)">
+                    <i class="fa fa-plus"></i> New Template
                 </button>
-                <ul class="dropdown-menu">
-                    <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
-                            Selected</a></li>
-                </ul>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        <i class="fa fa-ellipsis-h"></i> Bulk Actions <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
+                                Selected</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="page-action-right">
+                <div class="btn-group" data-toggle="buttons" id="templateTypeFilter">
+                    <label class="btn btn-primary active" onclick="switchTemplateType('')">
+                        <input type="radio" name="options" id="type_all" autocomplete="off"> All
+                    </label>
+                    <label class="btn btn-primary" onclick="switchTemplateType('email')">
+                        <input type="radio" name="options" id="type_email" autocomplete="off"> Email
+                    </label>
+                    <label class="btn btn-primary" onclick="switchTemplateType('qr')">
+                        <input type="radio" name="options" id="type_qr" autocomplete="off"> QR
+                    </label>
+                    <label class="btn btn-primary" onclick="switchTemplateType('sms')">
+                        <input type="radio" name="options" id="type_sms" autocomplete="off"> SMS
+                    </label>
+                </div>
             </div>
         </div>
-        <div class="page-action-right">
-            <div class="btn-group" data-toggle="buttons" id="templateTypeFilter">
-                <label class="btn btn-primary active" onclick="switchTemplateType('')">
-                    <input type="radio" name="options" id="type_all" autocomplete="off"> All
-                </label>
-                <label class="btn btn-primary" onclick="switchTemplateType('email')">
-                    <input type="radio" name="options" id="type_email" autocomplete="off"> Email
-                </label>
-                <label class="btn btn-primary" onclick="switchTemplateType('qr')">
-                    <input type="radio" name="options" id="type_qr" autocomplete="off"> QR
-                </label>
-                <label class="btn btn-primary" onclick="switchTemplateType('sms')">
-                    <input type="radio" name="options" id="type_sms" autocomplete="off"> SMS
-                </label>
+
+        <!-- Search Box -->
+        <div class="row" style="margin-bottom: 30px;">
+            <div class="col-md-12">
+                <div class="search-container">
+                    <input type="text" class="form-control search-input" id="templateSearch"
+                        placeholder="Search templates...">
+                    <button class="btn btn-search">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
             </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading">
+            <i class="fa fa-spinner fa-spin fa-4x"></i>
+        </div>
+
+        <!-- Empty Message -->
+        <div id="emptyMessage" class="row" style="display:none;">
+            <div class="alert alert-info" id="emptyMessageText">
+                No templates yet. Let's create one!
+            </div>
+        </div>
+
+        <!-- Template Cards Container -->
+        <div id="templateCardsContainer" class="row" style="display:none;">
+            <!-- Cards populated by JavaScript -->
         </div>
     </div>
 
-    <!-- Search Box -->
-    <div class="row" style="margin-bottom: 30px;">
-        <div class="col-md-12">
-            <div class="search-container">
-                <input type="text" class="form-control search-input" id="templateSearch"
-                    placeholder="Search templates...">
-                <button class="btn btn-search">
-                    <i class="fa fa-search"></i>
+    <!-- ================== REDIRECTOR TEMPLATES TAB ================== -->
+    <div id="tab-redirector" class="template-tab-content" style="display: none;">
+        <!-- Action Bar -->
+        <div class="page-action-bar">
+            <div class="page-action-left">
+                <button class="btn btn-primary" onclick="openCreateModal()">
+                    <i class="fa fa-plus"></i> New Redirector
+                </button>
+            </div>
+            <div class="page-action-right">
+                <div class="search-container">
+                    <input type="text" class="form-control search-input" id="searchRedirectors"
+                        placeholder="Search redirectors...">
+                    <button class="btn btn-search" type="button"><i class="fa fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="redirectorLoading">
+            <i class="fa fa-spinner fa-spin fa-4x"></i>
+        </div>
+
+        <!-- Empty Message -->
+        <div id="redirectorEmptyMessage" class="row" style="display:none;">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    No redirectors created yet. Let's create one!
+                </div>
+            </div>
+        </div>
+
+        <!-- Redirector Cards Grid -->
+        <div class="row" id="redirectorGrid" style="display:none;">
+            <!-- Cards populated by JavaScript -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="row">
+            <div class="col-md-12 text-center" id="redirectorPagination"></div>
+        </div>
+    </div>
+
+    <!-- ================== LOGIN PAGE TEMPLATES TAB ================== -->
+    <div id="tab-login-page" class="template-tab-content" style="display: none;">
+        <!-- Action Bar -->
+        <div class="page-action-bar">
+            <div class="page-action-right">
+                <div class="search-container">
+                    <input type="text" class="form-control search-input" id="phishletSearch"
+                        placeholder="Search phishlets...">
+                    <button class="btn btn-search" type="button"><i class="fa fa-search"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loginPageLoading">
+            <i class="fa fa-spinner fa-spin fa-4x"></i>
+        </div>
+
+        <!-- Empty Message -->
+        <div id="loginPageEmptyMessage" class="row" style="display:none;">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    No phishlets available. Please check your Simulation Server connection.
+                </div>
+            </div>
+        </div>
+
+        <!-- Phishlet Cards Grid -->
+        <div class="phishlet-grid-container" id="phishletGrid" style="display:none;">
+            <div id="phishletCardsRow">
+                <!-- Cards populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create/Edit Redirector Modal -->
+<div class="modal fade" id="redirectorModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <h4 class="modal-title" id="redirectorModalTitle">New Redirector</h4>
+            </div>
+            <div class="modal-body">
+                <div id="redirectorModal.flashes"></div>
+                <input type="hidden" id="editingRedirectorName" value="">
+
+                <div class="form-group">
+                    <label for="redirectorName">Name</label>
+                    <input type="text" class="form-control" id="redirectorName" placeholder="e.g., turnstile">
+                    <small class="help-block">A unique name (no spaces). Use <code>{strike_url_html}</code> in
+                        HTML for the lure URL.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="redirectorHtml">HTML Content</label>
+                    <textarea class="form-control" id="redirectorHtml" rows="15"
+                        placeholder="Enter HTML content..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="saveRedirectorBtn" onclick="saveRedirector()">
+                    <i class="fa fa-save"></i> Save Redirector
                 </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Loading -->
-    <div id="loading">
-        <i class="fa fa-spinner fa-spin fa-4x"></i>
-    </div>
-
-    <!-- Empty Message -->
-    <div id="emptyMessage" class="row" style="display:none;">
-        <div class="alert alert-info" id="emptyMessageText">
-            No templates yet. Let's create one!
+<!-- Full Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document" style="width: 900px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                <h4 class="modal-title" id="previewModalTitle">Preview</h4>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <iframe id="previewFrame" style="width: 100%; height: 500px; border: none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
         </div>
-    </div>
-
-    <!-- Template Cards Container -->
-    <div id="templateCardsContainer" class="row" style="display:none;">
-        <!-- Cards populated by JavaScript -->
     </div>
 </div>
 
 <style>
+    /* Main Template Type Tabs */
+    .template-main-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        border-bottom: 2px solid #E5E7EB;
+        padding-bottom: 0;
+    }
+
+    .template-main-tab {
+        background: transparent;
+        border: none;
+        padding: 12px 24px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #6B7280;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .template-main-tab:hover {
+        color: #4338CA;
+        background: #F3F4F6;
+    }
+
+    .template-main-tab.active {
+        color: #4338CA;
+        background: #EEF2FF;
+    }
+
+    .template-main-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #4338CA;
+        border-radius: 3px 3px 0 0;
+    }
+
+    .template-main-tab i {
+        margin-right: 8px;
+    }
+
+    .template-tab-content {
+        display: none;
+    }
+
+    .template-tab-content.active {
+        display: block;
+    }
+
+    .page-subtitle {
+        color: #6B7280;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
     .search-container {
         display: flex;
         border: 1px solid #E5E7EB;
@@ -316,6 +522,334 @@
         font-weight: 600 !important;
         box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
     }
+
+    /* Redirector Card Styles */
+    .redirector-card {
+        width: 100%;
+        height: 360px;
+        border: 1px solid #E5E7EB;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #fff;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+    }
+
+    .redirector-card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transform: translateY(-3px);
+        border-color: #D1D5DB;
+    }
+
+    .redirector-header {
+        padding: 14px 18px;
+        background: #F9FAFB;
+        border-bottom: 1px solid #F3F4F6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 52px;
+        flex-shrink: 0;
+    }
+
+    .redirector-name {
+        font-weight: 600;
+        font-size: 15px;
+        color: #111827;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60%;
+    }
+
+    .redirector-preview {
+        flex: 1;
+        background: #fff;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .redirector-preview iframe {
+        width: 200%;
+        height: 200%;
+        border: 0;
+        transform: scale(0.5);
+        transform-origin: 0 0;
+        pointer-events: none;
+    }
+
+    .redirector-footer {
+        padding: 14px 18px;
+        background: #F9FAFB;
+        border-top: 1px solid #F3F4F6;
+        flex-shrink: 0;
+        height: 70px;
+    }
+
+    .redirector-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 12px;
+    }
+
+    .btn-action {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        background: #ECFDF5;
+        border: none;
+        color: #10B981;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+        background: #4F46E5 !important;
+        color: #fff;
+    }
+
+    .btn-action-preview {
+        background: #19191A;
+        color: #fff;
+    }
+
+    .btn-action-preview:hover {
+        color: #fff;
+        background: #4F46E5 !important;
+    }
+
+    .btn-action-delete {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        background: #FEF2F2;
+        border: none;
+        color: #DC2626;
+        transition: all 0.2s ease;
+    }
+
+    .btn-action-delete:hover {
+        background: #DC2626;
+        color: #fff;
+    }
+
+    /* Phishlet/Login Page Styles */
+    .phishlet-grid-container {
+        overflow-y: auto;
+        padding: 24px;
+        background: #F9FAFB;
+        border: 1px solid #E5E7EB;
+        border-radius: 16px;
+        margin-top: 8px;
+        margin-bottom: 30px;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    #phishletCardsRow {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 24px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .phishlet-card-wrapper {
+        width: auto !important;
+        max-width: none !important;
+        flex: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .phishlet-card {
+        border: 1px solid #E5E7EB;
+        padding: 0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #FFFFFF;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        position: relative;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        width: 100%;
+        height: 330px;
+        border-radius: 12px;
+    }
+
+    .phishlet-card:hover {
+        transform: translateY(-4px);
+        border-color: #4338CA;
+        box-shadow: 0 8px 20px rgba(67, 56, 202, 0.15);
+    }
+
+    .phishlet-preview-container {
+        width: 100%;
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+        border-bottom: 1px solid #F3F4F6;
+        background: #F9FAFB;
+    }
+
+    .phishlet-preview-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top;
+        transition: transform 0.4s ease;
+    }
+
+    .phishlet-card:hover .phishlet-preview-img {
+        transform: scale(1.05);
+    }
+
+    .phishlet-preview-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .phishlet-card:hover .phishlet-preview-overlay {
+        opacity: 1;
+    }
+
+    .btn-preview {
+        background: white;
+        color: #111827;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transform: translateY(10px);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .phishlet-card:hover .btn-preview {
+        transform: translateY(0);
+    }
+
+    .btn-preview:hover {
+        background: #F3F4F6;
+        transform: scale(1.05);
+    }
+
+    .phishlet-card-content {
+        padding: 12px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: #FFFFFF;
+    }
+
+    .phishlet-card .phishlet-icon {
+        font-size: 28px;
+        color: #4338CA;
+        margin-bottom: 8px;
+        transition: all 0.3s;
+    }
+
+    .phishlet-card .phishlet-name {
+        font-weight: 600;
+        color: #111827;
+        font-size: 14px;
+        word-break: break-all;
+    }
+
+    .phishlet-status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        font-size: 10px;
+        font-weight: 600;
+        border-radius: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 2;
+    }
+
+    .phishlet-status-badge.enabled {
+        background: #ECFDF5;
+        color: #059669;
+    }
+
+    .phishlet-status-badge.disabled {
+        background: #F3F4F6;
+        color: #6B7280;
+    }
+
+    /* Brand Specific Icon Colors */
+    .phishlet-icon.brand-google {
+        color: #4285F4 !important;
+    }
+
+    .phishlet-icon.brand-microsoft {
+        color: #00A4EF !important;
+    }
+
+    .phishlet-icon.brand-linkedin {
+        color: #0077B5 !important;
+    }
+
+    .phishlet-icon.brand-github {
+        color: #181717 !important;
+    }
+
+    .phishlet-icon.brand-amazon {
+        color: #FF9900 !important;
+    }
+
+    .phishlet-icon.brand-facebook {
+        color: #1877F2 !important;
+    }
+
+    .phishlet-icon.brand-twitter {
+        color: #1DA1F2 !important;
+    }
+
+    .phishlet-icon.brand-apple {
+        color: #000000 !important;
+    }
+
+    .phishlet-icon.brand-reddit {
+        color: #FF4500 !important;
+    }
+
+    .phishlet-icon.brand-slack {
+        color: #4A154B !important;
+    }
 </style>
 
 {{end}}
@@ -324,26 +858,41 @@
 <script src="/js/src/vendor/ckeditor/adapters/jquery.js"></script>
 <script src="/js/dist/app/autocomplete.min.js"></script>
 <script>
+    // ===================== MAIN TAB SWITCHING =====================
+    var currentMainTab = 'email-qr-sms';
+    var tabsLoaded = { 'email-qr-sms': false, 'redirector': false, 'login-page': false };
+
+    function switchMainTab(tab) {
+        currentMainTab = tab;
+
+        // Update tab buttons
+        $('.template-main-tab').removeClass('active');
+        $('.template-main-tab[data-tab="' + tab + '"]').addClass('active');
+
+        // Show/hide content
+        $('.template-tab-content').removeClass('active').hide();
+        $('#tab-' + tab).addClass('active').show();
+
+        // Load data if not loaded yet
+        if (!tabsLoaded[tab]) {
+            if (tab === 'email-qr-sms') {
+                load();
+            } else if (tab === 'redirector') {
+                loadRedirectors();
+            } else if (tab === 'login-page') {
+                loadPhishlets();
+            }
+            tabsLoaded[tab] = true;
+        }
+    }
+
+    // ===================== EMAIL/QR/SMS TEMPLATES =====================
     var templates = []
     var templateType = "" // Default to all
 
     // Switch template type view
     function switchTemplateType(type) {
         templateType = type
-
-        if (type == "") {
-            pageHeader = "All Templates"
-            $(".page-header").text(pageHeader)
-        } else if (type == "email") {
-            pageHeader = "Email Templates"
-            $(".page-header").text(pageHeader)
-        } else if (type == "sms") {
-            pageHeader = "SMS Templates"
-            $(".page-header").text(pageHeader)
-        } else if (type == "qr") {
-            pageHeader = "QR Templates"
-            $(".page-header").text(pageHeader)
-        }
         $("#emptyMessageText").text("No " + (templateType || "templates") + " created yet. Let's create one!")
         load()
     }
@@ -396,7 +945,7 @@
                     'This template has been deleted!',
                     'success'
                 ).then(() => {
-                    location.reload()
+                    load()
                 });
             }
         })
@@ -442,9 +991,6 @@
         templates.forEach(function (template, idx) {
             var name = template.name || "Untitled"
             var html = template.html || template.text || ""
-
-            // Sanitize HTML for preview (strip scripts, truncate)
-            var previewHtml = html.substring(0, 500)
 
             var cardHtml = `
         <div class="col-md-4 template-card-wrapper" data-name="${escapeHtml(name)}">
@@ -493,40 +1039,7 @@
         })
     }
 
-    $(document).ready(function () {
-        // Determine template type from URL if necessary
-        switchTemplateType("")
-
-        if (window.location.pathname.indexOf("sms") !== -1) {
-            templateType = "sms"
-        } else if (window.location.pathname.indexOf("qr") !== -1) {
-            templateType = "qr"
-        }
-
-        // Set active button
-        $("#type_" + templateType).parent().addClass("active")
-
-        // Search filter
-        $("#templateSearch").on("keyup", function () {
-            var searchTerm = $(this).val().toLowerCase()
-            $(".template-card-wrapper").each(function () {
-                var name = $(this).data("name").toLowerCase()
-                if (name.indexOf(searchTerm) > -1) {
-                    $(this).show()
-                } else {
-                    $(this).hide()
-                }
-            })
-        })
-    })
-
     /* --- Bulk Management --- */
-
-    function toggleSelectAll() {
-        var checked = $("#selectAllTemplates").is(":checked")
-        $(".template-checkbox").prop("checked", checked)
-    }
-
     function bulkDeleteSelected() {
         var ids = []
         $(".template-checkbox:checked").each(function () {
@@ -559,15 +1072,502 @@
                 var promises = ids.map(id => api.templateId.delete(id))
                 $.when.apply($, promises).then(function () {
                     Swal.fire('Deleted!', 'The selected templates have been removed.', 'success').then(() => {
-                        location.reload()
+                        load()
                     })
                 }).fail(function () {
                     Swal.fire('Error', 'Some templates could not be deleted.', 'error').then(() => {
-                        location.reload()
+                        load()
                     })
                 })
             }
         })
     }
+
+    // ===================== REDIRECTOR TEMPLATES =====================
+    var redirectors = [];
+    var redirectorCurrentPage = 1;
+    var redirectorItemsPerPage = 6;
+    const REDIRECTOR_API_BASE = "/api/simulationserver/redirectors";
+
+    function loadRedirectors() {
+        $("#redirectorLoading").show();
+        $("#redirectorGrid").hide();
+        $("#redirectorEmptyMessage").hide();
+
+        $.ajax({
+            url: REDIRECTOR_API_BASE,
+            method: "GET",
+            success: function (response) {
+                $("#redirectorLoading").hide();
+
+                if (response.success && Array.isArray(response.redirectors)) {
+                    redirectors = response.redirectors;
+                } else if (Array.isArray(response)) {
+                    redirectors = response;
+                } else {
+                    redirectors = [];
+                }
+
+                if (redirectors.length === 0) {
+                    $("#redirectorEmptyMessage").show();
+                } else {
+                    $("#redirectorGrid").show();
+                    renderRedirectorCards();
+                }
+            },
+            error: function (xhr) {
+                $("#redirectorLoading").hide();
+                showRedirectorError("Failed to load redirectors: " + (xhr.responseJSON?.message || "Unknown error"));
+            }
+        });
+    }
+
+    function renderRedirectorCards() {
+        var grid = $("#redirectorGrid");
+        grid.empty();
+
+        var searchTerm = $("#searchRedirectors").val().toLowerCase();
+        var filtered = redirectors.filter(function (r) {
+            var name = r.name || r;
+            return !searchTerm || name.toLowerCase().indexOf(searchTerm) > -1;
+        });
+
+        if (filtered.length === 0) {
+            grid.html('<div class="col-md-12"><div class="alert alert-info">No redirectors match your search.</div></div>');
+            $("#redirectorPagination").hide();
+            return;
+        }
+
+        var totalPages = Math.ceil(filtered.length / redirectorItemsPerPage);
+        if (redirectorCurrentPage > totalPages) redirectorCurrentPage = 1;
+
+        var startIdx = (redirectorCurrentPage - 1) * redirectorItemsPerPage;
+        var endIdx = startIdx + redirectorItemsPerPage;
+        var pageItems = filtered.slice(startIdx, endIdx);
+
+        pageItems.forEach(function (redirector) {
+            var name = redirector.name || redirector;
+            var htmlBase64 = redirector.html_base64 || "";
+            var htmlEscaped = redirector.html_escaped || "";
+
+            var previewHtml = "";
+            if (htmlBase64) {
+                try {
+                    previewHtml = atob(htmlBase64);
+                } catch (e) {
+                    previewHtml = htmlEscaped;
+                }
+            } else if (htmlEscaped) {
+                var div = document.createElement('div');
+                div.innerHTML = htmlEscaped;
+                previewHtml = div.textContent || div.innerText || "";
+            }
+
+            var cardHtml = `
+                <div class="col-md-4 col-sm-6">
+                    <div class="redirector-card" id="card-${escapeHtml(name)}">
+                        <div class="redirector-header">
+                            <div class="redirector-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+                            <button class="btn btn-success btn-xs btn-action-preview" onclick="previewFull('${escapeHtml(name)}'); event.stopPropagation();" 
+                                    style="padding: 4px 8px; font-size: 14px; font-weight: bold;">
+                                FULL PREVIEW
+                            </button>
+                        </div>
+                        <div class="redirector-preview">
+                            <iframe srcdoc="${previewHtml.replace(/"/g, '&quot;')}" sandbox></iframe>
+                        </div>
+                        <div class="redirector-footer">
+                            <div class="redirector-actions">
+                                <button class="btn btn-default btn-sm btn-action" onclick="editRedirector('${escapeHtml(name)}'); event.stopPropagation();" title="Edit">
+                                    <i class="fa fa-pencil"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-action-delete" onclick="deleteRedirector('${escapeHtml(name)}'); event.stopPropagation();" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            grid.append(cardHtml);
+        });
+
+        renderRedirectorPagination(totalPages);
+    }
+
+    function renderRedirectorPagination(totalPages) {
+        if (totalPages <= 1) {
+            $("#redirectorPagination").hide();
+            return;
+        }
+
+        var html = '<ul class="pagination" style="margin: 0;">';
+        html += '<li class="' + (redirectorCurrentPage === 1 ? 'disabled' : '') + '"><a href="#" onclick="changeRedirectorPage(' + (redirectorCurrentPage - 1) + '); return false;">&laquo;</a></li>';
+
+        for (var i = 1; i <= totalPages; i++) {
+            html += '<li class="' + (i === redirectorCurrentPage ? 'active' : '') + '"><a href="#" onclick="changeRedirectorPage(' + i + '); return false;">' + i + '</a></li>';
+        }
+
+        html += '<li class="' + (redirectorCurrentPage === totalPages ? 'disabled' : '') + '"><a href="#" onclick="changeRedirectorPage(' + (redirectorCurrentPage + 1) + '); return false;">&raquo;</a></li>';
+        html += '</ul>';
+
+        $("#redirectorPagination").html(html).show();
+    }
+
+    function changeRedirectorPage(page) {
+        var totalPages = Math.ceil(redirectors.length / redirectorItemsPerPage);
+        if (page < 1 || page > totalPages) return;
+        redirectorCurrentPage = page;
+        renderRedirectorCards();
+    }
+
+    function openCreateModal() {
+        $("#redirectorModalTitle").text("New Redirector");
+        $("#editingRedirectorName").val("");
+        $("#redirectorName").val("").prop("readonly", false);
+
+        if (CKEDITOR.instances.redirectorHtml) {
+            CKEDITOR.instances.redirectorHtml.setData("");
+        } else {
+            $("#redirectorHtml").val("");
+        }
+
+        $("#redirectorModal").modal("show");
+    }
+
+    function editRedirector(name) {
+        var redirector = redirectors.find(function (r) {
+            return (r.name || r) === name;
+        });
+
+        if (!redirector) {
+            showRedirectorError("Redirector not found");
+            return;
+        }
+
+        $("#redirectorModalTitle").text("Edit Redirector");
+        $("#editingRedirectorName").val(name);
+        $("#redirectorName").val(name).prop("readonly", true);
+
+        var html = "";
+        if (redirector.html_base64) {
+            try {
+                html = atob(redirector.html_base64);
+            } catch (e) {
+                html = "";
+            }
+        }
+
+        if (CKEDITOR.instances.redirectorHtml) {
+            CKEDITOR.instances.redirectorHtml.setData(html);
+        } else {
+            $("#redirectorHtml").val(html);
+        }
+
+        $("#redirectorModal").modal("show");
+    }
+
+    function saveRedirector() {
+        var editingName = $("#editingRedirectorName").val();
+        var name = $("#redirectorName").val().trim();
+        var html = CKEDITOR.instances.redirectorHtml ?
+            CKEDITOR.instances.redirectorHtml.getData() :
+            $("#redirectorHtml").val();
+
+        if (!name) {
+            showRedirectorError("Please enter a name");
+            return;
+        }
+
+        if (/\s/.test(name)) {
+            showRedirectorError("Name cannot contain spaces");
+            return;
+        }
+
+        if (!html) {
+            showRedirectorError("Please enter HTML content");
+            return;
+        }
+
+        var btn = $("#saveRedirectorBtn");
+        var originalHtml = btn.html();
+        btn.html('<i class="fa fa-spinner fa-spin"></i> Saving...').prop("disabled", true);
+
+        var isEdit = editingName !== "";
+        var url = isEdit ? REDIRECTOR_API_BASE + "/" + encodeURIComponent(editingName) : REDIRECTOR_API_BASE;
+        var method = isEdit ? "PUT" : "POST";
+
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: "application/json",
+            data: JSON.stringify({
+                name: name,
+                html: html
+            }),
+            success: function (response) {
+                btn.html(originalHtml).prop("disabled", false);
+
+                if (response.success) {
+                    $("#redirectorModal").modal("hide");
+                    showRedirectorSuccess(isEdit ? "Redirector updated!" : "Redirector created!");
+                    loadRedirectors();
+                } else {
+                    showRedirectorError(response.message || response.error || "Failed to save");
+                }
+            },
+            error: function (xhr) {
+                btn.html(originalHtml).prop("disabled", false);
+                showRedirectorError("Failed to save: " + (xhr.responseJSON?.message || "Server error"));
+            }
+        });
+    }
+
+    function deleteRedirector(name) {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Delete redirector '" + name + "'?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then(function (result) {
+            if (result.value) {
+                $.ajax({
+                    url: REDIRECTOR_API_BASE + "/" + encodeURIComponent(name),
+                    method: "DELETE",
+                    success: function (response) {
+                        if (response.success) {
+                            showRedirectorSuccess("Redirector deleted!");
+                            loadRedirectors();
+                        } else {
+                            showRedirectorError(response.message || "Failed to delete");
+                        }
+                    },
+                    error: function () {
+                        showRedirectorError("Failed to delete redirector");
+                    }
+                });
+            }
+        });
+    }
+
+    function previewFull(name) {
+        var redirector = redirectors.find(function (r) {
+            return (r.name || r) === name;
+        });
+
+        if (!redirector) return;
+
+        var html = "";
+        if (redirector.html_base64) {
+            try {
+                html = atob(redirector.html_base64);
+            } catch (e) {
+                html = redirector.html_escaped || "";
+            }
+        }
+
+        $("#previewModalTitle").text("Preview: " + name);
+        document.getElementById("previewFrame").srcdoc = html;
+        $("#previewModal").modal("show");
+    }
+
+    function showRedirectorSuccess(message) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'success', title: 'Success', text: message, timer: 2000, showConfirmButton: false });
+        } else {
+            $("#flashes").html('<div class="alert alert-success">' + message + '</div>');
+        }
+    }
+
+    function showRedirectorError(message) {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({ icon: 'error', title: 'Error', text: message });
+        } else {
+            $("#flashes").html('<div class="alert alert-danger">' + message + '</div>');
+        }
+    }
+
+    // ===================== LOGIN PAGE TEMPLATES =====================
+    var phishlets = [];
+
+    function loadPhishlets() {
+        $("#loginPageLoading").show();
+        $("#phishletGrid").hide();
+        $("#loginPageEmptyMessage").hide();
+
+        $.ajax({
+            url: "/api/simulationserver/modules",
+            method: "GET",
+            success: function (response) {
+                $("#loginPageLoading").hide();
+                if (response && response.length > 0) {
+                    phishlets = response;
+                    renderPhishletCards();
+                    $("#phishletGrid").show();
+                } else {
+                    $("#loginPageEmptyMessage").show();
+                }
+            },
+            error: function () {
+                $("#loginPageLoading").hide();
+                $("#loginPageEmptyMessage").show();
+            }
+        });
+    }
+
+    function renderPhishletCards() {
+        var $row = $("#phishletCardsRow");
+        $row.empty();
+
+        phishlets.forEach(function (phishlet) {
+            var name = phishlet.name || phishlet;
+            var enabled = phishlet.enabled || false;
+
+            var iconClass = getBrandIconClass(name);
+            var brandClass = getBrandColorClass(name);
+
+            var previewImg = "/images/phishlets/" + name + ".png";
+            var fallbackImg = "/images/phishlets/generic_preview.png";
+
+            var statusBadge = enabled
+                ? '<span class="phishlet-status-badge enabled">Enabled</span>'
+                : '<span class="phishlet-status-badge disabled">Disabled</span>';
+
+            var cardHtml = `
+            <div class="phishlet-card-wrapper" data-name="${name}">
+                <div class="phishlet-card"">
+                    ${statusBadge}
+                    <div class="phishlet-preview-container">
+                        <img class="phishlet-preview-img" src="${previewImg}"
+                            onerror="this.src='${fallbackImg}'" alt="${name} preview">
+                        <div class="phishlet-preview-overlay">
+                            <button class="btn-preview" onclick="openPhishletPreview(event, '${name}')">
+                                <i class="fa fa-eye"></i> Full Preview
+                            </button>
+                        </div>
+                    </div>
+                    <div class="phishlet-card-content">
+                        <img class="phishlet-icon ${brandClass}" src="/${name}.svg"
+                            onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';"
+                            style="width: 32px; height: 32px;">
+                        <i class="${iconClass} phishlet-icon ${brandClass}" style="display: none;"></i>
+                        <span class="phishlet-name">${name}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            $row.append(cardHtml);
+        });
+    }
+
+    function openPhishletPreview(event, name) {
+        event.stopPropagation();
+        var imgPath = "/images/phishlets/" + name + ".png";
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: name,
+                imageUrl: imgPath,
+                imageAlt: name + ' preview',
+                showCloseButton: true,
+                showConfirmButton: false,
+                width: 600,
+                padding: '20px',
+                background: '#fff'
+            });
+        } else {
+            window.open(imgPath, '_blank');
+        }
+    }
+
+    function getBrandIconClass(name) {
+        var iconMap = {
+            'google': 'fa fa-google',
+            'microsoft': 'fa fa-windows',
+            'o365': 'fa fa-windows',
+            'linkedin': 'fa fa-linkedin',
+            'github': 'fa fa-github',
+            'git': 'fa fa-github',
+            'amazon': 'fa fa-amazon',
+            'facebook': 'fa fa-facebook',
+            'twitter': 'fa fa-twitter',
+            'apple': 'fa fa-apple',
+            'reddit': 'fa fa-reddit',
+            'slack': 'fa fa-slack',
+            'example': 'fa fa-shield'
+        };
+        return iconMap[name.toLowerCase()] || 'fa fa-globe';
+    }
+
+    function getBrandColorClass(name) {
+        var colorMap = {
+            'google': 'brand-google',
+            'microsoft': 'brand-microsoft',
+            'o365': 'brand-microsoft',
+            'linkedin': 'brand-linkedin',
+            'github': 'brand-github',
+            'git': 'brand-github',
+            'amazon': 'brand-amazon',
+            'facebook': 'brand-facebook',
+            'twitter': 'brand-twitter',
+            'apple': 'brand-apple',
+            'reddit': 'brand-reddit',
+            'slack': 'brand-slack'
+        };
+        return colorMap[name.toLowerCase()] || '';
+    }
+
+    // ===================== INITIALIZATION =====================
+    $(document).ready(function () {
+        // Load initial tab
+        switchMainTab('email-qr-sms');
+
+        // Template search filter
+        $("#templateSearch").on("keyup", function () {
+            var searchTerm = $(this).val().toLowerCase()
+            $(".template-card-wrapper").each(function () {
+                var name = $(this).data("name").toLowerCase()
+                if (name.indexOf(searchTerm) > -1) {
+                    $(this).show()
+                } else {
+                    $(this).hide()
+                }
+            })
+        });
+
+        // Redirector search filter
+        $("#searchRedirectors").on("keyup", function () {
+            redirectorCurrentPage = 1;
+            renderRedirectorCards();
+        });
+
+        // Phishlet search filter
+        $("#phishletSearch").on("keyup", function () {
+            var searchTerm = $(this).val().toLowerCase();
+            $(".phishlet-card-wrapper").each(function () {
+                var name = $(this).data("name").toLowerCase();
+                if (name.indexOf(searchTerm) > -1) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+        });
+
+        // Initialize CKEditor when redirector modal opens
+        $("#redirectorModal").on("shown.bs.modal", function () {
+            if (!CKEDITOR.instances.redirectorHtml) {
+                $("#redirectorHtml").ckeditor({
+                    height: 300,
+                    allowedContent: true,
+                    extraAllowedContent: '*(*);*{*}',
+                    fullPage: true
+                });
+            }
+        });
+    });
 </script>
 {{end}}

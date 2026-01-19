@@ -36,17 +36,9 @@
             TEMPLATES
         </div>
         <div class="nav-group-container" style="display: block;">
-            <div class="nav-item-wrapper {{ if or (eq .Title " Email Templates") (eq .Title "Email Templates" )
-                }}active{{ end }}">
-                <a href="/templates" class="nav-item-link">Email/QR/SMS Templates</a>
-            </div>
-            <div class="nav-item-wrapper {{ if or (eq .Title " Redirector Templates") (eq .Title "Redirector Templates"
-                ) }}active{{ end }}">
-                <a href="/redirectors" class="nav-item-link">Redirector Page Templates</a>
-            </div>
-            <div class="nav-item-wrapper {{ if or (eq .Title " Landing Pages") (eq .Title "Landing Pages" ) }}active{{
-                end }}">
-                <a href="/login_pages" class="nav-item-link">Login Page Templates</a>
+            <div class="nav-item-wrapper {{ if or (eq .Title " Email Templates") (eq .Title "Redirector Templates" ) (eq
+                .Title "Landing Pages" ) }}active{{ end }}">
+                <a href="/templates" class="nav-item-link">All Templates</a>
             </div>
         </div>
 
