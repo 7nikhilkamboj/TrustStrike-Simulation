@@ -8,9 +8,15 @@
     <div id="flashes" class="row"></div>
 
     <!-- Main Template Type Tabs -->
-    <div class="template-main-tabs">
-        <button class="template-main-tab active" data-tab="email-qr-sms" onclick="switchMainTab('email-qr-sms')">
-            <i class="fa fa-envelope"></i> Email/QR/SMS
+    <div class="template-main-tabs" style="margin-top: 20px;">
+        <button class="template-main-tab active" data-tab="email" onclick="switchMainTab('email')">
+            <i class="fa fa-envelope"></i> Email
+        </button>
+        <button class="template-main-tab" data-tab="qr" onclick="switchMainTab('qr')">
+            <i class="fa fa-qrcode"></i> QR
+        </button>
+        <button class="template-main-tab" data-tab="sms" onclick="switchMainTab('sms')">
+            <i class="fa fa-commenting"></i> SMS
         </button>
         <button class="template-main-tab" data-tab="redirector" onclick="switchMainTab('redirector')">
             <i class="fa fa-external-link"></i> Redirector Page
@@ -20,8 +26,8 @@
         </button>
     </div>
 
-    <!-- ================== EMAIL/QR/SMS TEMPLATES TAB ================== -->
-    <div id="tab-email-qr-sms" class="template-tab-content active">
+    <!-- ================== TEMPLATES TAB (EMAIL/QR/SMS) ================== -->
+    <div id="tab-templates" class="template-tab-content active">
         <!-- Action Bar -->
         <div class="page-action-bar">
             <div class="page-action-left">
@@ -40,20 +46,7 @@
                 </div>
             </div>
             <div class="page-action-right">
-                <div class="btn-group" data-toggle="buttons" id="templateTypeFilter">
-                    <label class="btn btn-primary active" onclick="switchTemplateType('')">
-                        <input type="radio" name="options" id="type_all" autocomplete="off"> All
-                    </label>
-                    <label class="btn btn-primary" onclick="switchTemplateType('email')">
-                        <input type="radio" name="options" id="type_email" autocomplete="off"> Email
-                    </label>
-                    <label class="btn btn-primary" onclick="switchTemplateType('qr')">
-                        <input type="radio" name="options" id="type_qr" autocomplete="off"> QR
-                    </label>
-                    <label class="btn btn-primary" onclick="switchTemplateType('sms')">
-                        <input type="radio" name="options" id="type_sms" autocomplete="off"> SMS
-                    </label>
-                </div>
+                <!-- Secondary filter removed as tabs now handle demerging -->
             </div>
         </div>
 
@@ -859,8 +852,8 @@
 <script src="/js/dist/app/autocomplete.min.js"></script>
 <script>
     // ===================== MAIN TAB SWITCHING =====================
-    var currentMainTab = 'email-qr-sms';
-    var tabsLoaded = { 'email-qr-sms': false, 'redirector': false, 'login-page': false };
+    var currentMainTab = 'email';
+    var tabsLoaded = { 'email': false, 'qr': false, 'sms': false, 'redirector': false, 'login-page': false };
 
     function switchMainTab(tab) {
         currentMainTab = tab;
@@ -871,31 +864,30 @@
 
         // Show/hide content
         $('.template-tab-content').removeClass('active').hide();
-        $('#tab-' + tab).addClass('active').show();
 
-        // Load data if not loaded yet
-        if (!tabsLoaded[tab]) {
-            if (tab === 'email-qr-sms') {
-                load();
-            } else if (tab === 'redirector') {
+        // Map templates tabs to the shared container
+        var contentId = (tab === 'email' || tab === 'qr' || tab === 'sms') ? 'templates' : tab;
+        $('#tab-' + contentId).addClass('active').show();
+
+        // Load data
+        if (tab === 'email' || tab === 'qr' || tab === 'sms') {
+            templateType = tab;
+            load();
+        } else if (tab === 'redirector') {
+            if (!tabsLoaded[tab]) {
                 loadEC2Data('redirector');
-            } else if (tab === 'login-page') {
-                loadEC2Data('login-page');
+                tabsLoaded[tab] = true;
             }
-            tabsLoaded[tab] = true;
+        } else if (tab === 'login-page') {
+            if (!tabsLoaded[tab]) {
+                loadEC2Data('login-page');
+                tabsLoaded[tab] = true;
+            }
         }
     }
 
-    // ===================== EMAIL/QR/SMS TEMPLATES =====================
     var templates = []
-    var templateType = "" // Default to all
-
-    // Switch template type view
-    function switchTemplateType(type) {
-        templateType = type
-        $("#emptyMessageText").text("No " + (templateType || "templates") + " created yet. Let's create one!")
-        load()
-    }
+    var templateType = "email" // Default to email as requested
 
     function edit(idx) {
         if (idx == -1) {
@@ -1103,13 +1095,13 @@
                         data: JSON.stringify({ start_evil: true, ignore_throttle: false }),
                         timeout: 300000,
                         success: function (response) {
-                            console.log("EC2 auto-start triggered");
+                            //console.log("EC2 auto-start triggered");
                         },
                         error: function (xhr) {
                             if (xhr.status === 429) {
-                                console.log("EC2 auto-start throttled (24h limit)");
+                                //console.log("EC2 auto-start throttled (24h limit)");
                             } else {
-                                console.error("Failed to auto-start EC2", xhr);
+                                // console.error("Failed to auto-start EC2", xhr);
                             }
                         },
                         complete: function () {
@@ -1126,7 +1118,7 @@
                 }
             },
             error: function (xhr) {
-                console.error("Failed to load EC2 status", xhr);
+                //console.error("Failed to load EC2 status", xhr);
                 if (tab === 'redirector') loadRedirectors();
                 else if (tab === 'login-page') loadPhishlets();
                 tabsLoaded[tab] = true;
@@ -1578,7 +1570,7 @@
     // ===================== INITIALIZATION =====================
     $(document).ready(function () {
         // Load initial tab
-        switchMainTab('email-qr-sms');
+        switchMainTab('email');
 
         // Template search filter
         $("#templateSearch").on("keyup", function () {
