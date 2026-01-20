@@ -19,6 +19,7 @@ import (
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
 const (
@@ -273,12 +274,12 @@ func (as *Server) GetConfig(w http.ResponseWriter, r *http.Request) {
 
 // GetModules returns modules exclusively from the database cache while triggering a background sync/stop sequence
 func (as *Server) GetModules(w http.ResponseWriter, r *http.Request) {
-	as.serveFromCacheOnly(w, CacheTypeModules)
+	as.serveFromCacheOnly(w, CacheTypeModules, true) // skipGrace=true for templates
 }
 
 // GetRedirectors returns available redirectors exclusively from the database cache while triggering a background refresh
 func (as *Server) GetRedirectors(w http.ResponseWriter, r *http.Request) {
-	as.serveFromCacheOnly(w, CacheTypeRedirectors)
+	as.serveFromCacheOnly(w, CacheTypeRedirectors, true) // skipGrace=true for templates
 }
 
 // RefreshAllCaches forces an update of redirectors and modules from the simulation server.
@@ -286,34 +287,36 @@ func (as *Server) RefreshAllCaches() {
 	log.Info("Refreshing simulation server caches...")
 	
 	// Refresh modules in background
-	go as.updateCacheBackground(CacheTypeModules)
+	go as.updateCacheBackground(CacheTypeModules, false)
 
 	// Refresh redirectors in background
-	go as.updateCacheBackground(CacheTypeRedirectors)
+	go as.updateCacheBackground(CacheTypeRedirectors, false)
 }
 
 // serveFromCacheOnly serves data from the local database and triggers a background update if available
-func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string) {
-	// 1. Get from database
-	cachedData, err := models.GetCache(cacheType, "")
-	
-	// 2. Trigger background update if server is likely available
-	go as.updateCacheBackground(cacheType)
-
-	if err != nil {
-		// If nothing in DB, return error
-		JSONResponse(w, models.Response{Success: false, Message: "Data not found in cache. Refreshing in background..."}, http.StatusNotFound)
+func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string, skipGrace bool) {
+	cache, err := models.GetCache(cacheType, "")
+	if err != nil && err != gorm.ErrRecordNotFound {
+		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 		return
 	}
 
-	// 3. Serve cached data
+	// Trigger background update
+	go as.updateCacheBackground(cacheType, skipGrace)
+
+	if err == gorm.ErrRecordNotFound {
+		JSONResponse(w, []interface{}{}, http.StatusOK)
+		return
+	}
+
+	w.Header().Set("X-Cache-Status", "cached")
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Served-From", "database")
-	w.Write([]byte(cachedData))
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(cache))
 }
 
 // updateCacheBackground attempts to fetch fresh data and update the database without blocking
-func (as *Server) updateCacheBackground(cacheType string) {
+func (as *Server) updateCacheBackground(cacheType string, skipGrace bool) {
 	data, err := as.fetchFromSimulationServer(cacheType)
 	if err != nil {
 		//log.Warnf("Background sync failed for %s (server might still be starting): %v", cacheType, err)
@@ -336,12 +339,16 @@ func (as *Server) updateCacheBackground(cacheType string) {
 			}
 
 			// 2. Check 60-minute grace period to protect active configuration sessions
-			startTime, err := models.GetEC2StartTime()
-			if err == nil && !startTime.IsZero() {
-				if time.Since(startTime) < 60*time.Minute {
-					log.Infof("Auto-stop skipped for %s: Within 60-minute safety window", cacheType)
-					return
+			if !skipGrace {
+				startTime, err := models.GetEC2StartTime()
+				if err == nil && !startTime.IsZero() {
+					if time.Since(startTime) < 60*time.Minute {
+						log.Infof("Auto-stop skipped for %s: Within 60-minute safety window", cacheType)
+						return
+					}
 				}
+			} else {
+				log.Infof("Auto-stop: Bypassing grace period for template-triggered sync of %s", cacheType)
 			}
 
 			log.Infof("Auto-stop criteria met for %s. Shutting down infrastructure.", cacheType)
