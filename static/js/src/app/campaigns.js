@@ -377,37 +377,47 @@ function startNewCampaign() {
         onOpen: function () {
             Swal.showLoading();
 
-            // First check EC2 status
-            $.ajax({
-                url: "/api/simulationserver/ec2/status",
-                method: "GET",
-                success: function (statusResponse) {
-                    var state = statusResponse.data && statusResponse.data.state;
-                    var publicIP = statusResponse.data && statusResponse.data.public_ip;
+            function checkStatus() {
+                $.ajax({
+                    url: "/api/simulationserver/ec2/status",
+                    method: "GET",
+                    success: function (statusResponse) {
+                        var state = statusResponse.data && statusResponse.data.state;
+                        var publicIP = statusResponse.data && statusResponse.data.public_ip;
 
-                    if (state === "running" && publicIP) {
-                        // EC2 is already running - go directly to campaign editor
-                        Swal.fire({
-                            title: "Server Ready!",
-                            text: "Simulation server is already running.",
-                            icon: "success",
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(function () {
-                            location.href = '/campaign';
-                        });
-                    } else {
-                        // EC2 is stopped - start it with progress bar
+                        if (state === "running" && publicIP) {
+                            // EC2 is already running - go directly to campaign editor
+                            Swal.fire({
+                                title: "Server Ready!",
+                                text: "Simulation server is already running.",
+                                icon: "success",
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(function () {
+                                location.href = '/campaign';
+                            });
+                        } else if (state === "stopping" || state === "shutting-down") {
+                            // EC2 is stopping - wait for it to stop
+                            Swal.update({
+                                title: "Waiting for Shutdown",
+                                html: '<p style="margin-top: 15px; font-size: 14px;">Server is currently stopping. Please wait...</p>'
+                            });
+                            setTimeout(checkStatus, 3000);
+                        } else {
+                            // EC2 is stopped (or other state) - start it
+                            Swal.close();
+                            startEC2WithProgressBar();
+                        }
+                    },
+                    error: function () {
+                        // If status check fails, try to start anyway
                         Swal.close();
                         startEC2WithProgressBar();
                     }
-                },
-                error: function () {
-                    // If status check fails, try to start anyway
-                    Swal.close();
-                    startEC2WithProgressBar();
-                }
-            });
+                });
+            }
+
+            checkStatus();
         }
     });
 }
