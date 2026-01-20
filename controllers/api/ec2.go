@@ -379,8 +379,8 @@ func (as *Server) checkEC2Shutdown() {
 		return // Not started or error reading
 	}
 
-	// Check if 10 minutes have passed
-	if time.Since(startTime) < 10*time.Minute {
+	// Check if 60 minutes have passed
+	if time.Since(startTime) < 60*time.Minute {
 		return
 	}
 
@@ -420,7 +420,7 @@ func (as *Server) checkEC2Shutdown() {
 		return
 	}
 
-	log.Infof("EC2 Scheduler: Auto-stopping EC2 instance %s (10 minute limit reached with no active campaigns)", cfg.InstanceID)
+	log.Infof("EC2 Scheduler: Auto-stopping EC2 instance %s (60 minute limit reached with no active campaigns)", cfg.InstanceID)
 	err = as.internalStopEC2()
 	if err != nil {
 		log.Errorf("EC2 Scheduler: Failed to auto-stop instance: %v", err)

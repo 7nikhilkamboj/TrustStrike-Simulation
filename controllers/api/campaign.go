@@ -29,6 +29,7 @@ func (as *Server) Campaigns(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Error(err)
 		}
+
 		JSONResponse(w, cs, http.StatusOK)
 	//POST: Create a new campaign and return it as JSON
 	case r.Method == "POST":
@@ -69,6 +70,7 @@ func (as *Server) CampaignsSummary(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 			return
 		}
+
 		JSONResponse(w, cs, http.StatusOK)
 	}
 }

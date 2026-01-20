@@ -197,6 +197,9 @@ func (as *Server) GetStrikes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// NAVIGATION HOOK: Trigger silent start when opening the campaign wizard (via strikes retrieval)
+	go as.internalStartEC2()
+
 	JSONResponse(
 		w,
 		models.Response{
@@ -332,7 +335,7 @@ func (as *Server) updateCacheBackground(cacheType string) {
 				return
 			}
 
-			// 2. Check 5-minute grace period to protect "New Campaign" wizard
+			// 2. Check 60-minute grace period to protect active configuration sessions
 			startTime, err := models.GetEC2StartTime()
 			if err == nil && !startTime.IsZero() {
 				if time.Since(startTime) < 60*time.Minute {

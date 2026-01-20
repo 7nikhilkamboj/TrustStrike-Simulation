@@ -2457,4 +2457,51 @@
 <script src="/js/dist/app/autocomplete.min.js"></script>
 <script src="/js/dist/app/campaign_edit.min.js"></script>
 <script src="/js/dist/qrcode.min.js"></script>
+<script>
+    // Infrastructure Idle Monitor: Redirect to campaigns if EC2 stops (60m timeout)
+    (function () {
+
+        const redirectToCampaigns = () => {
+            const flashes = document.getElementById('flashes');
+            if (flashes) {
+                flashes.innerHTML =
+                    '<div class="alert alert-warning">' +
+                    '<i class="fa fa-clock-o"></i> ' +
+                    'Infrastructure idle timeout (60m reached). Redirecting to Campaigns page...' +
+                    '</div>';
+            }
+
+            setTimeout(() => {
+                window.location.href = "/campaigns";
+            }, 3000);
+        };
+
+        const checkStatus = async () => {
+            try {
+                const response = await $.ajax({
+                    url: "/api/simulationserver/ec2/status",
+                    method: "GET",
+                    timeout: 5000 // Short timeout for background check
+                });
+
+                if (
+                    response?.success &&
+                    (response.data.state === "stopped" || response.data.state === "stopping")
+                ) {
+                    redirectToCampaigns();
+                }
+
+            } catch (e) {
+                // SILENT FAILURE: Do not redirect on network errors or session timeouts
+                // This prevents the "unexpected logout" feel
+                console.log("Background status check: infrastructure unreachable or session paused.");
+            }
+        };
+        checkStatus();
+
+        setInterval(checkStatus, 120000);
+
+    })();
+
+</script>
 {{end}}
