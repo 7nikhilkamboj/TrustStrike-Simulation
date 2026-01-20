@@ -108,8 +108,6 @@ Follow these steps to get your TrustStrike Simulation platform up and running.
 
 ### **A. Prerequisites**
 - **Go**: 1.20 or newer.
-- **Node.js & npm**: Required for building frontend assets.
-- **Gulp CLI**: `npm install --global gulp-cli`.
 - **AWS Account**: With permissions to manage EC2 instances.
 - **Cloudflare Account**: For automated DNS management.
 
@@ -121,20 +119,16 @@ Follow these steps to get your TrustStrike Simulation platform up and running.
    cd TrustStrike-Simulation
    ```
 
-2. **Install Dependencies**
-   - **Backend**: `go mod download`
-   - **Frontend**: `npm install`
-
-3. **Configuration (`config.json`)**
+2. **Configuration (`config.json`)**
    Copy the example configuration and fill in your details:
    - **AWS**: `aws_access_key_id`, `aws_secret_access_key`, `instance_id`.
    - **Cloudflare**: `cloudflare_token`.
    - **Server**: `listen_url`, `cert_path`, `key_path`.
 
-4. **Generate SSL Certificates**
+3. **Generate SSL Certificates**
    The platform requires SSL for the admin server. Place your `ca.crt` and `ca.key` in the root directory as specified in `config.json`.
 
-5. **Launch the Engine**
+4. **Launch the Engine**
    ```bash
    go build -o trust_strike trust_strike.go -v
    ./trust_strike
