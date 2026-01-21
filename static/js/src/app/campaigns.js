@@ -457,7 +457,7 @@ function startEC2WithProgressBar() {
 
             // Make the actual EC2 start API call
             $.ajax({
-                url: "/api/simulationserver/ec2/start",
+                url: "/api/simulationserver/ec2/start?ref=wizard",
                 method: "POST",
                 contentType: "application/json",
                 data: JSON.stringify({ start_evil: true, ignore_throttle: true }),

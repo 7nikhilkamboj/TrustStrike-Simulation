@@ -1460,8 +1460,8 @@ window.saveRedirectorModal = function () {
     var method = (mode === 'edit') ? 'PUT' : 'POST';
     // Use the proxied endpoint to the simulation server
     var url = (mode === 'edit')
-        ? '/api/simulationserver/redirectors/' + encodeURIComponent(originalName)
-        : '/api/simulationserver/redirectors';
+        ? '/api/simulationserver/redirectors/' + encodeURIComponent(originalName) + '?ref=wizard'
+        : '/api/simulationserver/redirectors?ref=wizard';
 
     $.ajax({
         url: url,
@@ -1654,7 +1654,7 @@ function autoEnablePhishlet(phishletName, callback) {
     var landingDomainToSet = useRedirector ? (redirectorDomain || "") : "";
 
     $.ajax({
-        url: "/api/simulationserver/modules",
+        url: "/api/simulationserver/modules?ref=wizard",
         method: "GET",
         success: function (data) {
             var modules = data.modules || data;
@@ -1744,7 +1744,7 @@ function loadPhishletConfig(name) {
 
     // Load Module Details
     $.ajax({
-        url: "/api/simulationserver/modules",
+        url: "/api/simulationserver/modules?ref=wizard",
         method: "GET",
         success: function (data) {
             var modules = data.modules || data;
@@ -3897,8 +3897,12 @@ var currentModules = [];
 
 // Fetch modules when setting up options
 function loadModules() {
-    $.get('/api/simulationserver/modules', function (data) {
-        currentModules = data || [];
+    $.ajax({
+        url: '/api/simulationserver/modules?ref=wizard',
+        method: 'GET',
+        success: function (data) {
+            currentModules = data || [];
+        }
     });
 }
 

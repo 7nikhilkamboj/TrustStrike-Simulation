@@ -216,7 +216,9 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	models.SetEC2StartTime(time.Now().UTC())
 
 	// Force refresh redirector and module caches now that EC2 is up
-	as.RefreshAllCaches()
+	// Check if started from wizard to prevent auto-stop
+	preventAutoStop := r.URL.Query().Get("ref") == "wizard"
+	as.RefreshAllCaches(preventAutoStop)
 
 	JSONResponse(w, models.Response{
 		Success: true,

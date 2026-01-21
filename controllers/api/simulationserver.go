@@ -274,34 +274,47 @@ func (as *Server) GetConfig(w http.ResponseWriter, r *http.Request) {
 
 // GetModules returns modules exclusively from the database cache while triggering a background sync/stop sequence
 func (as *Server) GetModules(w http.ResponseWriter, r *http.Request) {
-	as.serveFromCacheOnly(w, CacheTypeModules)
+	referer := r.Referer()
+	refParam := r.URL.Query().Get("ref")
+	log.Infof("DEBUG: GetModules URL: %s, RefParam: '%s', Referer: '%s'", r.URL.String(), refParam, referer)
+
+	// Check explicitly for wizard query param OR fallback to referer check
+	preventAutoStop := (refParam == "wizard") || strings.Contains(referer, "campaign")
+	as.serveFromCacheOnly(w, CacheTypeModules, preventAutoStop)
 }
 
 // GetRedirectors returns available redirectors exclusively from the database cache while triggering a background refresh
 func (as *Server) GetRedirectors(w http.ResponseWriter, r *http.Request) {
-	as.serveFromCacheOnly(w, CacheTypeRedirectors)
+	referer := r.Referer()
+	refParam := r.URL.Query().Get("ref")
+	log.Infof("DEBUG: GetRedirectors URL: %s, RefParam: '%s', Referer: '%s'", r.URL.String(), refParam, referer)
+
+	// Check explicitly for wizard query param OR fallback to referer check
+	preventAutoStop := (refParam == "wizard") || strings.Contains(referer, "campaign")
+	as.serveFromCacheOnly(w, CacheTypeRedirectors, preventAutoStop)
 }
 
 // RefreshAllCaches forces an update of redirectors and modules from the simulation server.
-func (as *Server) RefreshAllCaches() {
+// RefreshAllCaches forces an update of redirectors and modules from the simulation server.
+func (as *Server) RefreshAllCaches(preventAutoStop bool) {
 	log.Info("Refreshing simulation server caches...")
 	
 	// Refresh modules in background
-	go as.updateCacheBackground(CacheTypeModules)
+	go as.updateCacheBackground(CacheTypeModules, preventAutoStop)
 
 	// Refresh redirectors in background
-	go as.updateCacheBackground(CacheTypeRedirectors)
+	go as.updateCacheBackground(CacheTypeRedirectors, preventAutoStop)
 }
 
 // serveFromCacheOnly serves data from the local database and triggers a background update if available
-func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string) {
+func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string, preventAutoStop bool) {
 	cache, err := models.GetCache(cacheType, "")
 	if err != nil && err != gorm.ErrRecordNotFound {
 		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 		return
 	}
 
-	// TEMPLATE FLOW: Start EC2 with 24h throttle, sync cache, then shutdown
+	// TEMPLATE FLOW: Start EC2 with 24h throttle, sync cache, then shutdown (unless preventAutoStop is true)
 	go func() {
 		// Check 24h throttle - only start once per day for template browsing
 		allowed, throttleErr := models.IsEC2SyncAllowed("templates_auto_start")
@@ -310,7 +323,7 @@ func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string) {
 			as.internalStartEC2()
 		}
 		// Always try to update cache (will succeed if EC2 is running)
-		as.updateCacheBackground(cacheType)
+		as.updateCacheBackground(cacheType, preventAutoStop)
 	}()
 
 	if err == gorm.ErrRecordNotFound {
@@ -325,7 +338,7 @@ func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string) {
 }
 
 // updateCacheBackground attempts to fetch fresh data and update the database without blocking
-func (as *Server) updateCacheBackground(cacheType string) {
+func (as *Server) updateCacheBackground(cacheType string, preventAutoStop bool) {
 	data, err := as.fetchFromSimulationServer(cacheType)
 	if err != nil {
 		//log.Warnf("Background sync failed for %s (server might still be starting): %v", cacheType, err)
@@ -337,7 +350,13 @@ func (as *Server) updateCacheBackground(cacheType string) {
 		log.Errorf("Failed to update cache for %s: %v", cacheType, cacheErr)
 	} else {
 		log.Infof("Successfully updated cache for %s. Checking if infrastructure can be stopped...", cacheType)
-		
+		log.Infof("DEBUG: preventAutoStop is %v for %s", preventAutoStop, cacheType)
+
+		if preventAutoStop {
+			log.Infof("Auto-stop skipped for %s: User detected in Campaign Wizard (keep-alive active)", cacheType)
+			return
+		}
+
 		// TEMPLATE FLOW: Shutdown immediately after cache refresh
 		// The 60-minute protection for campaign-edit users is handled by ec2.go scheduler
 		go func() {
