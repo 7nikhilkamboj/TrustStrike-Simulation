@@ -20,10 +20,11 @@ import (
 
 // EC2StatusResponse represents the response from EC2 status endpoint
 type EC2StatusResponse struct {
-	InstanceID string `json:"instance_id"`
-	State      string `json:"state"`
-	PublicIP   string `json:"public_ip,omitempty"`
-	Region     string `json:"region"`
+	InstanceID   string `json:"instance_id"`
+	State        string `json:"state"`
+	PublicIP     string `json:"public_ip,omitempty"`
+	Region       string `json:"region"`
+	ScreenStatus string `json:"status,omitempty"`
 }
 
 // getEC2Client creates an EC2 client with credentials from config
@@ -80,6 +81,10 @@ func (as *Server) GetEC2Status(w http.ResponseWriter, r *http.Request) {
 
 	if instance.PublicIpAddress != nil {
 		response.PublicIP = *instance.PublicIpAddress
+		// Only check screen status if instance is running and has a public IP
+		if string(instance.State.Name) == "running" {
+			response.ScreenStatus = as.checkScreenStatus(*instance.PublicIpAddress)
+		}
 	}
 
 	JSONResponse(w, models.Response{
@@ -276,6 +281,32 @@ func (as *Server) startEvilginxViaSSH(publicIP string, domain string) string {
 	}
 
 	return "evil started in screen session: " + cfg.ScreenName
+}
+
+// checkScreenStatus checks if the evilginx screen session is running via SSH
+func (as *Server) checkScreenStatus(publicIP string) string {
+	cfg := as.config.EC2
+	
+	// Quick SSH check with timeout
+	cmd := exec.Command("ssh",
+		"-o", "StrictHostKeyChecking=no",
+		"-o", "BatchMode=yes",
+		"-o", "ConnectTimeout=5",
+		"-i", cfg.SSHKeyPath,
+		fmt.Sprintf("%s@%s", cfg.SSHUser, publicIP),
+		fmt.Sprintf("screen -list | grep -q '\\.%s' && echo 'running' || echo 'not running'", cfg.ScreenName),
+	)
+	
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return "ssh check failed"
+	}
+	
+	result := strings.TrimSpace(string(output))
+	if result == "running" {
+		return "true"
+	}
+	return "false"
 }
 
 // StopEC2Instance stops the EC2 instance

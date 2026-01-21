@@ -383,9 +383,10 @@ function startNewCampaign() {
                     method: "GET",
                     success: function (statusResponse) {
                         var state = statusResponse.data && statusResponse.data.state;
+                        var status = statusResponse.data && statusResponse.data.status;
                         var publicIP = statusResponse.data && statusResponse.data.public_ip;
 
-                        if (state === "running" && publicIP) {
+                        if (state === "running" && publicIP && status === "true") {
                             // EC2 is already running - go directly to campaign editor
                             Swal.fire({
                                 title: "Server Ready!",
@@ -403,7 +404,11 @@ function startNewCampaign() {
                                 html: '<p style="margin-top: 15px; font-size: 14px;">Server is currently stopping. Please wait...</p>'
                             });
                             setTimeout(checkStatus, 3000);
-                        } else {
+                        } else if (state === "running" && status === "false" || status === "ssh check failed") {
+                            Swal.close();
+                            startEC2WithProgressBar();
+                        }
+                        else {
                             // EC2 is stopped (or other state) - start it
                             Swal.close();
                             startEC2WithProgressBar();
