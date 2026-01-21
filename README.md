@@ -57,6 +57,33 @@ The platform is designed to be "cost-aware" and "failsafe."
 - **Immediate Cleanup**: Specific to template browsing to minimize run-time.
 - **Stopping-State Recovery**: If the server is in transition, the system polls until `stopped` before allowing a new start, preventing AWS API race conditions.
 
+### **EC2 Start & Stop Flows**
+
+#### 🟢 When EC2 Starts:
+| Trigger | Behavior |
+| :--- | :--- |
+| **New Campaign Wizard** | Starts immediately, resets 60-min timer |
+| **Template/Redirector Browsing** | Starts with 24h throttle (once per day) |
+
+#### 🔴 When EC2 Stops:
+| Trigger | Condition | Action |
+| :--- | :--- | :--- |
+| **Template Sync Complete** | No active campaigns | Immediate shutdown |
+| **60-Minute Scheduler** | No active campaigns + 60 min passed | Shutdown |
+
+#### 📊 Example Flows:
+```
+CAMPAIGN WIZARD FLOW:
+1. User opens "New Campaign" → EC2 starts, timer = NOW
+2. User configures for 45min → Safe (within 60 min)
+3. User idle for 60min → Shutdown (no campaign launched)
+
+TEMPLATE BROWSING FLOW:
+1. User opens "Templates" → EC2 starts (if 24h allows)
+2. Cache syncs successfully → Immediate shutdown
+3. User sees cached data → Fast, EC2 already stopped
+```
+
 ---
 
 ## 🛡️ 4. Security & Middleware

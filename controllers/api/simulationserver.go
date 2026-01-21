@@ -274,12 +274,12 @@ func (as *Server) GetConfig(w http.ResponseWriter, r *http.Request) {
 
 // GetModules returns modules exclusively from the database cache while triggering a background sync/stop sequence
 func (as *Server) GetModules(w http.ResponseWriter, r *http.Request) {
-	as.serveFromCacheOnly(w, CacheTypeModules, true) // skipGrace=true for templates
+	as.serveFromCacheOnly(w, CacheTypeModules)
 }
 
 // GetRedirectors returns available redirectors exclusively from the database cache while triggering a background refresh
 func (as *Server) GetRedirectors(w http.ResponseWriter, r *http.Request) {
-	as.serveFromCacheOnly(w, CacheTypeRedirectors, true) // skipGrace=true for templates
+	as.serveFromCacheOnly(w, CacheTypeRedirectors)
 }
 
 // RefreshAllCaches forces an update of redirectors and modules from the simulation server.
@@ -287,22 +287,31 @@ func (as *Server) RefreshAllCaches() {
 	log.Info("Refreshing simulation server caches...")
 	
 	// Refresh modules in background
-	go as.updateCacheBackground(CacheTypeModules, false)
+	go as.updateCacheBackground(CacheTypeModules)
 
 	// Refresh redirectors in background
-	go as.updateCacheBackground(CacheTypeRedirectors, false)
+	go as.updateCacheBackground(CacheTypeRedirectors)
 }
 
 // serveFromCacheOnly serves data from the local database and triggers a background update if available
-func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string, skipGrace bool) {
+func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string) {
 	cache, err := models.GetCache(cacheType, "")
 	if err != nil && err != gorm.ErrRecordNotFound {
 		JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 		return
 	}
 
-	// Trigger background update
-	go as.updateCacheBackground(cacheType, skipGrace)
+	// TEMPLATE FLOW: Start EC2 with 24h throttle, sync cache, then shutdown
+	go func() {
+		// Check 24h throttle - only start once per day for template browsing
+		allowed, throttleErr := models.IsEC2SyncAllowed("templates_auto_start")
+		if throttleErr == nil && allowed {
+			log.Infof("Template browsing: Starting EC2 for cache refresh (24h throttle allows)")
+			as.internalStartEC2()
+		}
+		// Always try to update cache (will succeed if EC2 is running)
+		as.updateCacheBackground(cacheType)
+	}()
 
 	if err == gorm.ErrRecordNotFound {
 		JSONResponse(w, []interface{}{}, http.StatusOK)
@@ -316,7 +325,7 @@ func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string, sk
 }
 
 // updateCacheBackground attempts to fetch fresh data and update the database without blocking
-func (as *Server) updateCacheBackground(cacheType string, skipGrace bool) {
+func (as *Server) updateCacheBackground(cacheType string) {
 	data, err := as.fetchFromSimulationServer(cacheType)
 	if err != nil {
 		//log.Warnf("Background sync failed for %s (server might still be starting): %v", cacheType, err)
@@ -329,37 +338,17 @@ func (as *Server) updateCacheBackground(cacheType string, skipGrace bool) {
 	} else {
 		log.Infof("Successfully updated cache for %s. Checking if infrastructure can be stopped...", cacheType)
 		
-		// THE HOOK: Stop the server only if no active campaigns and grace period passed
+		// TEMPLATE FLOW: Shutdown immediately after cache refresh
+		// The 60-minute protection for campaign-edit users is handled by ec2.go scheduler
 		go func() {
-			// 1. Check for active campaigns
+			// Check for active campaigns - never shutdown if campaigns are running
 			hasActive, err := models.HasActiveCampaigns()
 			if err != nil || hasActive {
 				log.Infof("Auto-stop skipped for %s: Active campaigns detected or error checking (%v)", cacheType, err)
 				return
 			}
 
-			// 2. Check grace period to protect active configuration sessions
-			startTime, err := models.GetEC2StartTime()
-			if err == nil && !startTime.IsZero() {
-				elapsed := time.Since(startTime)
-				if !skipGrace {
-					// Standard 60-minute window for background idle
-					if elapsed < 60*time.Minute {
-						log.Infof("Auto-stop skipped for %s: Within 60-minute safety window", cacheType)
-						return
-					}
-				} else {
-					// 10-minute minimal window for template-triggered syncs 
-					// to protect active users in the "New Campaign" wizard.
-					if elapsed < 10*time.Minute {
-						log.Infof("Auto-stop skipped for %s: Within 10-minute user-intent window", cacheType)
-						return
-					}
-					log.Infof("Auto-stop: Bypassing extended grace period for template-triggered sync of %s", cacheType)
-				}
-			}
-
-			log.Infof("Auto-stop criteria met for %s. Shutting down infrastructure.", cacheType)
+			log.Infof("Auto-stop: Cache refresh complete for %s. Shutting down infrastructure.", cacheType)
 			as.internalStopEC2()
 		}()
 	}

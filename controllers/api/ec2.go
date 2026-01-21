@@ -297,6 +297,10 @@ func (as *Server) StopEC2Instance(w http.ResponseWriter, r *http.Request) {
 
 // internalStartEC2 starts the EC2 instance without waiting for it to be ready
 func (as *Server) internalStartEC2() (*ec2.Client, error) {
+	// ALWAYS reset the start time first to prevent scheduler from shutting down
+	// while user is actively configuring a campaign.
+	models.SetEC2StartTime(time.Now().UTC())
+
 	client, err := as.getEC2Client()
 	if err != nil {
 		return nil, err
@@ -315,9 +319,6 @@ func (as *Server) internalStartEC2() (*ec2.Client, error) {
 			return nil, fmt.Errorf("failed to trigger start: %w", err)
 		}
 	}
-
-	// Update start time for scheduler tracking
-	models.SetEC2StartTime(time.Now().UTC())
 
 	return client, nil
 }
