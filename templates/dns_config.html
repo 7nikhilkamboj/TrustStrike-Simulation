@@ -55,7 +55,13 @@
                     </div>
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label style="margin-bottom: 8px; color: #666;">Nameserver Status</label>
+                            <label style="margin-bottom: 8px; color: #666;">
+                                Nameserver Status
+                                <button type="button" class="btn btn-default btn-sm" onclick="refreshNameserverStatus()"
+                                    style="margin-left: 10px; padding: 2px 8px;">
+                                    <i class="fa fa-refresh"></i>
+                                </button>
+                            </label>
                             <input type="text" class="form-control" id="nameserverStatus" readonly>
                         </div>
                     </div>
@@ -365,7 +371,39 @@
             showToast('error', 'Failed to connect');
         }
     }
+    async function refreshNameserverStatus() {
+        const domain = document.getElementById('configDomainCF').value;
+        if (!domain) {
+            showToast('warning', 'Please enter a domain first');
+            return;
+        }
 
+        showToast('info', 'Refreshing nameserver status...');
+
+        try {
+            const response = await fetch('/api/simulationserver/config/cloudflare_setup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ domain: domain })
+            });
+
+            if (!response.ok) {
+                const text = await response.text();
+                showToast('error', `Refresh failed: ${text}`);
+                return;
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                loadInfo(data.data || {});
+                showToast('success', 'Nameserver status updated');
+            } else {
+                showToast('error', data.message || 'Error refreshing status');
+            }
+        } catch (err) {
+            showToast('error', 'Failed to refresh status');
+        }
+    }
     function updateNameserverDisplay(zoneId) {
         // Get the selected option from dropdown
         const dropdown = document.getElementById('domainSelectDropdown');
