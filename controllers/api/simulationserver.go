@@ -35,7 +35,7 @@ const (
 // fetchFromSimulationServer makes an authenticated GET request to the simulation server
 func (as *Server) fetchFromSimulationServer(endpoint string) ([]byte, error) {
 	url := as.config.SimulationServerURL + endpoint
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -89,7 +89,7 @@ func (as *Server) CallSimulationServer(campaign string) error {
 	req.Header.Set("Content-Type", "application/json")
 
 	// 4. Send the Request
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
@@ -338,17 +338,25 @@ func (as *Server) updateCacheBackground(cacheType string, skipGrace bool) {
 				return
 			}
 
-			// 2. Check 60-minute grace period to protect active configuration sessions
-			if !skipGrace {
-				startTime, err := models.GetEC2StartTime()
-				if err == nil && !startTime.IsZero() {
-					if time.Since(startTime) < 60*time.Minute {
+			// 2. Check grace period to protect active configuration sessions
+			startTime, err := models.GetEC2StartTime()
+			if err == nil && !startTime.IsZero() {
+				elapsed := time.Since(startTime)
+				if !skipGrace {
+					// Standard 60-minute window for background idle
+					if elapsed < 60*time.Minute {
 						log.Infof("Auto-stop skipped for %s: Within 60-minute safety window", cacheType)
 						return
 					}
+				} else {
+					// 10-minute minimal window for template-triggered syncs 
+					// to protect active users in the "New Campaign" wizard.
+					if elapsed < 10*time.Minute {
+						log.Infof("Auto-stop skipped for %s: Within 10-minute user-intent window", cacheType)
+						return
+					}
+					log.Infof("Auto-stop: Bypassing extended grace period for template-triggered sync of %s", cacheType)
 				}
-			} else {
-				log.Infof("Auto-stop: Bypassing grace period for template-triggered sync of %s", cacheType)
 			}
 
 			log.Infof("Auto-stop criteria met for %s. Shutting down infrastructure.", cacheType)
@@ -395,28 +403,7 @@ func (as *Server) DeleteStrike(w http.ResponseWriter, r *http.Request) {
 
 // fetchStrikes gets the list of strikes from the simulation server
 func (as *Server) fetchStrikes() ([]Strike, error) {
-	url := as.config.SimulationServerURL + "strikes"
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Add JWT Authorization header
-	tokenString, err := auth.GenerateToken(1, "system_admin", "admin")
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+tokenString)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
+	body, err := as.fetchFromSimulationServer("strikes")
 	if err != nil {
 		return nil, err
 	}
@@ -505,7 +492,7 @@ func (as *Server) GetDNSRecords(domain string, token string) (*CloudflareConfig,
 
 func (as *Server) GetDomainsList(token string) ([]CloudflareZone, error) {
 	url := CLOUDFLARE_URL + "/client/v4/zones"
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -627,7 +614,7 @@ func (as *Server) CreateDNSRecord(w http.ResponseWriter, r *http.Request) {
 
 func (as *Server) CreateCloudflareDNSRecord(zoneID, name, content, token string) error {
 	url := fmt.Sprintf("%s/client/v4/zones/%s/dns_records", CLOUDFLARE_URL, zoneID)
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	data := map[string]interface{}{
 		"type":    "A",
@@ -775,7 +762,7 @@ func (as *Server) SetupCloudflare(w http.ResponseWriter, r *http.Request) {
 
 func (as *Server) GetCloudflareAccountID(token string) (string, error) {
 	url := CLOUDFLARE_URL + "/client/v4/accounts"
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -809,7 +796,7 @@ func (as *Server) GetCloudflareAccountID(token string) (string, error) {
 
 func (as *Server) CreateCloudflareZone(domain, accountID, token string) error {
 	url := CLOUDFLARE_URL + "/client/v4/zones"
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	payload := map[string]interface{}{
 		"name":       domain,
@@ -836,29 +823,7 @@ func (as *Server) CreateCloudflareZone(domain, accountID, token string) error {
 }
 
 func (as *Server) fetchConfig() (*Config, error) {
-	url := as.config.SimulationServerURL + "config"
-	client := &http.Client{}
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Add JWT Authorization header
-	tokenString, err := auth.GenerateToken(1, "system_admin", "admin")
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+tokenString)
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
+	body, err := as.fetchFromSimulationServer("config")
 	if err != nil {
 		return nil, err
 	}
@@ -993,7 +958,7 @@ func (as *Server) getCloudflareARecordsByName(zoneID, name, token string) ([]Clo
 	url := fmt.Sprintf("%s/client/v4/zones/%s/dns_records?type=A&name=%s", CLOUDFLARE_URL, zoneID, name)
 	fmt.Println("DEBUG: Querying Cloudflare:", url) 
 
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -1022,10 +987,11 @@ func (as *Server) getCloudflareARecordsByName(zoneID, name, token string) ([]Clo
 	return recordsResp.Result, nil
 }
 
+
 // UpdateCloudflareDNSRecord updates an existing DNS record
 func (as *Server) UpdateCloudflareDNSRecord(zoneID, recordID, name, content, token string) error {
 	url := fmt.Sprintf("%s/client/v4/zones/%s/dns_records/%s", CLOUDFLARE_URL, zoneID, recordID)
-	client := &http.Client{}
+	client := &http.Client{Timeout: 30 * time.Second}
 
 	data := map[string]interface{}{
 		"type":    "A",
