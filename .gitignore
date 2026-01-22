@@ -3,3 +3,4 @@ TrustStrike-Simulation
 trust_strike.db
 key.pem
 config.json
+trust_strike.log
