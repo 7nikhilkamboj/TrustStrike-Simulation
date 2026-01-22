@@ -128,7 +128,7 @@ func DeleteUser(id int64) error {
 	// Delete the campaigns
 	log.Infof("Deleting campaigns for user ID %d", id)
 	for _, campaign := range campaigns {
-		err = DeleteCampaign(campaign.Id, id)
+		err = DeleteCampaign(campaign.Id, 0) // Pass 0 to indicate admin action
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,7 @@ func DeleteUser(id int64) error {
 		return err
 	}
 	for _, page := range pages {
-		err = DeletePage(page.Id, id)
+		err = DeletePage(page.Id, 0) // Pass 0 to indicate admin action
 		if err != nil {
 			return err
 		}
@@ -152,7 +152,7 @@ func DeleteUser(id int64) error {
 		return err
 	}
 	for _, template := range templates {
-		err = DeleteTemplate(template.Id, id)
+		err = DeleteTemplate(template.Id, 0) // Pass 0 to indicate admin action
 		if err != nil {
 			return err
 		}
@@ -164,7 +164,7 @@ func DeleteUser(id int64) error {
 		return err
 	}
 	for _, group := range groups {
-		err = DeleteGroup(group.Id, id)
+		err = DeleteGroup(group.Id, 0) // Pass 0 to indicate admin action
 		if err != nil {
 			return err
 		}
@@ -176,7 +176,19 @@ func DeleteUser(id int64) error {
 		return err
 	}
 	for _, profile := range profiles {
-		err = DeleteSMTP(profile.Id, id)
+		err = DeleteSMTP(profile.Id, 0) // Pass 0 to indicate admin action
+		if err != nil {
+			return err
+		}
+	}
+	// Delete the SMS profiles
+	log.Infof("Deleting SMS profiles for user ID %d", id)
+	smsProfiles, err := GetSMSs(id)
+	if err != nil {
+		return err
+	}
+	for _, sms := range smsProfiles {
+		err = DeleteSMS(sms.Id, 0) // Pass 0 to indicate admin action
 		if err != nil {
 			return err
 		}

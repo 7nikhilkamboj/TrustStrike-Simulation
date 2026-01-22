@@ -223,7 +223,8 @@ func DeleteTemplate(id int64, uid int64) error {
 		return err
 	}
 	// If the user is not an admin and the template belongs to the admin, deny deletion
-	if uid != 1 && t.UserId == 1 {
+	// uid == 0 indicates an admin action (e.g., from DeleteUser cascade)
+	if uid != 0 && uid != 1 && t.UserId == 1 {
 		return errors.New("Only administrators can delete this resource. Please contact the admin.")
 	}
 	// Delete attachments

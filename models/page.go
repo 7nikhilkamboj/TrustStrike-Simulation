@@ -193,7 +193,8 @@ func DeletePage(id int64, uid int64) error {
 		return err
 	}
 	// If the user is not an admin and the page belongs to the admin, deny deletion
-	if uid != 1 && p.UserId == 1 {
+	// uid == 0 indicates an admin action (e.g., from DeleteUser cascade)
+	if uid != 0 && uid != 1 && p.UserId == 1 {
 		return errors.New("Only administrators can delete this resource. Please contact the admin.")
 	}
 	err = db.Delete(Page{Id: id}).Error
