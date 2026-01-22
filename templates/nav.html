@@ -25,12 +25,15 @@
                 }}active{{ end }}">
                 <a href="/campaigns" class="nav-item-link">Campaigns</a>
             </div>
+            {{if .ModifySystem}}
             <div class="nav-item-wrapper {{ if or (eq .Title " Users & Groups") (eq .Title "Users & Groups" ) }}active{{
                 end }}">
                 <a href="/groups" class="nav-item-link">Users & Groups</a>
             </div>
+            {{end}}
         </div>
 
+        {{if .ModifySystem}}
         <!-- TEMPLATES SECTION -->
         <div class="nav-section-label">
             TEMPLATES
@@ -65,6 +68,7 @@
                 <a href="/simulationserver" class="nav-item-link">Simulation Server</a>
             </div>
         </div>
+        {{end}}
 
         <!-- ADMIN SECTION -->
         {{if .ModifySystem}}

@@ -13,14 +13,18 @@
     <!-- Action Bar -->
     <div class="campaigns-action-bar">
         <div class="campaigns-action-left">
+            {{if .ModifySystem}}
             <button type="button" class="btn btn-primary" onclick="startNewCampaign()">
                 <i class="fa fa-plus"></i> New Campaign
             </button>
+            {{end}}
             <div class="btn-group">
+                {{if .ModifySystem}}
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
                     <i class="fa fa-ellipsis-h" style="margin-right: 6px;"></i> Bulk Actions <span class="caret"></span>
                 </button>
+                {{end}}
                 <ul class="dropdown-menu">
                     <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
                             Selected</a></li>

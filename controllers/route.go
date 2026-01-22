@@ -11,13 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NYTimes/gziphandler"
-	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/gorilla/csrf"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
-	"github.com/jordan-wright/unindexed"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/config"
 	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
@@ -28,6 +21,13 @@ import (
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/util"
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/worker"
+	"github.com/NYTimes/gziphandler"
+	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/gorilla/csrf"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
+	"github.com/jordan-wright/unindexed"
 	"golang.org/x/oauth2"
 )
 
@@ -153,33 +153,33 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/campaigns", mid.Use(as.Campaigns, mid.RequireLogin))
 	router.HandleFunc("/qr_campaigns", mid.Use(as.QRCampaigns, mid.RequireLogin))
 	router.HandleFunc("/campaigns/{id:[0-9]+}", mid.Use(as.CampaignID, mid.RequireLogin))
-	router.HandleFunc("/templates", mid.Use(as.Templates, mid.RequireLogin))
-	router.HandleFunc("/templates/email", mid.Use(as.EmailTemplates, mid.RequireLogin))
-	router.HandleFunc("/templates/qr", mid.Use(as.QRTemplates, mid.RequireLogin))
-	router.HandleFunc("/templates/sms", mid.Use(as.SMSTemplates, mid.RequireLogin))
-	router.HandleFunc("/groups", mid.Use(as.Groups, mid.RequireLogin))
-	router.HandleFunc("/login_pages", mid.Use(as.LoginPages, mid.RequireLogin))
-	router.HandleFunc("/landing_pages", mid.Use(as.LandingPages, mid.RequireLogin))
-	router.HandleFunc("/landing_page", mid.Use(as.LandingPageEdit, mid.RequireLogin))
-	router.HandleFunc("/landing_page/{id:[0-9]+}", mid.Use(as.LandingPageEdit, mid.RequireLogin))
-	router.HandleFunc("/redirectors", mid.Use(as.Redirectors, mid.RequireLogin))
-	router.HandleFunc("/sending_profiles", mid.Use(as.SendingProfiles, mid.RequireLogin))
-	router.HandleFunc("/sending_profile", mid.Use(as.SendingProfileEdit, mid.RequireLogin))
-	router.HandleFunc("/sending_profile/{id:[0-9]+}", mid.Use(as.SendingProfileEdit, mid.RequireLogin)).Methods("GET")
-	router.HandleFunc("/template", mid.Use(as.TemplateEdit, mid.RequireLogin)).Methods("GET")
-	router.HandleFunc("/template/{id:[0-9]+}", mid.Use(as.TemplateEdit, mid.RequireLogin)).Methods("GET")
-	router.HandleFunc("/group", mid.Use(as.GroupEdit, mid.RequireLogin)).Methods("GET")
-	router.HandleFunc("/group/{id:[0-9]+}", mid.Use(as.GroupEdit, mid.RequireLogin)).Methods("GET")
-	router.HandleFunc("/campaign", mid.Use(as.CampaignEdit, mid.RequireLogin)).Methods("GET")
-	router.HandleFunc("/campaign/{id:[0-9]+}", mid.Use(as.CampaignEdit, mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/templates", mid.Use(as.Templates, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/templates/email", mid.Use(as.EmailTemplates, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/templates/qr", mid.Use(as.QRTemplates, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/templates/sms", mid.Use(as.SMSTemplates, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/groups", mid.Use(as.Groups, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/login_pages", mid.Use(as.LoginPages, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/landing_pages", mid.Use(as.LandingPages, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/landing_page", mid.Use(as.LandingPageEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/landing_page/{id:[0-9]+}", mid.Use(as.LandingPageEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/redirectors", mid.Use(as.Redirectors, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/sending_profiles", mid.Use(as.SendingProfiles, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/sending_profile", mid.Use(as.SendingProfileEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/sending_profile/{id:[0-9]+}", mid.Use(as.SendingProfileEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/template", mid.Use(as.TemplateEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/template/{id:[0-9]+}", mid.Use(as.TemplateEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/group", mid.Use(as.GroupEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/group/{id:[0-9]+}", mid.Use(as.GroupEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/campaign", mid.Use(as.CampaignEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/campaign/{id:[0-9]+}", mid.Use(as.CampaignEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
 
-	router.HandleFunc("/sending_profiles/email", mid.Use(as.EmailSendingProfiles, mid.RequireLogin))
-	router.HandleFunc("/sending_profiles/sms", mid.Use(as.SMSSendingProfiles, mid.RequireLogin))
+	router.HandleFunc("/sending_profiles/email", mid.Use(as.EmailSendingProfiles, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/sending_profiles/sms", mid.Use(as.SMSSendingProfiles, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/sms_campaigns", mid.Use(as.SMSCampaigns, mid.RequireLogin))
 	router.HandleFunc("/settings", mid.Use(as.Settings, mid.RequireLogin))
-	router.HandleFunc("/simulationserver", mid.Use(as.SimulationServer, mid.RequireLogin))
-	router.HandleFunc("/dns_config", mid.Use(as.DNSConfig, mid.RequireLogin))
-	router.HandleFunc("/phishlets", mid.Use(as.Phishlets, mid.RequireLogin))
+	router.HandleFunc("/simulationserver", mid.Use(as.SimulationServer, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/dns_config", mid.Use(as.DNSConfig, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
+	router.HandleFunc("/phishlets", mid.Use(as.Phishlets, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/user_groups", mid.Use(as.UserGroups, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/users", mid.Use(as.UserManagement, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/webhooks", mid.Use(as.Webhooks, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))

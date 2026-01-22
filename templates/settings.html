@@ -9,16 +9,20 @@
     <ul class="nav nav-tabs" role="tablist">
         <li class="active" role="mainSettings"><a href="#mainSettings" aria-controls="mainSettings" role="tab"
                 data-toggle="tab">Account Settings</a></li>
+        {{if .ModifySystem }}
         <li role="uiSettings"><a href="#uiSettings" aria-controls="uiSettings" role="tab" data-toggle="tab">UI
                 Settings</a></li>
         <li role="reportingSettings"><a href="#reportingSettings" aria-controls="reportingSettings" role="tab"
                 id="reporttab" data-toggle="tab">Reporting Settings</a></li>
+        {{end}}
+
     </ul>
     <!-- Tab Panes -->
     <div class="tab-content">
         <div role="tabpanel" class="tab-pane active" id="mainSettings">
-            <br />
             {{if .ModifySystem }}
+            <br />
+
             <div class="row">
                 <label class="col-sm-2 control-label form-label">Trust Strike Version:</label>
                 <div class="col-md-6">
@@ -26,7 +30,7 @@
                 </div>
             </div>
             <br />
-            {{end}}
+
             <div class="row">
                 <label for="api_key" class="col-sm-2 control-label form-label">API Key:</label>
                 <div class="col-md-6">
@@ -38,6 +42,7 @@
                     <input type="hidden" name="csrf_token" value="{{.Token}}" />
                 </form>
             </div>
+            {{end}}
             <br />
             <form id="settingsForm">
                 <div class="row">
