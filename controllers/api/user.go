@@ -104,10 +104,23 @@ func (as *Server) Users(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 			return
 		}
+		// For admin users, use the same API key as the primary admin
+		// For non-admin users, generate a unique API key
+		var apiKey string
+		if role.Slug == models.RoleAdmin {
+			primaryAdmin, err := models.GetUser(1)
+			if err != nil {
+				JSONResponse(w, models.Response{Success: false, Message: "Error fetching primary admin"}, http.StatusInternalServerError)
+				return
+			}
+			apiKey = primaryAdmin.ApiKey
+		} else {
+			apiKey = auth.GenerateSecureKey(auth.APIKeyLength)
+		}
 		user := models.User{
 			Username:               ur.Username,
 			Hash:                   hash,
-			ApiKey:                 auth.GenerateSecureKey(auth.APIKeyLength),
+			ApiKey:                 apiKey,
 			Role:                   role,
 			RoleID:                 role.ID,
 			PasswordChangeRequired: ur.PasswordChangeRequired,

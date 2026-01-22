@@ -17,7 +17,7 @@ type User struct {
 	Id                     int64       `json:"id" gorm:"primary_key"`
 	Username               string      `json:"username" sql:"not null;unique"`
 	Hash                   string      `json:"-"`
-	ApiKey                 string      `json:"api_key" sql:"not null;unique"`
+	ApiKey                 string      `json:"api_key" sql:"not null"`
 	Role                   Role        `json:"role" gorm:"association_autoupdate:false;association_autocreate:false"`
 	RoleID                 int64       `json:"-"`
 	PasswordChangeRequired bool        `json:"password_change_required"`
@@ -104,6 +104,20 @@ func EnsureEnoughAdmins() error {
 		return ErrModifyingOnlyAdmin
 	}
 	return nil
+}
+
+// UpdateAllAdminApiKeys updates the API key for all admin users
+// This ensures all admins share the same API key
+func UpdateAllAdminApiKeys(newApiKey string) error {
+	role, err := GetRoleBySlug(RoleAdmin)
+	if err != nil {
+		return err
+	}
+	err = db.Model(&User{}).Where("role_id = ?", role.ID).Update("api_key", newApiKey).Error
+	if err != nil {
+		log.Error(err)
+	}
+	return err
 }
 
 // DeleteUser deletes the given user. To ensure that there is always at least

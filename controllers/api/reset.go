@@ -13,12 +13,24 @@ func (as *Server) Reset(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "POST":
 		u := ctx.Get(r, "user").(models.User)
-		u.ApiKey = auth.GenerateSecureKey(auth.APIKeyLength)
-		err := models.PutUser(&u)
-		if err != nil {
-			http.Error(w, "Error setting API Key", http.StatusInternalServerError)
+		newApiKey := auth.GenerateSecureKey(auth.APIKeyLength)
+
+		// If user is an admin, update API key for all admins
+		if u.Role.Slug == models.RoleAdmin {
+			err := models.UpdateAllAdminApiKeys(newApiKey)
+			if err != nil {
+				http.Error(w, "Error setting API Key for admins", http.StatusInternalServerError)
+				return
+			}
+			u.ApiKey = newApiKey
 		} else {
-			JSONResponse(w, models.Response{Success: true, Message: "API Key successfully reset!", Data: u.ApiKey}, http.StatusOK)
+			u.ApiKey = newApiKey
+			err := models.PutUser(&u)
+			if err != nil {
+				http.Error(w, "Error setting API Key", http.StatusInternalServerError)
+				return
+			}
 		}
+		JSONResponse(w, models.Response{Success: true, Message: "API Key successfully reset!", Data: u.ApiKey}, http.StatusOK)
 	}
 }
