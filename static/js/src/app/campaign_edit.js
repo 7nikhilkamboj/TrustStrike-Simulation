@@ -454,6 +454,7 @@ function renderTemplateGrid(templates) {
         var card = `
         <div class="col-md-4 col-sm-6">
             <div class="template-card" id="card-${t.id}" onclick="selectTemplateCard(${t.id})">
+                 <div class="selection-checkbox"><i class="fa fa-check"></i></div>
                  <div class="template-header">
                     <div class="template-name" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</div>
                      <div class="template-type">
@@ -1136,6 +1137,7 @@ function renderRedirectorTemplateCards(templates) {
         var card = `
         <div class="col-md-4 col-sm-6">
             <div class="template-card redirector-template-card${selectedClass}" data-name="${name}">
+                 <div class="selection-checkbox"><i class="fa fa-check"></i></div>
                  <div class="template-header">
                     <div class="template-name" title="${name}">${name}</div>
                      <div class="template-type">

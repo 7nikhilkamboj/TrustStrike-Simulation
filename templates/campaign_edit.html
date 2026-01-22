@@ -533,6 +533,55 @@
                         box-shadow: 0 0 0 10px rgba(204, 46, 46, 0.62);
                     }
 
+                    /* Selection checkbox indicator */
+                    .template-card .selection-checkbox {
+                        position: absolute;
+                        top: 8px;
+                        left: 8px;
+                        width: 24px;
+                        height: 24px;
+                        background: #fff;
+                        border: 2px solid #ccc;
+                        border-radius: 4px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 10;
+                        transition: all 0.2s;
+                    }
+
+                    .template-card .selection-checkbox i {
+                        display: none;
+                        color: #fff;
+                        font-size: 14px;
+                    }
+
+                    .template-card.selected .selection-checkbox {
+                        display: flex;
+                        background: #28a745;
+                        border-color: #28a745;
+                    }
+
+                    .template-card.selected .selection-checkbox i {
+                        display: block;
+                    }
+
+                    .template-card.selected .template-header {
+                        padding-left: 45px;
+                    }
+
+                    /* Redirector cards: hide name, keep checkbox */
+                    .redirector-template-card .template-name {
+                        display: none;
+                        width: 0;
+                        flex: 0;
+                    }
+
+                    .redirector-template-card .template-header {
+                        padding-left: 45px;
+                        justify-content: flex-end !important;
+                    }
+
                     /* Header (Name + Type) */
                     .template-header {
                         padding: 10px 15px;
@@ -597,8 +646,8 @@
                         border: 0;
                         transform: scale(0.5);
                         transform-origin: 0 0;
-                        pointer-events: auto;
-                        /* Allow interaction/scrolling */
+                        pointer-events: none;
+                        /* Disabled to allow card selection */
                     }
 
                     .template-preview .text-preview {
