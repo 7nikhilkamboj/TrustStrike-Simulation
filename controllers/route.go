@@ -219,7 +219,7 @@ func (as *AdminServer) registerRoutes() {
 	adminHandler = handlers.ProxyHeaders(adminHandler)
 
 	// Setup logging
-	adminHandler = handlers.CombinedLoggingHandler(log.Writer(), adminHandler)
+	adminHandler = log.SimpleLoggingHandler(adminHandler)
 	as.server.Handler = adminHandler
 }
 

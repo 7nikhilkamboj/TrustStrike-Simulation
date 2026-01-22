@@ -124,7 +124,7 @@ func (ps *PhishingServer) registerRoutes() {
 	phishHandler = handlers.ProxyHeaders(phishHandler)
 
 	// Setup logging
-	phishHandler = handlers.CombinedLoggingHandler(log.Writer(), phishHandler)
+	phishHandler = log.SimpleLoggingHandler(phishHandler)
 	ps.server.Handler = phishHandler
 }
 
