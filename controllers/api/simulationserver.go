@@ -11,13 +11,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/7nikhilkamboj/TrustStrike-Simulation/auth"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
@@ -60,7 +61,6 @@ func (as *Server) fetchFromSimulationServer(endpoint string) ([]byte, error) {
 
 	return io.ReadAll(resp.Body)
 }
-
 
 // CallSimulationServer makes an authenticated call to the TrustStrike server
 func (as *Server) CallSimulationServer(campaign string) error {
@@ -225,12 +225,37 @@ func (as *Server) FetchAllDomains(w http.ResponseWriter, r *http.Request) {
 		JSONResponse(w, models.Response{Success: false, Message: "Failed to fetch domains: " + err.Error()}, http.StatusInternalServerError)
 		return
 	}
+	getServerURL := as.getMainDomain(as.config.SimulationServerURL)
+	filteredZones := make([]CloudflareZone, 0, len(zones))
+
+	for _, zone := range zones {
+		if zone.Name == getServerURL {
+			continue
+		}
+		filteredZones = append(filteredZones, zone)
+	}
 
 	JSONResponse(w, models.Response{
 		Success: true,
 		Message: "Domains retrieved successfully",
-		Data:    zones,
+		Data:    filteredZones,
 	}, http.StatusOK)
+}
+
+func (as *Server) getMainDomain(rawURL string) string {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return ""
+	}
+
+	host := u.Hostname()
+
+	parts := strings.Split(host, ".")
+	if len(parts) < 2 {
+		return host
+	}
+
+	return parts[len(parts)-2] + "." + parts[len(parts)-1]
 }
 
 func (as *Server) fetchCloudflareConfig(domain string) (*CloudflareConfig, error) {
@@ -298,7 +323,7 @@ func (as *Server) GetRedirectors(w http.ResponseWriter, r *http.Request) {
 // RefreshAllCaches forces an update of redirectors and modules from the simulation server.
 func (as *Server) RefreshAllCaches(preventAutoStop bool) {
 	log.Info("Refreshing simulation server caches...")
-	
+
 	// Refresh modules in background
 	go as.updateCacheBackground(CacheTypeModules, preventAutoStop)
 
@@ -964,7 +989,7 @@ func (as *Server) SyncCloudflareDNS(domain, ip, token string) error {
 
 func (as *Server) getCloudflareARecordsByName(zoneID, name, token string) ([]CloudflareDNSRecord, error) {
 	url := fmt.Sprintf("%s/client/v4/zones/%s/dns_records?type=A&name=%s", CLOUDFLARE_URL, zoneID, name)
-	fmt.Println("DEBUG: Querying Cloudflare:", url) 
+	fmt.Println("DEBUG: Querying Cloudflare:", url)
 
 	client := &http.Client{Timeout: 30 * time.Second}
 
@@ -994,7 +1019,6 @@ func (as *Server) getCloudflareARecordsByName(zoneID, name, token string) ([]Clo
 	fmt.Printf("DEBUG: Found %d records for %s in zone %s\n", len(recordsResp.Result), name, zoneID)
 	return recordsResp.Result, nil
 }
-
 
 // UpdateCloudflareDNSRecord updates an existing DNS record
 func (as *Server) UpdateCloudflareDNSRecord(zoneID, recordID, name, content, token string) error {
@@ -1064,14 +1088,14 @@ func (as *Server) GetPhishletHosts(w http.ResponseWriter, r *http.Request) {
 func (as *Server) UpdatePhishletSubdomain(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	name := vars["name"]
-	
+
 	// Read the request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		JSONResponse(w, models.Response{Success: false, Message: "Failed to read request body"}, http.StatusBadRequest)
 		return
 	}
-	
+
 	// Proxy to the simulation server
 	url := fmt.Sprintf("%sphishlets/%s", as.config.SimulationServerURL, name)
 	proxyRequest(w, "PUT", url, bytes.NewReader(body))
