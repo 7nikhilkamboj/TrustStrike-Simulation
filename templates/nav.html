@@ -28,7 +28,9 @@
             {{if .ModifySystem}}
             <div class="nav-item-wrapper {{ if or (eq .Title " Users & Groups") (eq .Title "Users & Groups" ) }}active{{
                 end }}">
-                <a href="/groups" class="nav-item-link">Users & Groups</a>
+                <a href="/groups" class="nav-item-link">Users & groups
+                    <span class="nav-admin-badge">Admin</span>
+                </a>
             </div>
             {{end}}
         </div>
@@ -41,7 +43,9 @@
         <div class="nav-group-container" style="display: block;">
             <div class="nav-item-wrapper {{ if or (eq .Title " Email Templates") (eq .Title "Redirector Templates" ) (eq
                 .Title "Landing Pages" ) }}active{{ end }}">
-                <a href="/templates" class="nav-item-link">All Templates</a>
+                <a href="/templates" class="nav-item-link">All Templates
+                    <span class="nav-admin-badge">Admin</span>
+                </a>
             </div>
         </div>
 
@@ -53,19 +57,27 @@
             <div class="nav-item-wrapper {{ if or (eq .Title " Email Sending Profiles") (eq
                 .Title "Email Sending Profiles" ) (eq .Title " SMS Sending Profiles" ) (eq .Title "SMS Sending Profiles"
                 ) }}active{{ end }}">
-                <a href="/sending_profiles" class="nav-item-link">Sending Profiles</a>
+                <a href="/sending_profiles" class="nav-item-link">Sending Profiles
+                    <span class="nav-admin-badge">Admin</span>
+                </a>
             </div>
             <div class="nav-item-wrapper {{ if or (eq .Title " Account Settings") (eq .Title "Account Settings" )
                 }}active{{ end }}">
-                <a href="/settings" class="nav-item-link">Account Settings</a>
+                <a href="/settings" class="nav-item-link">Account Settings
+                    <span class="nav-admin-badge">Admin</span>
+                </a>
             </div>
             <div class="nav-item-wrapper {{ if or (eq .Title " DNS Configuration") (eq .Title "DNS Configuration" )
                 }}active{{ end }}">
-                <a href="/dns_config" class="nav-item-link">DNS Configuration</a>
+                <a href="/dns_config" class="nav-item-link">DNS Configuration
+                    <span class="nav-admin-badge">Admin</span>
+                </a>
             </div>
             <div class="nav-item-wrapper {{ if or (eq .Title " SimulationServer Integration") (eq
                 .Title "SimulationServer Integration" ) }}active{{ end }}">
-                <a href="/simulationserver" class="nav-item-link">Simulation Server</a>
+                <a href="/simulationserver" class="nav-item-link">Simulation Server
+                    <span class="nav-admin-badge">Admin</span>
+                </a>
             </div>
         </div>
         {{end}}
