@@ -58,7 +58,6 @@ scripts = function () {
         app_directory + 'trust_strike.js',
         app_directory + 'users.js',
         app_directory + 'webhooks.js',
-        app_directory + 'user_groups.js',
         app_directory + 'qr_campaigns.js',
         app_directory + 'passwords.js',
         app_directory + 'landing_page_edit.js',

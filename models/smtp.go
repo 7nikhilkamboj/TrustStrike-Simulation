@@ -153,13 +153,6 @@ func (s *SMTP) GetDialer() (mailer.Dialer, error) {
 func GetSMTPs(uid int64) ([]SMTP, error) {
 	ss := []SMTP{}
 	query := db.Model(&SMTP{})
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return ss, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	query = query.Select("smtp.*, users.username as created_by").Joins("left join users on smtp.user_id = users.id")
 	err := query.Find(&ss).Error
 	if err != nil {
@@ -180,13 +173,6 @@ func GetSMTPs(uid int64) ([]SMTP, error) {
 func GetSMTP(id int64, uid int64) (SMTP, error) {
 	s := SMTP{}
 	query := db.Where("id=?", id)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return s, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)
@@ -204,13 +190,6 @@ func GetSMTP(id int64, uid int64) (SMTP, error) {
 func GetSMTPByName(n string, uid int64) (SMTP, error) {
 	s := SMTP{}
 	query := db.Where("name=?", n)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return s, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)

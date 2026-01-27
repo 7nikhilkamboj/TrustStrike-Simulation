@@ -323,30 +323,7 @@ var api = {
             return query("/users/" + id, "DELETE", {}, true)
         }
     },
-    // userGroups contains the endpoints for /user_groups/
-    userGroups: {
-        get: function () {
-            return query("/user_groups/", "GET", {}, true)
-        },
-        post: function (group) {
-            return query("/user_groups/", "POST", group, true)
-        }
-    },
-    // userGroupId contains the endpoints for /user_groups/:id
-    userGroupId: {
-        get: function (id) {
-            return query("/user_groups/" + id, "GET", {}, true)
-        },
-        delete: function (id) {
-            return query("/user_groups/" + id, "DELETE", {}, true)
-        },
-        addMember: function (id, userId) {
-            return query("/user_groups/" + id + "/members", "POST", { user_id: parseInt(userId) }, true)
-        },
-        removeMember: function (id, userId) {
-            return query("/user_groups/" + id + "/members/" + userId, "DELETE", {}, true)
-        }
-    },
+    // webhooks contains the endpoints for /webhooks/
     webhooks: {
         get: function () {
             return query("/webhooks/", "GET", {}, false)
@@ -388,9 +365,6 @@ var api = {
     // send_test_sms sends an sms to the specified phone number
     send_test_sms: function (req) {
         return query("/util/send_test_sms", "POST", req, true)
-    },
-    reset: function () {
-        return query("/reset", "POST", {}, true)
     }
 }
 window.api = api

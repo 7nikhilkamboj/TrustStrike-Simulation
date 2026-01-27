@@ -12,8 +12,7 @@ const save = (id) => {
         password: $("#password").val(),
         role: $("#role").val(),
         password_change_required: $("#force_password_change_checkbox").prop('checked'),
-        account_locked: $("#account_locked_checkbox").prop('checked'),
-        group_ids: $("#user_groups").val() ? $("#user_groups").val().map(id => parseInt(id)) : []
+        account_locked: $("#account_locked_checkbox").prop('checked')
     }
     // Submit the user
     if (id != -1) {
@@ -50,62 +49,31 @@ const dismiss = () => {
     $("#username").val("")
     $("#password").val("")
     $("#confirm_password").val("")
-    $("#role").val("")
-    $("#user_groups").val([]).trigger("change")
+    $("#role").val("user").trigger("change")
     $("#force_password_change_checkbox").prop('checked', true)
     $("#account_locked_checkbox").prop('checked', false)
     $("#modal\\.flashes").empty()
+    $("#userModalLabel").text("New User")
 }
 
 const edit = (id) => {
+    if (id != -1) {
+        let user = users.find(u => u.id == id)
+        if (user) {
+            $("#userModalLabel").text("Edit User")
+            $("#username").val(user.username)
+            $("#role").val(user.role.slug).trigger("change")
+            $("#force_password_change_checkbox").prop('checked', user.password_change_required)
+            $("#account_locked_checkbox").prop('checked', user.account_locked)
+        }
+    } else {
+        dismiss()
+    }
     $("#username").attr("disabled", false);
     $("#modalSubmit").unbind('click').click(() => {
         save(id)
     })
     $("#role").select2()
-    $("#user_groups").select2()
-
-    // Load groups into the dropdown
-    api.userGroups.get()
-        .done((groups) => {
-            $("#user_groups").empty()
-            $.each(groups, (i, group) => {
-                $("#user_groups").append($('<option>', {
-                    value: group.id,
-                    text: group.name
-                }))
-            })
-
-            if (id == -1) {
-                $("#userModalLabel").text("New User")
-                $("#role").val("user")
-                $("#role").trigger("change")
-                $("#user_groups").val([]).trigger("change")
-            } else {
-                $("#userModalLabel").text("Edit User")
-                api.userId.get(id)
-                    .done((user) => {
-                        $("#username").val(user.username)
-                        $("#role").val(user.role.slug)
-                        $("#role").trigger("change")
-                        $("#force_password_change_checkbox").prop('checked', user.password_change_required)
-                        $("#account_locked_checkbox").prop('checked', user.account_locked)
-
-                        let groupIds = []
-                        if (user.user_groups) {
-                            groupIds = user.user_groups.map(g => g.id)
-                        }
-                        $("#user_groups").val(groupIds).trigger("change")
-
-                        if (user.username == "admin") {
-                            $("#username").attr("disabled", true);
-                        }
-                    })
-                    .fail(function () {
-                        errorFlash("Error fetching user")
-                    })
-            }
-        })
 }
 
 const deleteUser = (id) => {

@@ -71,7 +71,6 @@ func (as *Server) registerRoutes() {
 	router.Use(mid.EnforceViewOnly)
 	router.HandleFunc("/imap/", mid.Use(as.IMAPServer))
 	router.HandleFunc("/imap/validate", mid.Use(as.IMAPServerValidate, mid.RequirePermission(models.PermissionModifySystem)))
-	router.HandleFunc("/reset", mid.Use(as.Reset, mid.RequirePermission(models.PermissionModifySystem)))
 	router.HandleFunc("/campaigns/", as.Campaigns)
 	router.HandleFunc("/campaigns/summary", as.CampaignsSummary)
 	router.HandleFunc("/campaigns/{id:[0-9]+}", as.Campaign)
@@ -93,10 +92,6 @@ func (as *Server) registerRoutes() {
 	router.HandleFunc("/sms_campaigns/", as.SMSCampaigns)
 	router.HandleFunc("/users/", mid.Use(as.Users, mid.RequirePermission(models.PermissionModifySystem)))
 	router.HandleFunc("/users/{id:[0-9]+}", mid.Use(as.User))
-	router.HandleFunc("/user_groups/", mid.Use(as.UserGroups, mid.RequirePermission(models.PermissionModifySystem)))
-	router.HandleFunc("/user_groups/{id:[0-9]+}", mid.Use(as.UserGroup, mid.RequirePermission(models.PermissionModifySystem)))
-	router.HandleFunc("/user_groups/{id:[0-9]+}/members", mid.Use(as.UserGroupMembers, mid.RequirePermission(models.PermissionModifySystem)))
-	router.HandleFunc("/user_groups/{id:[0-9]+}/members/{user_id:[0-9]+}", mid.Use(as.UserGroupMember, mid.RequirePermission(models.PermissionModifySystem)))
 	router.HandleFunc("/util/send_test_email", mid.Use(as.SendTestEmail, mid.RequirePermission(models.PermissionModifySystem)))
 
 	// Phishlets Proxy

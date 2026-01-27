@@ -204,7 +204,7 @@ func Setup(c *config.Config) error {
 		return err
 	}
 	// Run custom migrations for new tables
-	err = db.AutoMigrate(&UserGroup{}, &UserGroupMembership{}, &Campaign{}, &SimulationConfig{}, &Group{}, &Target{}, &BlacklistedToken{}).Error
+	err = db.AutoMigrate(&Campaign{}, &SimulationConfig{}, &Group{}, &Target{}, &BlacklistedToken{}).Error
 	if err != nil {
 		log.Error(err)
 		return err

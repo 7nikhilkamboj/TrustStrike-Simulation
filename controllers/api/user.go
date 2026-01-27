@@ -29,12 +29,11 @@ var ErrInsufficientPermission = errors.New("Permission denied")
 
 // userRequest is the payload which represents the creation of a new user.
 type userRequest struct {
-	Username               string  `json:"username"`
-	Password               string  `json:"password"`
-	Role                   string  `json:"role"`
-	PasswordChangeRequired bool    `json:"password_change_required"`
-	AccountLocked          bool    `json:"account_locked"`
-	GroupIDs               []int64 `json:"group_ids"`
+	Username               string `json:"username"`
+	Password               string `json:"password"`
+	Role                   string `json:"role"`
+	PasswordChangeRequired bool   `json:"password_change_required"`
+	AccountLocked          bool   `json:"account_locked"`
 }
 
 func (ur *userRequest) Validate(existingUser *models.User) error {
@@ -83,7 +82,6 @@ func (as *Server) Users(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
 			return
 		}
-		log.Debugf("Received User POST request with Groups: %v", ur.GroupIDs)
 		err = ur.Validate(nil)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
@@ -131,18 +129,6 @@ func (as *Server) Users(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Debugf("User created successfully with ID: %d", user.Id)
-		// Update groups
-		if len(ur.GroupIDs) > 0 {
-			err = models.SetUserGroups(user.Id, ur.GroupIDs)
-			if err != nil {
-				JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
-				return
-			}
-			user.UserGroups = make([]models.UserGroup, len(ur.GroupIDs))
-			for i, gid := range ur.GroupIDs {
-				user.UserGroups[i], _ = models.GetUserGroup(gid)
-			}
-		}
 		JSONResponse(w, user, http.StatusOK)
 		return
 	}
@@ -190,7 +176,6 @@ func (as *Server) User(w http.ResponseWriter, r *http.Request) {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusBadRequest)
 			return
 		}
-		log.Debugf("Received User PUT request with Groups: %v", ur.GroupIDs)
 		err = ur.Validate(&existingUser)
 		if err != nil {
 			log.Errorf("invalid user request received: %v", err)
@@ -249,16 +234,6 @@ func (as *Server) User(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 			return
-		}
-		// Update groups
-		err = models.SetUserGroups(existingUser.Id, ur.GroupIDs)
-		if err != nil {
-			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
-			return
-		}
-		existingUser.UserGroups = make([]models.UserGroup, len(ur.GroupIDs))
-		for i, gid := range ur.GroupIDs {
-			existingUser.UserGroups[i], _ = models.GetUserGroup(gid)
 		}
 		JSONResponse(w, existingUser, http.StatusOK)
 	}

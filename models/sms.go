@@ -48,13 +48,6 @@ func (s SMS) TableName() string {
 func GetSMSs(uid int64) ([]SMS, error) {
 	ss := []SMS{}
 	query := db.Model(&SMS{})
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return ss, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	query = query.Select("sms.*, users.username as created_by").Joins("left join users on sms.user_id = users.id")
 	err := query.Find(&ss).Error
 	if err != nil {
@@ -69,13 +62,6 @@ func GetSMSs(uid int64) ([]SMS, error) {
 func GetSMS(id int64, uid int64) (SMS, error) {
 	s := SMS{}
 	query := db.Where("id=?", id)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return s, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)
@@ -89,13 +75,6 @@ func GetSMS(id int64, uid int64) (SMS, error) {
 func GetSMSByName(n string, uid int64) (SMS, error) {
 	s := SMS{}
 	query := db.Where("name=?", n)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return s, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)

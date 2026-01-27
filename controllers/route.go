@@ -180,7 +180,6 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/simulationserver", mid.Use(as.SimulationServer, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/dns_config", mid.Use(as.DNSConfig, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/phishlets", mid.Use(as.Phishlets, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
-	router.HandleFunc("/user_groups", mid.Use(as.UserGroups, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/users", mid.Use(as.UserManagement, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/webhooks", mid.Use(as.Webhooks, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/impersonate", mid.Use(as.Impersonate, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
@@ -485,14 +484,6 @@ func (as *AdminServer) UserManagement(w http.ResponseWriter, r *http.Request) {
 	params := newTemplateParams(r)
 	params.Title = "User Management"
 	getTemplate(w, "users").ExecuteTemplate(w, "base", params)
-}
-
-// UserGroups is an admin-only handler that allows for the management
-// of user groups.
-func (as *AdminServer) UserGroups(w http.ResponseWriter, r *http.Request) {
-	params := newTemplateParams(r)
-	params.Title = "User Groups"
-	getTemplate(w, "user_groups").ExecuteTemplate(w, "base", params)
 }
 
 func (as *AdminServer) nextOrIndex(w http.ResponseWriter, r *http.Request) {

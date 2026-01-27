@@ -351,13 +351,6 @@ func getCampaignStats(cid int64) (CampaignStats, error) {
 func GetCampaigns(uid int64, campaignType string) ([]Campaign, error) {
 	cs := []Campaign{}
 	query := db.Model(&Campaign{})
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return cs, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	if campaignType != "" {
 		query = query.Where("campaign_type = ?", campaignType)
 	}
@@ -381,13 +374,6 @@ func GetCampaignSummaries(uid int64, campaignType string) (CampaignSummaries, er
 	cs := []CampaignSummary{}
 	// Get the basic campaign information
 	query := db.Table("campaigns")
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return overview, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	if campaignType != "" {
 		query = query.Where("campaign_type = ?", campaignType)
 	}
@@ -413,13 +399,6 @@ func GetCampaignSummaries(uid int64, campaignType string) (CampaignSummaries, er
 func GetCampaignSummary(id int64, uid int64) (CampaignSummary, error) {
 	cs := CampaignSummary{}
 	query := db.Table("campaigns").Where("id = ?", id)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return cs, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	query = query.Select("id, name, campaign_type, created_date, launch_date, send_by_date, completed_date, status")
 	err := query.Scan(&cs).Error
 	if err != nil {
@@ -438,13 +417,7 @@ func GetCampaignSummary(id int64, uid int64) (CampaignSummary, error) {
 func GetCampaignMailContext(id int64, uid int64) (Campaign, error) {
 	c := Campaign{}
 	query := db.Where("id = ?", id)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return c, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
+
 	err := query.Find(&c).Error
 	if err != nil {
 		return c, err
@@ -472,13 +445,6 @@ func GetCampaignMailContext(id int64, uid int64) (Campaign, error) {
 func GetCampaign(id int64, uid int64) (Campaign, error) {
 	c := Campaign{}
 	query := db.Where("id = ?", id)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return c, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	err := query.Find(&c).Error
 	if err != nil {
 		log.Errorf("%s: campaign not found", err)
@@ -492,13 +458,6 @@ func GetCampaign(id int64, uid int64) (Campaign, error) {
 func GetCampaignResults(id int64, uid int64) (CampaignResults, error) {
 	cr := CampaignResults{}
 	query := db.Table("campaigns").Where("id = ?", id)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return cr, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	err := query.Find(&cr).Error
 	if err != nil {
 		log.WithFields(logrus.Fields{
@@ -857,13 +816,6 @@ func PostSMSCampaign(c *Campaign, uid int64) error {
 func GetCampaignSMSContext(id int64, uid int64) (Campaign, error) {
 	c := Campaign{}
 	query := db.Where("id = ?", id)
-	if uid != 0 {
-		uids, err := GetUsersSharingWith(uid)
-		if err != nil {
-			return c, err
-		}
-		query = query.Where("user_id IN (?)", uids)
-	}
 	err := query.Find(&c).Error
 	if err != nil {
 		return c, err

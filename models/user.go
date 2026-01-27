@@ -14,16 +14,15 @@ var ErrModifyingOnlyAdmin = errors.New("Cannot remove the only administrator")
 
 // User represents the user model for trust_strike.
 type User struct {
-	Id                     int64       `json:"id" gorm:"primary_key"`
-	Username               string      `json:"username" sql:"not null;unique"`
-	Hash                   string      `json:"-"`
-	ApiKey                 string      `json:"api_key" sql:"not null"`
-	Role                   Role        `json:"role" gorm:"association_autoupdate:false;association_autocreate:false"`
-	RoleID                 int64       `json:"-"`
-	PasswordChangeRequired bool        `json:"password_change_required"`
-	AccountLocked          bool        `json:"account_locked"`
-	LastLogin              time.Time   `json:"last_login"`
-	UserGroups             []UserGroup `json:"user_groups" gorm:"-"`
+	Id                     int64     `json:"id" gorm:"primary_key"`
+	Username               string    `json:"username" sql:"not null;unique"`
+	Hash                   string    `json:"-"`
+	ApiKey                 string    `json:"api_key" sql:"not null"`
+	Role                   Role      `json:"role" gorm:"association_autoupdate:false;association_autocreate:false"`
+	RoleID                 int64     `json:"-"`
+	PasswordChangeRequired bool      `json:"password_change_required"`
+	AccountLocked          bool      `json:"account_locked"`
+	LastLogin              time.Time `json:"last_login"`
 }
 
 // GetUser returns the user that the given id corresponds to. If no user is found, an
@@ -34,13 +33,6 @@ func GetUser(id int64) (User, error) {
 	if err != nil {
 		return u, err
 	}
-	// Fetch groups
-	groups := []UserGroup{}
-	err = db.Table("user_groups").
-		Joins("JOIN user_group_memberships ON user_group_memberships.user_group_id = user_groups.id").
-		Where("user_group_memberships.user_id = ?", id).
-		Find(&groups).Error
-	u.UserGroups = groups
 	return u, err
 }
 
@@ -50,17 +42,6 @@ func GetUsers() ([]User, error) {
 	err := db.Preload("Role").Find(&us).Error
 	if err != nil {
 		return us, err
-	}
-	// Fetch groups for each user
-	for i, user := range us {
-		groups := []UserGroup{}
-		err = db.Table("user_groups").
-			Joins("JOIN user_group_memberships ON user_group_memberships.user_group_id = user_groups.id").
-			Where("user_group_memberships.user_id = ?", user.Id).
-			Find(&groups).Error
-		if err == nil {
-			us[i].UserGroups = groups
-		}
 	}
 	return us, err
 }
