@@ -93,6 +93,9 @@ func (p *Page) Validate() error {
 func GetPages(uid int64) ([]Page, error) {
 	ps := []Page{}
 	query := db.Model(&Page{})
+	if uid != 0 {
+		query = query.Where("pages.user_id = ?", uid)
+	}
 	query = query.Select("pages.*, users.username as created_by").Joins("left join users on pages.user_id = users.id")
 	err := query.Find(&ps).Error
 	if err != nil {
@@ -106,6 +109,9 @@ func GetPages(uid int64) ([]Page, error) {
 func GetPage(id int64, uid int64) (Page, error) {
 	p := Page{}
 	query := db.Where("id=?", id)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	err := query.Find(&p).Error
 	if err != nil {
 		log.Error(err)
@@ -117,6 +123,9 @@ func GetPage(id int64, uid int64) (Page, error) {
 func GetPageByName(n string, uid int64) (Page, error) {
 	p := Page{}
 	query := db.Where("name=?", n)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	err := query.Find(&p).Error
 	if err != nil {
 		log.Error(err)

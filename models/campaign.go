@@ -152,10 +152,6 @@ func (c *Campaign) Validate() error {
 	if c.Template.Name == "" {
 		return ErrTemplateNotSpecified
 	}
-	// URL is mandatory unless we are in "Tracking only" mode where we might auto-generate it
-	if c.AttackObjective != "Tracking only" && c.URL == "" {
-		return errors.New("No URL specified")
-	}
 	if c.CampaignType == "sms" {
 		if c.SMS.Name == "" {
 			return errors.New("No SMS profile specified")
@@ -167,9 +163,6 @@ func (c *Campaign) Validate() error {
 	}
 	if !c.SendByDate.IsZero() && !c.LaunchDate.IsZero() && c.SendByDate.Before(c.LaunchDate) {
 		return ErrInvalidSendByDate
-	}
-	if c.ScheduledStopDate.IsZero() {
-		return errors.New("End date not specified")
 	}
 	return nil
 }
@@ -374,8 +367,11 @@ func GetCampaignSummaries(uid int64, campaignType string) (CampaignSummaries, er
 	cs := []CampaignSummary{}
 	// Get the basic campaign information
 	query := db.Table("campaigns")
+	if uid != 0 {
+		query = query.Where("campaigns.user_id = ?", uid)
+	}
 	if campaignType != "" {
-		query = query.Where("campaign_type = ?", campaignType)
+		query = query.Where("campaigns.campaign_type = ?", campaignType)
 	}
 	query = query.Select("campaigns.id, campaigns.name, campaigns.campaign_type, campaigns.created_date, campaigns.launch_date, campaigns.send_by_date, campaigns.completed_date, campaigns.status, users.username as created_by").Joins("left join users on campaigns.user_id = users.id")
 	err := query.Scan(&cs).Error
@@ -399,6 +395,9 @@ func GetCampaignSummaries(uid int64, campaignType string) (CampaignSummaries, er
 func GetCampaignSummary(id int64, uid int64) (CampaignSummary, error) {
 	cs := CampaignSummary{}
 	query := db.Table("campaigns").Where("id = ?", id)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	query = query.Select("id, name, campaign_type, created_date, launch_date, send_by_date, completed_date, status")
 	err := query.Scan(&cs).Error
 	if err != nil {

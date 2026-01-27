@@ -114,6 +114,9 @@ func (g *Group) Validate() error {
 func GetGroups(uid int64) ([]Group, error) {
 	gs := []Group{}
 	query := db.Model(&Group{})
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	query = query.Where("is_active IS NOT ?", false)
 	err := query.Find(&gs).Error
 	if err != nil {
@@ -134,7 +137,10 @@ func GetGroups(uid int64) ([]Group, error) {
 func GetGroupSummaries(uid int64) (GroupSummaries, error) {
 	gs := GroupSummaries{}
 	query := db.Table("groups")
-	query = query.Where("is_active IS NOT ?", false)
+	if uid != 0 {
+		query = query.Where("groups.user_id = ?", uid)
+	}
+	query = query.Where("groups.is_active IS NOT ?", false)
 	query = query.Select("groups.*, users.username as created_by").Joins("left join users on groups.user_id = users.id")
 	err := query.Find(&gs.Groups).Error
 	if err != nil {
@@ -142,20 +148,9 @@ func GetGroupSummaries(uid int64) (GroupSummaries, error) {
 		return gs, err
 	}
 	for i := range gs.Groups {
-		query = db.Table("group_targets").Where("group_id=?", gs.Groups[i].Id)
-		err = query.Count(&gs.Groups[i].NumTargets).Error
-	}
-	query = query.Select("groups.*, users.username as created_by").Joins("left join users on groups.user_id = users.id")
-	err = query.Find(&gs.Groups).Error
-	if err != nil {
-		log.Error(err)
-		return gs, err
-	}
-	for i := range gs.Groups {
-		query = db.Table("group_targets").Where("group_id=?", gs.Groups[i].Id)
-		err = query.Count(&gs.Groups[i].NumTargets).Error
+		err = db.Table("group_targets").Where("group_id=?", gs.Groups[i].Id).Count(&gs.Groups[i].NumTargets).Error
 		if err != nil {
-			return gs, err
+			log.Error(err)
 		}
 	}
 	gs.Total = int64(len(gs.Groups))
@@ -166,6 +161,9 @@ func GetGroupSummaries(uid int64) (GroupSummaries, error) {
 func GetGroup(id int64, uid int64) (Group, error) {
 	g := Group{}
 	query := db.Where("id=?", id)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	err := query.Find(&g).Error
 	if err != nil {
 		log.Error(err)
@@ -182,13 +180,15 @@ func GetGroup(id int64, uid int64) (Group, error) {
 func GetGroupSummary(id int64, uid int64) (GroupSummary, error) {
 	g := GroupSummary{}
 	query := db.Table("groups").Where("id=?", id).Where("is_active IS NOT ?", false)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	err := query.Find(&g).Error
 	if err != nil {
 		log.Error(err)
 		return g, err
 	}
-	query = db.Table("group_targets").Where("group_id=?", id)
-	err = query.Count(&g.NumTargets).Error
+	err = db.Table("group_targets").Where("group_id=?", id).Count(&g.NumTargets).Error
 	if err != nil {
 		return g, err
 	}

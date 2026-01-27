@@ -62,6 +62,9 @@ func (t *Template) Validate() error {
 func GetTemplates(uid int64) ([]Template, error) {
 	ts := []Template{}
 	query := db.Model(&Template{})
+	if uid != 0 {
+		query = query.Where("templates.user_id = ?", uid)
+	}
 
 	query = query.Select("templates.*, users.username as created_by").Joins("left join users on templates.user_id = users.id")
 	err := query.Find(&ts).Error
@@ -87,6 +90,9 @@ func GetTemplates(uid int64) ([]Template, error) {
 func GetTemplate(id int64, uid int64) (Template, error) {
 	t := Template{}
 	query := db.Where("id=?", id)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 
 	err := query.Find(&t).Error
 	if err != nil {
@@ -110,6 +116,9 @@ func GetTemplate(id int64, uid int64) (Template, error) {
 func GetTemplateByName(n string, uid int64) (Template, error) {
 	t := Template{}
 	query := db.Where("name=?", n)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 
 	err := query.Find(&t).Error
 	if err != nil {
