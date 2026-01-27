@@ -155,7 +155,7 @@ function loadCampaigns() {
                     escapeHtml(campaign.created_by || ""),
                     moment(campaign.created_date).format('MMMM Do YYYY, h:mm:ss a'),
                     "<span class=\"label " + label + "\" data-toggle=\"tooltip\" data-placement=\"right\" data-html=\"true\" title=\"" + quickStats + "\">" + campaign.status + "</span>",
-                    "<div style='display: flex; justify-content: flex-end; white-space: nowrap; gap: 5px;'>\
+                    "<div style='display: flex; justify-content: center; white-space: nowrap; gap: 5px;'>\
                         <a class='btn btn-primary' href='/campaigns/" + campaign.id + "' data-toggle='tooltip' data-placement='left' title='View Results'>\
                             <i class='fa fa-bar-chart'></i>\
                         </a>\
