@@ -33,8 +33,9 @@ func init() {
 type SimpleFormatter struct{}
 
 func (f *SimpleFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	timestamp := entry.Time.Format("2006-01-02 15:04:05")
 	level := strings.ToUpper(entry.Level.String())
-	return []byte(fmt.Sprintf("[%s] %s\n", level, entry.Message)), nil
+	return []byte(fmt.Sprintf("%s [%s] %s\n", timestamp, level, entry.Message)), nil
 }
 
 // Setup configures the logger based on options in the config.json.
