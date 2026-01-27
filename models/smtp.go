@@ -153,6 +153,9 @@ func (s *SMTP) GetDialer() (mailer.Dialer, error) {
 func GetSMTPs(uid int64) ([]SMTP, error) {
 	ss := []SMTP{}
 	query := db.Model(&SMTP{})
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	query = query.Select("smtp.*, users.username as created_by").Joins("left join users on smtp.user_id = users.id")
 	err := query.Find(&ss).Error
 	if err != nil {
@@ -173,6 +176,9 @@ func GetSMTPs(uid int64) ([]SMTP, error) {
 func GetSMTP(id int64, uid int64) (SMTP, error) {
 	s := SMTP{}
 	query := db.Where("id=?", id)
+	if uid != 0 {
+		query = query.Where("user_id=?", uid)
+	}
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)
@@ -189,7 +195,7 @@ func GetSMTP(id int64, uid int64) (SMTP, error) {
 // GetSMTPByName returns the SMTP, if it exists, specified by the given name and user_id.
 func GetSMTPByName(n string, uid int64) (SMTP, error) {
 	s := SMTP{}
-	query := db.Where("name=?", n)
+	query := db.Where("name=? AND user_id=?", n, uid)
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)

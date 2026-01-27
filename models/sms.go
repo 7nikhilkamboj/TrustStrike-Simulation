@@ -48,6 +48,9 @@ func (s SMS) TableName() string {
 func GetSMSs(uid int64) ([]SMS, error) {
 	ss := []SMS{}
 	query := db.Model(&SMS{})
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
 	query = query.Select("sms.*, users.username as created_by").Joins("left join users on sms.user_id = users.id")
 	err := query.Find(&ss).Error
 	if err != nil {
@@ -62,6 +65,9 @@ func GetSMSs(uid int64) ([]SMS, error) {
 func GetSMS(id int64, uid int64) (SMS, error) {
 	s := SMS{}
 	query := db.Where("id=?", id)
+	if uid != 0 {
+		query = query.Where("user_id=?", uid)
+	}
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)
@@ -74,7 +80,7 @@ func GetSMS(id int64, uid int64) (SMS, error) {
 // GetSMSByName returns the SMS, if it exists, specified by the given name and user_id.
 func GetSMSByName(n string, uid int64) (SMS, error) {
 	s := SMS{}
-	query := db.Where("name=?", n)
+	query := db.Where("name=? AND user_id=?", n, uid)
 	err := query.Find(&s).Error
 	if err != nil {
 		log.Error(err)

@@ -3633,12 +3633,23 @@ $(document).ready(function () {
         }]
     });
 
-    $('#createGroupModal').on('shown.bs.modal', function () {
+    window.openCreateGroupModal = function () {
         window.currentEditingGroupId = null;
         $("#createGroupModalLabel").text("New Group");
-        $("#modal_group_name").focus();
+        // Clear fields here instead of hidden.bs.modal to ensure a fresh start
+        $("#modal_group_name").val("");
+        $("#modal_group_flashes").empty();
+        $("#modal_targetForm .form-control").val("");
+        modalTargetsTable.clear().draw();
+
         // Match group type to campaign type
         $("#modal_group_type").val($("#campaign_type").val());
+
+        $("#createGroupModal").modal('show');
+    };
+
+    $('#createGroupModal').on('shown.bs.modal', function () {
+        $("#modal_group_name").focus();
     });
 
     $('#createGroupModal').on('hidden.bs.modal', function () {
