@@ -437,7 +437,7 @@ function renderDashboard() {
                 // Fallback for undefined/null
                 typeLabel = '<span class="label label-default">UNKNOWN</span>';
             }
-
+            console.log(window.modify)
             campaignRows.push([
                 escapeHtml(campaign.name),
                 typeLabel,
@@ -452,7 +452,7 @@ function renderDashboard() {
                 "<a class='btn btn-primary' href='/campaigns/" + campaign.id + "' data-toggle='tooltip' data-placement='left' title='View Results'>\
             <i class='fa fa-bar-chart'></i>\
             </a>\
-            " + (modifySystem ? "<button class='btn btn-danger' onclick='deleteCampaign(" + i + ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
+            " + (window.modify === "true" ? "<button class='btn btn-danger' onclick='deleteCampaign(" + i + ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
             <i class='fa fa-trash-o'></i>\
             </button>" : "")
             ])
