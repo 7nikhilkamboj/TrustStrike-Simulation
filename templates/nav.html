@@ -41,8 +41,10 @@
             TEMPLATES
         </div>
         <div class="nav-group-container" style="display: block;">
-            <div class="nav-item-wrapper {{ if or (eq .Title " Email Templates") (eq .Title "Redirector Templates" ) (eq
-                .Title "Landing Pages" ) }}active{{ end }}">
+            <div class="nav-item-wrapper {{ if or (eq .Title " Templates") (eq .Title " Email Templates" ) (eq
+                .Title "Email Templates" ) (eq .Title "QR Templates" ) (eq .Title "SMS Templates" ) (eq
+                .Title "Redirector Templates" ) (eq .Title "Landing Pages" ) (eq .Title "Login Pages" ) (eq
+                .Title "Redirectors" ) }}active{{ end }}">
                 <a href="/templates" class="nav-item-link">All Templates
                     <span class="nav-admin-badge">Admin</span>
                 </a>
@@ -61,8 +63,8 @@
                     <span class="nav-admin-badge">Admin</span>
                 </a>
             </div>
-            <div class="nav-item-wrapper {{ if or (eq .Title " Account Settings") (eq .Title "Account Settings" )
-                }}active{{ end }}">
+            <div class="nav-item-wrapper {{ if or (eq .Title " Account Settings") (eq .Title "Settings" ) }}active{{ end
+                }}">
                 <a href="/settings" class="nav-item-link">Account Settings
                     <span class="nav-admin-badge">Admin</span>
                 </a>
