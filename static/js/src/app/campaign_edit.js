@@ -1212,7 +1212,7 @@ function renderRedirectorTemplateCards(templates) {
                     url: "/api/simulationserver/redirectors/" + encodeURIComponent(name),
                     method: "DELETE",
                     success: function () {
-                        Swal.fire("Deleted!", "Redirector template deleted.", "success");
+
                         loadRedirectorTemplates();
                     },
                     error: function () {
@@ -1703,16 +1703,7 @@ function autoEnablePhishlet(phishletName, callback) {
 }
 
 function showPhishletEnabledToast(phishletName) {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000
-    });
-    Toast.fire({
-        icon: 'success',
-        title: 'Phishlet "' + phishletName + '" enabled'
-    });
+
 }
 
 function loadPhishletHosts(name) {
@@ -1820,16 +1811,6 @@ $("#phishletHostname").on("change", function () {
                 contentType: "application/json",
                 data: JSON.stringify({ hostname: hostname }),
                 success: function () {
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 3000
-                    });
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Phishlet hostname set to ' + hostname
-                    });
 
                     loadPhishletHosts(name);
                     // 3. Auto-create DNS records for all phishlet hosts
@@ -1841,13 +1822,12 @@ $("#phishletHostname").on("change", function () {
                     autoCreateDefaultLure(name, hostname);
                 },
                 error: function () {
-                    Swal.fire("Error", "Failed to update phishlet hostname.", "error");
+
                 }
             });
         },
         error: function () {
-            console.error("Failed to update global domain");
-            Swal.fire("Error", "Failed to update global domain.", "error");
+
         }
     });
 
@@ -1862,10 +1842,10 @@ $("#saveIPv4Btn").on("click", function () {
         contentType: "application/json",
         data: JSON.stringify({ external: ip }), // Updated key to 'external'
         success: function () {
-            Swal.fire("Saved", "Server IP updated.", "success");
+
         },
         error: function () {
-            Swal.fire("Error", "Failed to update IP.", "error");
+
         }
     });
 });
@@ -1877,19 +1857,11 @@ $("#addSubdomainDNSBtn").on("click", function () {
     var domain = $("#redirectorDomain").val(); // Assuming validation against this or 
 
     if (!hostname || !ip) {
-        Swal.fire("Error", "Please set Hostname and IP first.", "warning");
         return;
     }
 
-    Swal.fire({
-        title: "Creating DNS Record...",
-        text: "Adding A record for " + hostname + " -> " + ip,
-        onBeforeOpen: () => { Swal.showLoading() }
-    });
-
     getZoneIdForDomain(hostname).then(function (zoneId) {
         if (!zoneId) {
-            Swal.fire("Error", "Could not determine Zone ID for " + hostname, "error");
             return;
         }
 
@@ -1905,10 +1877,10 @@ $("#addSubdomainDNSBtn").on("click", function () {
                 proxied: true // Default to false? User said "IP", usually means direct A record.
             }),
             success: function () {
-                Swal.fire("Success", "DNS Record created.", "success");
+
             },
             error: function (xhr) {
-                Swal.fire("Error", "Failed to create DNS record: " + (xhr.responseJSON ? xhr.responseJSON.message : xhr.statusText), "error");
+
             }
         });
     });
@@ -1917,16 +1889,7 @@ $("#addSubdomainDNSBtn").on("click", function () {
 // Auto-create DNS A records for all phishlet hosts using the EC2 public IP
 function autoCreateDNSRecords(phishletName, hostname) {
     // Show progress notification
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 5000
-    });
-    Toast.fire({
-        icon: 'info',
-        title: 'Setting up DNS records...'
-    });
+
 
     // Fetch EC2 IP from status API (EC2 was already started on "New Campaign" click)
     $.ajax({
@@ -1937,7 +1900,7 @@ function autoCreateDNSRecords(phishletName, hostname) {
             if (!ec2IP) {
                 Toast.fire({
                     icon: 'warning',
-                    title: 'EC2 not running - no public IP available'
+                    title: 'server not running - no public IP available'
                 });
                 return;
             }
@@ -1958,10 +1921,7 @@ function autoCreateDNSRecords(phishletName, hostname) {
             createDNSRecordsWithIP(phishletName, hostname, ec2IP, Toast);
         },
         error: function () {
-            Toast.fire({
-                icon: 'error',
-                title: 'Failed to get EC2 status'
-            });
+
         }
     });
 }
@@ -1996,10 +1956,7 @@ function createDNSRecordsWithIP(phishletName, hostname, ec2IP, Toast) {
                         proceedWithValidation(matchingZone);
                     },
                     error: function () {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'Failed to fetch Cloudflare domains'
-                        });
+
                     }
                 });
                 return;
@@ -2012,11 +1969,7 @@ function createDNSRecordsWithIP(phishletName, hostname, ec2IP, Toast) {
 
             function proceedWithValidation(matchingZone) {
                 if (!matchingZone) {
-                    console.error("Could not find matching Cloudflare zone for", hostname);
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Could not find Cloudflare zone for ' + hostname
-                    });
+
                     return;
                 }
 
@@ -2065,10 +2018,7 @@ function createDNSRecordsWithIP(phishletName, hostname, ec2IP, Toast) {
             }
         },
         error: function () {
-            Toast.fire({
-                icon: 'error',
-                title: 'Failed to get phishlet hosts'
-            });
+
         }
     });
 }
@@ -2146,10 +2096,7 @@ function autoCreateDefaultLure(phishletName, hostname) {
                                             if (redirectorName) {
                                                 toastMsg += ' (with redirector: ' + redirectorName + ')';
                                             }
-                                            Toast.fire({
-                                                icon: 'success',
-                                                title: toastMsg
-                                            });
+
 
                                             // Refresh lures table to show the new entry
                                             refreshLures();
@@ -2191,15 +2138,9 @@ function showDNSCompletionMessage(created, errors) {
         timer: 5000
     });
     if (errors === 0) {
-        Toast.fire({
-            icon: 'success',
-            title: 'Created ' + created + ' DNS records successfully!'
-        });
+
     } else {
-        Toast.fire({
-            icon: 'warning',
-            title: 'Created ' + created + ' DNS records, ' + errors + ' failed'
-        });
+
     }
 }
 
@@ -2274,14 +2215,6 @@ function setRedirectorSubdomain() {
     var subdomain = $("#subdomainInput").val().trim();
 
     if (!subdomain) {
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: 'Please enter a subdomain',
-            showConfirmButton: false,
-            timer: 3000
-        });
         return;
     }
 
@@ -2303,15 +2236,6 @@ function setRedirectorSubdomain() {
 
     // Update the email URL preview
     updateEmailUrlPreview(fullDomain);
-
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: 'success',
-        title: 'Subdomain set: ' + fullDomain,
-        showConfirmButton: false,
-        timer: 3000
-    });
 }
 
 // Update the Email URL preview in Step 3
@@ -2330,31 +2254,13 @@ function copyEmailUrl() {
     var emailUrl = $("#emailUrlPreviewValue").val();
     if (emailUrl) {
         navigator.clipboard.writeText(emailUrl).then(function () {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: 'Email URL copied!',
-                showConfirmButton: false,
-                timer: 2000
-            });
+
         });
     }
 }
 
 // Create DNS A record for redirector domain with EC2 IP
 function createRedirectorDNSRecord(fullDomain, baseDomain) {
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 5000
-    });
-
-    Toast.fire({
-        icon: 'info',
-        title: 'Creating DNS record for redirector...'
-    });
 
     // Get EC2 IP from status API
     $.ajax({
@@ -2363,10 +2269,7 @@ function createRedirectorDNSRecord(fullDomain, baseDomain) {
         success: function (statusResponse) {
             var ec2IP = statusResponse.data && statusResponse.data.public_ip;
             if (!ec2IP) {
-                Toast.fire({
-                    icon: 'warning',
-                    title: 'EC2 not running - cannot create DNS record'
-                });
+
                 return;
             }
 
@@ -2387,10 +2290,7 @@ function createRedirectorDNSRecord(fullDomain, baseDomain) {
                         proceedWithCreateLure(matchingZone);
                     },
                     error: function () {
-                        Toast.fire({
-                            icon: 'error',
-                            title: 'Failed to fetch Cloudflare domains'
-                        });
+
                     }
                 });
                 return;
@@ -2403,10 +2303,6 @@ function createRedirectorDNSRecord(fullDomain, baseDomain) {
 
             function proceedWithCreateLure(matchingZone) {
                 if (!matchingZone) {
-                    Toast.fire({
-                        icon: 'warning',
-                        title: 'Could not find Cloudflare zone for ' + baseDomain
-                    });
                     return;
                 }
 
@@ -2425,23 +2321,14 @@ function createRedirectorDNSRecord(fullDomain, baseDomain) {
                         proxied: true
                     }),
                     success: function () {
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'DNS record created: ' + fullDomain
-                        });
+
                     },
                     error: function (xhr) {
                         var response = xhr.responseJSON || {};
                         if (response.message && response.message.indexOf("already exists") > -1) {
-                            Toast.fire({
-                                icon: 'info',
-                                title: 'DNS record already exists for ' + fullDomain
-                            });
+
                         } else {
-                            Toast.fire({
-                                icon: 'error',
-                                title: 'Failed to create DNS record: ' + (response.message || xhr.statusText)
-                            });
+
                         }
                     }
                 });
@@ -2450,7 +2337,7 @@ function createRedirectorDNSRecord(fullDomain, baseDomain) {
         error: function () {
             Toast.fire({
                 icon: 'error',
-                title: 'Failed to get EC2 status'
+                title: 'Failed to get server status'
             });
         }
     });
@@ -2470,17 +2357,6 @@ function updatePhishletLandingDomain() {
             contentType: "application/json",
             data: JSON.stringify({ landing_domain: domain }),
             success: function () {
-
-                const Toast = Swal.mixin({
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000
-                });
-                Toast.fire({
-                    icon: 'success',
-                    title: 'Updated phishlet domain to ' + domain
-                });
             },
             error: function (xhr) {
                 console.error("Failed to update phishlet landing domain", xhr);
@@ -2712,12 +2588,6 @@ function createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirec
                                                         $("#trackingLureUrl").val(actualLureUrl);
                                                         $("#trackingLureDisplay").show();
 
-                                                        const Toast = Swal.mixin({
-                                                            toast: true,
-                                                            position: 'top-end',
-                                                            showConfirmButton: false,
-                                                            timer: 3000
-                                                        });
 
                                                         var toastMsg = 'Tracking lure created';
                                                         if (useRedirector && redirectorName) {
@@ -2728,11 +2598,6 @@ function createTrackingLureWithRedirector(randomPath, trackingDomain, useRedirec
                                                             // Use displayUrl (redirector if enabled) for QR
                                                             generateQR(displayUrl);
                                                         }
-
-                                                        Toast.fire({
-                                                            icon: 'success',
-                                                            title: toastMsg
-                                                        });
                                                     }
                                                 }
                                             });
@@ -2762,14 +2627,7 @@ function setTrackingSubdomain() {
     var subdomain = $("#trackingSubdomainInput").val().trim();
 
     if (!subdomain) {
-        Swal.fire({
-            toast: true,
-            position: 'top-end',
-            icon: 'warning',
-            title: 'Please enter a subdomain',
-            showConfirmButton: false,
-            timer: 3000
-        });
+
         return;
     }
 
@@ -2790,15 +2648,6 @@ function setTrackingSubdomain() {
             phish_sub: subdomain
         }),
         success: function (response) {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: 'Tracking subdomain set: ' + fullDomain,
-                showConfirmButton: false,
-                timer: 3000
-            });
-
             // Create DNS A record for the subdomain with EC2 IP
             createRedirectorDNSRecord(fullDomain, baseDomain);
 
@@ -2812,14 +2661,6 @@ function setTrackingSubdomain() {
             }
         },
         error: function () {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'error',
-                title: 'Failed to update phishlet subdomain',
-                showConfirmButton: false,
-                timer: 3000
-            });
         }
     });
 }
@@ -2892,14 +2733,7 @@ function copyTrackingLureUrl() {
     var lureUrl = $("#trackingLureUrl").val();
     if (lureUrl) {
         navigator.clipboard.writeText(lureUrl).then(function () {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'success',
-                title: 'Tracking URL copied!',
-                showConfirmButton: false,
-                timer: 2000
-            });
+
         });
     }
 }
@@ -4004,18 +3838,6 @@ window.renderLureTable = function (strikes) {
                         redirector: selectedRedirectorTemplate
                     }),
                     success: function () {
-
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000
-                        });
-                        Toast.fire({
-                            icon: 'success',
-                            title: 'Redirector updated to ' + selectedRedirectorTemplate
-                        });
-
                         // Fetch updated strikes to refresh the UI live
                         getStrikes().then(function (data) {
                             if (data.success) {
