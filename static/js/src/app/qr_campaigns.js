@@ -256,48 +256,6 @@ function generateQR(url) {
     }
 }
 
-function copy(idx) {
-    setupOptions();
-    // Set our initial values
-    api.campaignId.get(campaigns[idx].id)
-        .success(function (campaign) {
-            $("#name").val("Copy of " + campaign.name)
-            if (!campaign.template.id) {
-                $("#template").val("").change();
-                $("#template").select2({
-                    placeholder: campaign.template.name
-                });
-            } else {
-                $("#template").val(campaign.template.id.toString());
-                $("#template").trigger("change.select2")
-            }
-            if (!campaign.page.id) {
-                $("#page").val("").change();
-                $("#page").select2({
-                    placeholder: campaign.page.name
-                });
-            } else {
-                $("#page").val(campaign.page.id.toString());
-                $("#page").trigger("change.select2")
-            }
-            if (!campaign.smtp.id) {
-                $("#profile").val("").change();
-                $("#profile").select2({
-                    placeholder: campaign.smtp.name
-                });
-            } else {
-                $("#profile").val(campaign.smtp.id.toString());
-                $("#profile").trigger("change.select2")
-            }
-            $("#url").val(campaign.url)
-            generateQR(campaign.url);
-        })
-        .error(function (data) {
-            $("#modal\\.flashes").empty().append("<div style=\"text-align:center\" class=\"alert alert-danger\">\
-            <i class=\"fa fa-exclamation-circle\"></i> " + data.responseJSON.message + "</div>")
-        })
-}
-
 $(document).ready(function () {
     $("#url").on("input", function () {
         generateQR($(this).val());
@@ -399,9 +357,6 @@ $(document).ready(function () {
                         "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" + campaign.id + "' data-toggle='tooltip' data-placement='left' title='View Results'>\
                     <i class='fa fa-bar-chart'></i>\
                     </a>\
-            <span data-toggle='modal' data-backdrop='static' data-target='#modal'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Campaign' onclick='copy(" + i + ")'>\
-                    <i class='fa fa-copy'></i>\
-                    </button></span>\
                     <button class='btn btn-danger' onclick='deleteCampaign(" + i + ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
                     <i class='fa fa-trash-o'></i>\
                     </button></div>"

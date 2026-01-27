@@ -70,10 +70,6 @@ function deleteCampaign(id, name) {
     })
 }
 
-function copy(idx) {
-    location.href = "/campaign?copy=" + campaigns[idx].id;
-}
-
 function loadCampaigns() {
     $("#loading").show()
     $("#campaignTable").hide()
@@ -159,9 +155,6 @@ function loadCampaigns() {
                         <a class='btn btn-primary' href='/campaigns/" + campaign.id + "' data-toggle='tooltip' data-placement='left' title='View Results'>\
                             <i class='fa fa-bar-chart'></i>\
                         </a>\
-                        <button class='btn btn-primary' onclick='copy(" + i + ")' data-toggle='tooltip' data-placement='left' title='Copy Campaign'>\
-                            <i class='fa fa-copy'></i>\
-                        </button>\
                         <button class='btn btn-danger' onclick='deleteCampaign(" + campaign.id + ", \"" + escapeHtml(campaign.name).replace(/"/g, '&quot;') + "\")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
                             <i class='fa fa-trash-o'></i>\
                         </button>\
