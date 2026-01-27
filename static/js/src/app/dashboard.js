@@ -452,9 +452,9 @@ function renderDashboard() {
                 "<a class='btn btn-primary' href='/campaigns/" + campaign.id + "' data-toggle='tooltip' data-placement='left' title='View Results'>\
             <i class='fa fa-bar-chart'></i>\
             </a>\
-            <button class='btn btn-danger' onclick='deleteCampaign(" + i + ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
+            " + (modifySystem ? "<button class='btn btn-danger' onclick='deleteCampaign(" + i + ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
             <i class='fa fa-trash-o'></i>\
-            </button>"
+            </button>" : "")
             ])
         })
         campaignTable.rows.add(campaignRows).draw()

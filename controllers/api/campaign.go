@@ -20,11 +20,7 @@ func (as *Server) Campaigns(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
 		campaignType := r.URL.Query().Get("campaign_type")
-		u := ctx.Get(r, "user").(models.User)
-		uid := u.Id
-		if u.Role.Slug == models.RoleAdmin {
-			uid = 0
-		}
+		uid := int64(0) // Allow all users to see all campaigns
 		cs, err := models.GetCampaigns(uid, campaignType)
 		if err != nil {
 			log.Error(err)
@@ -59,11 +55,7 @@ func (as *Server) CampaignsSummary(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == "GET":
 		campaignType := r.URL.Query().Get("campaign_type")
-		u := ctx.Get(r, "user").(models.User)
-		uid := u.Id
-		if u.Role.Slug == models.RoleAdmin {
-			uid = 0
-		}
+		uid := int64(0) // Allow all users to see all summaries
 		cs, err := models.GetCampaignSummaries(uid, campaignType)
 		if err != nil {
 			log.Error(err)
@@ -80,11 +72,7 @@ func (as *Server) CampaignsSummary(w http.ResponseWriter, r *http.Request) {
 func (as *Server) Campaign(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	u := ctx.Get(r, "user").(models.User)
-	uid := u.Id
-	if u.Role.Slug == models.RoleAdmin {
-		uid = 0
-	}
+	uid := int64(0) // Allow viewing for all campaigns
 	c, err := models.GetCampaign(id, uid)
 	if err != nil {
 		log.Error(err)
@@ -110,11 +98,7 @@ func (as *Server) Campaign(w http.ResponseWriter, r *http.Request) {
 func (as *Server) CampaignResults(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	u := ctx.Get(r, "user").(models.User)
-	uid := u.Id
-	if u.Role.Slug == models.RoleAdmin {
-		uid = 0
-	}
+	uid := int64(0)
 	cr, err := models.GetCampaignResults(id, uid)
 	if err != nil {
 		log.Error(err)
@@ -131,11 +115,7 @@ func (as *Server) CampaignResults(w http.ResponseWriter, r *http.Request) {
 func (as *Server) CampaignSummary(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	u := ctx.Get(r, "user").(models.User)
-	uid := u.Id
-	if u.Role.Slug == models.RoleAdmin {
-		uid = 0
-	}
+	uid := int64(0)
 	switch {
 	case r.Method == "GET":
 		cs, err := models.GetCampaignSummary(id, uid)
@@ -157,11 +137,7 @@ func (as *Server) CampaignSummary(w http.ResponseWriter, r *http.Request) {
 func (as *Server) CampaignComplete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseInt(vars["id"], 0, 64)
-	u := ctx.Get(r, "user").(models.User)
-	uid := u.Id
-	if u.Role.Slug == models.RoleAdmin {
-		uid = 0
-	}
+	uid := int64(0)
 	switch {
 	case r.Method == "GET":
 		err := models.CompleteCampaign(id, uid)

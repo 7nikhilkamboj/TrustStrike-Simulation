@@ -26,16 +26,22 @@
                     </li>
                 </ul>
             </div>
+            {{if .ModifySystem}}
             <button id="complete_button" type="button" class="btn btn-blue" data-toggle="tooltip"
                 onclick="completeCampaign()">
                 <i class="fa fa-flag-checkered"></i> Complete
             </button>
+            {{end}}
+            {{if .ModifySystem}}
             <button type="button" class="btn btn-danger" data-toggle="tooltip" onclick="deleteCampaign()">
                 <i class="fa fa-trash-o fa-lg"></i> Delete
             </button>
+            {{end}}
+            {{if .ModifySystem}}
             <button id="refresh_btn" type="button" class="btn btn-blue" data-toggle="tooltip" onclick="refresh()">
                 <i class="fa fa-refresh fa-lg"></i> Refresh
             </button>
+            {{end}}
             <span id="refresh_message">
                 <i class="fa fa-spin fa-spinner"></i> Refreshing
             </span>
