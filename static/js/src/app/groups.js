@@ -5,10 +5,10 @@ var profileType = ""
 function switchProfileType(type) {
     profileType = type
     if (type == "") {
-        pageHeader = "All Users & Groups"
+        pageHeader = "All Groups"
         $(".page-header").text(pageHeader)
     } else if (type == "email") {
-        pageHeader = "Users & Groups"
+        pageHeader = "Email Groups"
         $(".page-header").text(pageHeader)
     } else if (type == "sms") {
         pageHeader = "SMS Groups"
