@@ -339,18 +339,6 @@ func (as *Server) serveFromCacheOnly(w http.ResponseWriter, cacheType string, pr
 		return
 	}
 
-	// TEMPLATE FLOW: Start EC2 with 24h throttle, sync cache, then shutdown (unless preventAutoStop is true)
-	go func() {
-		// Check 24h throttle - only start once per day for template browsing
-		allowed, throttleErr := models.IsEC2SyncAllowed("templates_auto_start")
-		if throttleErr == nil && allowed {
-			log.Infof("Template browsing: Starting EC2 for cache refresh (24h throttle allows)")
-			as.internalStartEC2()
-		}
-		// Always try to update cache (will succeed if EC2 is running)
-		as.updateCacheBackground(cacheType, preventAutoStop)
-	}()
-
 	if err == gorm.ErrRecordNotFound {
 		JSONResponse(w, []interface{}{}, http.StatusOK)
 		return
