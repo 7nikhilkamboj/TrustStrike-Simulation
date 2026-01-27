@@ -1579,3 +1579,50 @@ func (as *Server) uploadCertificateToSimulationServer(hostname string, certPEM, 
 
 	return nil
 }
+
+// UpdateSimulationServerGophishConfig pushes the current Gophish admin URL and API key to the simulation server.
+// This is triggered from the backend when a new campaign cycle begins (e.g., EC2 start).
+func (as *Server) UpdateSimulationServerGophishConfig(r *http.Request, apiKey string) error {
+	adminURL := fmt.Sprintf("http://%s", r.Host)
+	if as.config.AdminConf.UseTLS {
+		adminURL = fmt.Sprintf("https://%s", r.Host)
+	}
+
+	log.Infof("Pushing Gophish configuration to simulation server: %s", adminURL)
+
+	payload := map[string]interface{}{
+		"admin_url": adminURL,
+		"api_key":   apiKey,
+		"insecure":  false,
+	}
+	jsonBody, _ := json.Marshal(payload)
+
+	url := as.config.SimulationServerURL + "config/gophish"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return err
+	}
+
+	tokenString, err := auth.GenerateToken(1, "system_admin", "admin")
+	if err == nil {
+		req.Header.Set("Authorization", "Bearer "+tokenString)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Errorf("Failed to push Gophish config to simulation server: %v", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		log.Errorf("Simulation server returned error during config sync (%d): %s", resp.StatusCode, string(body))
+		return fmt.Errorf("simulation server error: %s", string(body))
+	}
+
+	log.Info("Successfully synced Gophish configuration with simulation server")
+	return nil
+}

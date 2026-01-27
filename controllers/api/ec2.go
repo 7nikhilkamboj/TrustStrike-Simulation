@@ -10,12 +10,13 @@ import (
 	"strings"
 	"time"
 
+	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
+	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
+	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
-	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
-	"github.com/7nikhilkamboj/TrustStrike-Simulation/models"
 )
 
 // EC2StatusResponse represents the response from EC2 status endpoint
@@ -57,9 +58,9 @@ func (as *Server) GetEC2Status(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cfg := as.config.EC2
-	ctx := context.Background()
+	backgroundCtx := context.Background()
 
-	result, err := client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
+	result, err := client.DescribeInstances(backgroundCtx, &ec2.DescribeInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil {
@@ -110,14 +111,14 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cfg := as.config.EC2
-	ctx := context.Background()
+	backgroundCtx := context.Background()
 
 	// Check if we need to throttle (24-hour rule)
 	if !req.IgnoreThrottle {
 		allowed, err := models.IsEC2SyncAllowed("templates_auto_start")
 		if err == nil && !allowed {
 			// Check if it's already running. If so, we can continue without starting.
-			status, err := client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
+			status, err := client.DescribeInstances(backgroundCtx, &ec2.DescribeInstancesInput{
 				InstanceIds: []string{cfg.InstanceID},
 			})
 			if err == nil && len(status.Reservations) > 0 && len(status.Reservations[0].Instances) > 0 {
@@ -135,7 +136,7 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Start the instance
-	_, err = client.StartInstances(ctx, &ec2.StartInstancesInput{
+	_, err = client.StartInstances(backgroundCtx, &ec2.StartInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil {
@@ -153,7 +154,7 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 
 	// Wait for running state
 	waiter := ec2.NewInstanceRunningWaiter(client)
-	err = waiter.Wait(ctx, &ec2.DescribeInstancesInput{
+	err = waiter.Wait(backgroundCtx, &ec2.DescribeInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	}, 5*time.Minute)
 	if err != nil {
@@ -162,7 +163,7 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the public IP
-	result, err := client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
+	result, err := client.DescribeInstances(backgroundCtx, &ec2.DescribeInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil || len(result.Reservations) == 0 || len(result.Reservations[0].Instances) == 0 {
@@ -207,7 +208,7 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 		} else {
 			sshMessage += " | IPv4 Updated"
 		}
-		
+
 	}
 
 	response := map[string]interface{}{
@@ -224,6 +225,16 @@ func (as *Server) StartEC2Instance(w http.ResponseWriter, r *http.Request) {
 	// Check if started from wizard to prevent auto-stop
 	preventAutoStop := r.URL.Query().Get("ref") == "wizard"
 	as.RefreshAllCaches(preventAutoStop)
+
+	// Trigger Simulation Server Gophish Config Sync from Backend
+	if u := ctx.Get(r, "user"); u != nil {
+		user := u.(models.User)
+		go func() {
+			// Wait a few seconds for the simulation server to be ready to receive the config
+			time.Sleep(5 * time.Second)
+			as.UpdateSimulationServerGophishConfig(r, user.ApiKey)
+		}()
+	}
 
 	JSONResponse(w, models.Response{
 		Success: true,
@@ -286,7 +297,7 @@ func (as *Server) startEvilginxViaSSH(publicIP string, domain string) string {
 // checkScreenStatus checks if the evilginx screen session is running via SSH
 func (as *Server) checkScreenStatus(publicIP string) string {
 	cfg := as.config.EC2
-	
+
 	// Quick SSH check with timeout
 	cmd := exec.Command("ssh",
 		"-o", "StrictHostKeyChecking=no",
@@ -296,12 +307,12 @@ func (as *Server) checkScreenStatus(publicIP string) string {
 		fmt.Sprintf("%s@%s", cfg.SSHUser, publicIP),
 		fmt.Sprintf("screen -list | grep -q '\\.%s' && echo 'running' || echo 'not running'", cfg.ScreenName),
 	)
-	
+
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return "ssh check failed"
 	}
-	
+
 	result := strings.TrimSpace(string(output))
 	if result == "running" {
 		return "true"
@@ -340,10 +351,10 @@ func (as *Server) internalStartEC2() (*ec2.Client, error) {
 	}
 
 	cfg := as.config.EC2
-	ctx := context.Background()
+	backgroundCtx := context.Background()
 
 	// Start the instance
-	_, err = client.StartInstances(ctx, &ec2.StartInstancesInput{
+	_, err = client.StartInstances(backgroundCtx, &ec2.StartInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil {
@@ -364,10 +375,10 @@ func (as *Server) internalStopEC2() error {
 	}
 
 	cfg := as.config.EC2
-	ctx := context.Background()
+	backgroundCtx := context.Background()
 
 	// Stop the instance
-	_, err = client.StopInstances(ctx, &ec2.StopInstancesInput{
+	_, err = client.StopInstances(backgroundCtx, &ec2.StopInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil {
@@ -381,7 +392,7 @@ func (as *Server) internalStopEC2() error {
 
 	// Wait for stopped state
 	waiter := ec2.NewInstanceStoppedWaiter(client)
-	err = waiter.Wait(ctx, &ec2.DescribeInstancesInput{
+	err = waiter.Wait(backgroundCtx, &ec2.DescribeInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	}, 5*time.Minute)
 	if err != nil {
@@ -425,8 +436,8 @@ func (as *Server) checkEC2Shutdown() {
 	}
 
 	cfg := as.config.EC2
-	ctx := context.Background()
-	result, err := client.DescribeInstances(ctx, &ec2.DescribeInstancesInput{
+	backgroundCtx := context.Background()
+	result, err := client.DescribeInstances(backgroundCtx, &ec2.DescribeInstancesInput{
 		InstanceIds: []string{cfg.InstanceID},
 	})
 	if err != nil || len(result.Reservations) == 0 || len(result.Reservations[0].Instances) == 0 {
@@ -460,5 +471,3 @@ func (as *Server) checkEC2Shutdown() {
 		log.Errorf("EC2 Scheduler: Failed to auto-stop instance: %v", err)
 	}
 }
-
-
