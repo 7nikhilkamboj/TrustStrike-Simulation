@@ -43,6 +43,9 @@ func GetUsers() ([]User, error) {
 	if err != nil {
 		return us, err
 	}
+	for i := range us {
+		us[i].ApiKey = ""
+	}
 	return us, err
 }
 
