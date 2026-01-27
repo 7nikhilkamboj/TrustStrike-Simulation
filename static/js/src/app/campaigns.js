@@ -393,6 +393,30 @@ function checkCampaignStatus() {
     });
 }
 
+async function deleteAllLures() {
+    try {
+        const response = await fetch('/api/simulationserver/get_strikes');
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.length > 0) {
+            const strikesToDelete = [...data.data].reverse();
+
+            for (const strike of strikesToDelete) {
+                try {
+                    const delResponse = await fetch(`/api/simulationserver/strikes/${strike.id}`, { method: 'DELETE' });
+                    if (!delResponse.ok) {
+                        console.warn(`Failed to delete lure ${strike.id}: ${delResponse.statusText}`);
+                    }
+                    // Small delay to prevent overwhelming the backend
+                    await new Promise(r => setTimeout(r, 200));
+                } catch (delErr) {
+                }
+            }
+        }
+    } catch (err) {
+    }
+}
+
 // Start new campaign - first check EC2 status, start if needed, then navigate to campaign editor
 function startNewCampaign() {
     // Show initial status check
@@ -419,15 +443,18 @@ function startNewCampaign() {
                             var publicIP = statusResponse.data && statusResponse.data.public_ip;
 
                             if (state === "running" && publicIP && status === "true") {
-                                // EC2 is already running - go directly to campaign editor
-                                Swal.fire({
-                                    title: "Server Ready!",
-                                    text: "Simulation server is already running.",
-                                    icon: "success",
-                                    timer: 1500,
-                                    showConfirmButton: false
-                                }).then(function () {
-                                    location.href = '/campaign';
+                                // EC2 is already running - perform cleanup then go to campaign editor
+
+                                deleteAllLures().then(function () {
+                                    Swal.fire({
+                                        title: "Server Ready!",
+                                        text: "Simulation server is ready.",
+                                        icon: "success",
+                                        timer: 1500,
+                                        showConfirmButton: false
+                                    }).then(function () {
+                                        location.href = '/campaign';
+                                    });
                                 });
                             } else if (state === "stopping" || state === "shutting-down") {
                                 // EC2 is stopping - wait for it to stop
@@ -504,9 +531,12 @@ function startEC2WithProgressBar() {
                     clearInterval(progressInterval);
                     // Complete the progress animation
                     animateEC2ProgressTo(100, progressMessages, function () {
-                        Swal.close();
-                        // Navigate to campaign editor
-                        location.href = '/campaign';
+                        // Perform cleanup after start
+                        deleteAllLures().then(function () {
+                            Swal.close();
+                            // Navigate to campaign editor
+                            location.href = '/campaign';
+                        });
                     });
                 },
                 error: function (xhr) {
