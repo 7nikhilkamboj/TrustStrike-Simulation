@@ -1,0 +1,42 @@
+{
+	"admin_server": {
+		"listen_url": "0.0.0.0:3334",
+		"use_tls": true,
+		"cert_path": "ca.crt",
+		"key_path": "ca.key",
+		"trusted_origins": []
+	},
+	"phish_server": {
+		"listen_url": "127.0.0.1:3335",
+		"use_tls": false,
+		"cert_path": "example.crt",
+		"key_path": "example.key"
+	},
+	"db_name": "sqlite3",
+	"db_path": "trust_strike.db",
+	"migrations_prefix": "db/db_",
+	"contact_address": "",
+	"logging": {
+		"filename": "",
+		"level": ""
+	},
+	"keycloak": {
+		"enabled": true,
+		"client_id": "truststrike",
+		"client_secret": "",
+		"discovery_url": "http://localhost:8080/realms/truststrike",
+		"redirect_url": "https://127.0.0.1:3334/login/keycloak/callback"
+	},
+	"simulation_server_url": "https://api.prprzo.com/api/",
+	"cloudflare_token": "token",
+	"ec2": {
+		"aws_access_key_id": "",
+		"aws_secret_access_key": "",
+		"aws_region": "eu-north-1",
+		"instance_id": "",
+		"ssh_user": "ubuntu",
+		"ssh_key_path": "key.pem",
+		"remote_dir": "/home/ubuntu/TrustStrike-Evil",
+		"screen_name": "evil"
+	}
+}
