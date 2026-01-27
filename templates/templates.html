@@ -31,6 +31,7 @@
         <!-- Action Bar -->
         <div class="page-action-bar">
             <div class="page-action-left">
+                {{if .ModifySystem}}
                 <button type="button" class="btn btn-primary" onclick="edit(-1)">
                     <i class="fa fa-plus"></i> New Template
                 </button>
@@ -44,6 +45,7 @@
                                 Selected</a></li>
                     </ul>
                 </div>
+                {{end}}
             </div>
             <div class="page-action-right">
                 <!-- Secondary filter removed as tabs now handle demerging -->
@@ -86,9 +88,11 @@
         <!-- Action Bar -->
         <div class="page-action-bar">
             <div class="page-action-left">
+                {{if .ModifySystem}}
                 <button class="btn btn-primary" onclick="openCreateModal()">
                     <i class="fa fa-plus"></i> New Redirector
                 </button>
+                {{end}}
             </div>
             <div class="page-action-right">
                 <div class="search-container">
@@ -160,40 +164,12 @@
     </div>
 </div>
 
+{{if .ModifySystem}}
 <!-- Create/Edit Redirector Modal -->
 <div class="modal fade" id="redirectorModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                <h4 class="modal-title" id="redirectorModalTitle">New Redirector</h4>
-            </div>
-            <div class="modal-body">
-                <div id="redirectorModal.flashes"></div>
-                <input type="hidden" id="editingRedirectorName" value="">
-
-                <div class="form-group">
-                    <label for="redirectorName">Name</label>
-                    <input type="text" class="form-control" id="redirectorName" placeholder="e.g., turnstile">
-                    <small class="help-block">A unique name (no spaces). Use <code>{strike_url_html}</code> in
-                        HTML for the lure URL.</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="redirectorHtml">HTML Content</label>
-                    <textarea class="form-control" id="redirectorHtml" rows="15"
-                        placeholder="Enter HTML content..."></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveRedirectorBtn" onclick="saveRedirector()">
-                    <i class="fa fa-save"></i> Save Redirector
-                </button>
-            </div>
-        </div>
-    </div>
+    ...
 </div>
+{{end}}
 
 <!-- Full Preview Modal -->
 <div class="modal fade" id="previewModal" tabindex="-1" role="dialog">

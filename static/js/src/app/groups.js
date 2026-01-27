@@ -110,18 +110,18 @@ function load() {
                     var typeLabel = "<span class='label " + labelClass + "'>" + (group.group_type || "email").toUpperCase() + "</span>"
 
                     groupRows.push([
-                        "<input type='checkbox' class='group-checkbox' value='" + group.id + "'>",
+                        (window.modifySystem === "true" ? "<input type='checkbox' class='group-checkbox' value='" + group.id + "'>" : ""),
                         escapeHtml(group.name),
                         typeLabel,
                         escapeHtml(group.created_by || ""),
                         escapeHtml(group.num_targets),
                         moment(group.modified_date).format('MMMM Do YYYY, h:mm:ss a'),
-                        "<button class='btn btn-primary' onclick='edit(" + group.id + ")'>\
+                        (window.modifySystem === "true" ? "<button class='btn btn-primary' onclick='edit(" + group.id + ")'>\
                     <i class='fa fa-pencil'></i>\
                     </button>\
                     <button class='btn btn-danger' onclick='deleteGroup(" + group.id + ")'>\
                     <i class='fa fa-trash-o'></i>\
-                    </button>"
+                    </button>" : "")
                     ])
                 })
                 $("#groupTable").DataTable({

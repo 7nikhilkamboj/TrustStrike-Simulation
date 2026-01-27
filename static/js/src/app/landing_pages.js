@@ -153,7 +153,7 @@ function load() {
                         escapeHtml(page.name),
                         escapeHtml(page.created_by || ""),
                         moment(page.modified_date).format('MMMM Do YYYY, h:mm:ss a'),
-                        "<div class='pull-right'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Page' onclick='edit(" + i + ")'>\
+                        "<div class='pull-right'>" + (window.modifySystem === "true" ? "<button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Page' onclick='edit(" + i + ")'>\
                     <i class='fa fa-pencil'></i>\
                     </button>\
 		    <button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Page' onclick='copy(" + i + ")'>\
@@ -161,7 +161,7 @@ function load() {
                     </button>\
                     <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' title='Delete Page' onclick='deletePage(" + i + ")'>\
                     <i class='fa fa-trash-o'></i>\
-                    </button></div>"
+                    </button>" : "") + "</div>"
                     ])
                 })
                 pagesTable.rows.add(pageRows).draw()

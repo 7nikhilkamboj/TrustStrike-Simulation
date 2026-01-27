@@ -357,9 +357,9 @@ $(document).ready(function () {
                         "<div class='pull-right'><a class='btn btn-primary' href='/campaigns/" + campaign.id + "' data-toggle='tooltip' data-placement='left' title='View Results'>\
                     <i class='fa fa-bar-chart'></i>\
                     </a>\
-                    <button class='btn btn-danger' onclick='deleteCampaign(" + i + ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
+                    " + (window.modifySystem === "true" ? "<button class='btn btn-danger' onclick='deleteCampaign(" + i + ")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
                     <i class='fa fa-trash-o'></i>\
-                    </button></div>"
+                    </button>" : "") + "</div>"
                     ]
                     if (campaign.status == 'Completed') {
                         rows['archived'].push(row)

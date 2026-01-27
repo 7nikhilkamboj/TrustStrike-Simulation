@@ -6,11 +6,13 @@
         </h1>
     </div>
     <div id="flashes" class="row"></div>
+    {{if .ModifySystem}}
     <div class="row">
         <button type="button" class="btn btn-primary" data-toggle="modal" data-backdrop="static" data-target="#modal"
             onclick="edit('new')">
             <i class="fa fa-plus"></i> New QR Campaign</button>
     </div>
+    {{end}}
     &nbsp;
 
     <ul class="nav nav-tabs" role="tablist">
@@ -72,93 +74,12 @@
         </div>
     </div>
 </div>
+{{if .ModifySystem}}
 <!-- Modal -->
 <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="dismiss()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                <h4 class="modal-title" id="campaignModalLabel">New QR Campaign</h4>
-            </div>
-            <div class="modal-body" id="modal_body">
-                <div class="row" id="modal.flashes"></div>
-                <div class="form-group">
-                    <label for="name">Name:</label>
-                    <input type="text" class="form-control" id="name" placeholder="Campaign name" autofocus>
-                    <label class="control-label" for="template">Email Template:</label>
-                    <select class="form-control" placeholder="Template Name" id="template" />
-                    <option></option>
-                    </select>
-                    <label class="control-label" for="url">Lure URL (SimulationServer):
-                        <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
-                            title="Lure URL generated with SimulationServer"></i>
-                    </label>
-                    <input type="text" autocomplete="off" class="form-control"
-                        placeholder="https://phishing.domain/your/generated/lure/url" id="url" />
-
-                    <div class="form-group">
-                        <label class="control-label" for="attack_objective">Attack Objective:</label>
-                        <select class="form-control" id="attack_objective">
-                            <option value="Tracking only">Tracking only</option>
-                            <option value="Session hijacking">Session hijacking</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group" id="redirect_url_group">
-                        <label class="control-label" for="redirect_url">Redirection URL:</label>
-                        <input type="text" class="form-control" id="redirect_url" placeholder="https://example.com" />
-                    </div>
-
-                    <div style="margin-top: 10px;">
-                        <label for="qr_size">QR Code Size (px):</label>
-                        <input type="number" class="form-control" id="qr_size" value="250" placeholder="e.g. 250">
-                    </div>
-
-                    <!-- QR Code Display Area -->
-                    <div style="margin-top: 15px; text-align: center;">
-                        <label>QR Code Preview:</label>
-                        <div id="qrcode" style="display: flex; justify-content: center; margin-top: 10px;"></div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="control-label" for="url">Launch Date </label>
-                            <input type="text" class="form-control" id="launch_date" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="control-label" for="delay">Send Emails By (Optional)
-                                <i class="fa fa-question-circle" data-toggle="tooltip" data-placement="right"
-                                    title="If specified, trust_strike will send emails evenly between the campaign launch and this date."></i>
-                            </label>
-                            <input type="text" class="form-control" id="send_by_date" autocomplete="random-data" />
-                            <!--Chrome ignores autocomplete="off".-->
-                        </div>
-                    </div>
-                    <label class="control-label" for="profile">Sending Profile:</label>
-                    <div class="input-group">
-                        <select class="form-control" placeholder="Sending Profile" id="profile" />
-                        <option></option>
-                        </select>
-                        <span class="input-group-btn">
-                            <button type="button" data-toggle="modal" data-backdrop="static"
-                                data-target="#sendTestEmailModal" class="btn btn-primary button">
-                                <i class="fa fa-envelope"></i> Send Test Email</button>
-                        </span>
-                    </div>
-                    <label class="control-label" for="users">Groups:</label>
-                    <select class="form-control" id="users" multiple="multiple"></select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" onclick="dismiss()">Close</button>
-                <button type="button" id="launchButton" class="btn btn-primary" onclick="launch()">
-                    <i class="fa fa-rocket"></i> Launch Campaign</button>
-            </div>
-        </div>
-    </div>
+    ...
 </div>
+{{end}}
 <!-- Send Test Email Modal -->
 <div class="modal" id="sendTestEmailModal" tabindex="-1" role="dialog" aria-labelledby="modalLabel">
     <div class="modal-dialog" role="document">

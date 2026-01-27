@@ -152,7 +152,7 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/reset_password", mid.Use(as.ResetPassword, mid.RequireLogin))
 	router.HandleFunc("/campaigns", mid.Use(as.Campaigns, mid.RequireLogin))
 	router.HandleFunc("/qr_campaigns", mid.Use(as.QRCampaigns, mid.RequireLogin))
-	router.HandleFunc("/campaigns/{id:[0-9]+}", mid.Use(as.CampaignID, mid.RequireLogin))
+	router.HandleFunc("/campaigns/{id:[a-zA-Z0-9]+}", mid.Use(as.CampaignID, mid.RequireLogin))
 	router.HandleFunc("/templates", mid.Use(as.Templates, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/templates/email", mid.Use(as.EmailTemplates, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/templates/qr", mid.Use(as.QRTemplates, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
@@ -171,7 +171,7 @@ func (as *AdminServer) registerRoutes() {
 	router.HandleFunc("/group", mid.Use(as.GroupEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
 	router.HandleFunc("/group/{id:[0-9]+}", mid.Use(as.GroupEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
 	router.HandleFunc("/campaign", mid.Use(as.CampaignEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
-	router.HandleFunc("/campaign/{id:[0-9]+}", mid.Use(as.CampaignEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
+	router.HandleFunc("/campaign/{id:[a-zA-Z0-9]+}", mid.Use(as.CampaignEdit, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin)).Methods("GET")
 
 	router.HandleFunc("/sending_profiles/email", mid.Use(as.EmailSendingProfiles, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))
 	router.HandleFunc("/sending_profiles/sms", mid.Use(as.SMSSendingProfiles, mid.RequirePermission(models.PermissionModifySystem), mid.RequireLogin))

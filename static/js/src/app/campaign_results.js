@@ -207,8 +207,7 @@ function completeCampaign() {
             // Update campaign status
             campaign.status = "Completed";
             // Disable and update the complete button
-            $('#complete_button')[0].disabled = true;
-            $('#complete_button').text('Completed!')
+            $('#complete_button').prop('disabled', true).text('Completed!');
             // Stop polling
             doPoll = false;
             // Refresh the page to show updated status
@@ -863,8 +862,7 @@ function load() {
                     ]
                 }
                 if (campaign.status == "Completed") {
-                    $('#complete_button')[0].disabled = true;
-                    $('#complete_button').text('Completed!');
+                    $('#complete_button').prop('disabled', true).text('Completed!');
                     doPoll = false;
                 }
                 // Setup viewing the details of a result

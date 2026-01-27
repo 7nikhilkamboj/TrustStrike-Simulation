@@ -209,6 +209,17 @@ func Setup(c *config.Config) error {
 		log.Error(err)
 		return err
 	}
+
+	// Backfill Rids for existing campaigns
+	var campaigns []Campaign
+	db.Where("rid = ? OR rid IS NULL", "").Find(&campaigns)
+	for _, c := range campaigns {
+		err = c.GenerateRid()
+		if err == nil {
+			db.Model(&c).Update("rid", c.Rid)
+		}
+	}
+
 	// Create the admin user if it doesn't exist
 	var userCount int64
 	var adminUser User

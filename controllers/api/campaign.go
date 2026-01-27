@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	ctx "github.com/7nikhilkamboj/TrustStrike-Simulation/context"
 	log "github.com/7nikhilkamboj/TrustStrike-Simulation/logger"
@@ -71,9 +70,9 @@ func (as *Server) CampaignsSummary(w http.ResponseWriter, r *http.Request) {
 // valid, APICampaign returns null.
 func (as *Server) Campaign(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	rid := vars["id"]
 	uid := int64(0) // Allow viewing for all campaigns
-	c, err := models.GetCampaign(id, uid)
+	c, err := models.GetCampaignByRid(rid, uid)
 	if err != nil {
 		log.Error(err)
 		JSONResponse(w, models.Response{Success: false, Message: "Campaign not found"}, http.StatusNotFound)
@@ -83,7 +82,7 @@ func (as *Server) Campaign(w http.ResponseWriter, r *http.Request) {
 	case r.Method == "GET":
 		JSONResponse(w, c, http.StatusOK)
 	case r.Method == "DELETE":
-		err = models.DeleteCampaign(id, uid)
+		err = models.DeleteCampaignByRid(rid, uid)
 		if err != nil {
 			log.Error(err)
 			JSONResponse(w, models.Response{Success: false, Message: "Error deleting campaign: " + err.Error()}, http.StatusInternalServerError)
@@ -97,9 +96,9 @@ func (as *Server) Campaign(w http.ResponseWriter, r *http.Request) {
 // significantly reduce the information returned.
 func (as *Server) CampaignResults(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	rid := vars["id"]
 	uid := int64(0)
-	cr, err := models.GetCampaignResults(id, uid)
+	cr, err := models.GetCampaignResultsByRid(rid, uid)
 	if err != nil {
 		log.Error(err)
 		JSONResponse(w, models.Response{Success: false, Message: "Campaign not found"}, http.StatusNotFound)
@@ -114,11 +113,11 @@ func (as *Server) CampaignResults(w http.ResponseWriter, r *http.Request) {
 // CampaignSummary returns the summary for a given campaign.
 func (as *Server) CampaignSummary(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	rid := vars["id"]
 	uid := int64(0)
 	switch {
 	case r.Method == "GET":
-		cs, err := models.GetCampaignSummary(id, uid)
+		cs, err := models.GetCampaignSummaryByRid(rid, uid)
 		if err != nil {
 			if err == gorm.ErrRecordNotFound {
 				JSONResponse(w, models.Response{Success: false, Message: "Campaign not found"}, http.StatusNotFound)
@@ -136,11 +135,11 @@ func (as *Server) CampaignSummary(w http.ResponseWriter, r *http.Request) {
 // Future phishing emails clicked will return a simple "404" page.
 func (as *Server) CampaignComplete(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, _ := strconv.ParseInt(vars["id"], 0, 64)
+	rid := vars["id"]
 	uid := int64(0)
 	switch {
 	case r.Method == "GET":
-		err := models.CompleteCampaign(id, uid)
+		err := models.CompleteCampaignByRid(rid, uid)
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: "Error completing campaign"}, http.StatusInternalServerError)
 			return

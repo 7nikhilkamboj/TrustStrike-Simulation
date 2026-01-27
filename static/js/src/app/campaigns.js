@@ -142,7 +142,6 @@ function loadCampaigns() {
                     launchDate = "Launch Date: " + moment(campaign.launch_date).format('MMMM Do YYYY, h:mm:ss a')
                     var quickStats = launchDate + "<br><br>" + "Number of recipients: " + stats.total + "<br><br>" + (currentType == "sms" ? "SMS Sent: " : "Emails Sent: ") + stats.sent + "<br><br>" + (currentType == "sms" ? "SMS Clicked: " : "Clicked: ") + stats.clicked + "<br><br>" + "Submitted Credentials: " + stats.submitted_data + "<br><br>" + "Errors : " + stats.error + "<br><br>" + "Reported : " + stats.email_reported
                 }
-
                 // Construct Row: Checkbox, Name, Type, Created By, Created Date, Status, Actions
                 var row = [
                     "<input type='checkbox' class='campaign-checkbox index-checkbox' value='" + campaign.id + "' data-status='" + campaign.status + "' data-name='" + escapeHtml(campaign.name) + "'>",
@@ -155,7 +154,7 @@ function loadCampaigns() {
                         <a class='btn btn-primary' href='/campaigns/" + campaign.id + "' data-toggle='tooltip' data-placement='left' title='View Results'>\
                             <i class='fa fa-bar-chart'></i>\
                         </a>\
-                        " + (window.modify === "true" ? "<button class='btn btn-danger' onclick='deleteCampaign(" + campaign.id + ", \"" + escapeHtml(campaign.name).replace(/"/g, '&quot;') + "\")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
+                        " + (window.modifySystem === "true" ? "<button class='btn btn-danger' onclick='deleteCampaign(\"" + campaign.id + "\", \"" + escapeHtml(campaign.name).replace(/"/g, '&quot;') + "\")' data-toggle='tooltip' data-placement='left' title='Delete Campaign'>\
                             <i class='fa fa-trash-o'></i>\
                         </button>" : "") + "\
                     </div>"

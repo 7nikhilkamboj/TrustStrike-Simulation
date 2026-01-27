@@ -13,6 +13,7 @@
     <!-- Action Bar -->
     <div class="groups-action-bar">
         <div class="groups-action-left">
+            {{if .ModifySystem}}
             <button type="button" class="btn btn-primary" onclick="edit(-1)">
                 <i class="fa fa-plus"></i> New Group
             </button>
@@ -26,6 +27,7 @@
                             Selected</a></li>
                 </ul>
             </div>
+            {{end}}
         </div>
         <div class="groups-action-right">
             <div class="btn-group" data-toggle="buttons" id="profileTypeFilter">
@@ -61,7 +63,9 @@
                 <thead>
                     <tr>
                         <th class="no-sort" style="width: 20px;">
+                            {{if .ModifySystem}}
                             <input type="checkbox" id="selectAllGroups" onclick="toggleSelectAll()">
+                            {{end}}
                         </th>
                         <th>Name</th>
                         <th>Type</th>

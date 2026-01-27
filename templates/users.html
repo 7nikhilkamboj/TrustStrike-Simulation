@@ -13,10 +13,12 @@
     <!-- Action Bar -->
     <div class="page-action-bar">
         <div class="page-action-left">
+            {{if .ModifySystem}}
             <button type="button" class="btn btn-primary" id="new_button" data-toggle="modal" data-backdrop="static"
                 data-user-id="-1" data-target="#modal">
                 <i class="fa fa-plus"></i> New User
             </button>
+            {{end}}
         </div>
     </div>
 

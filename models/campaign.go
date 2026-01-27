@@ -1,7 +1,9 @@
 package models
 
 import (
+	"crypto/rand"
 	"errors"
+	"math/big"
 	"net/url"
 	"strconv"
 	"time"
@@ -14,7 +16,8 @@ import (
 
 // Campaign is a struct representing a created campaign
 type Campaign struct {
-	Id                int64     `json:"id"`
+	Id                int64     `json:"-"`
+	Rid               string    `json:"id" gorm:"column:rid;unique_index"`
 	UserId            int64     `json:"-"`
 	Name              string    `json:"name" sql:"not null"`
 	CreatedDate       time.Time `json:"created_date"`
@@ -45,7 +48,8 @@ type Campaign struct {
 
 // CampaignResults is a struct representing the results from a campaign
 type CampaignResults struct {
-	Id           int64    `json:"id"`
+	Id           int64    `json:"-"`
+	Rid          string   `json:"id"`
 	Name         string   `json:"name"`
 	Status       string   `json:"status"`
 	CampaignType string   `json:"campaign_type"`
@@ -61,7 +65,8 @@ type CampaignSummaries struct {
 
 // CampaignSummary is a struct representing the overview of a single camaign
 type CampaignSummary struct {
-	Id            int64         `json:"id"`
+	Id            int64         `json:"-"`
+	Rid           string        `json:"id"`
 	CreatedDate   time.Time     `json:"created_date"`
 	LaunchDate    time.Time     `json:"launch_date"`
 	SendByDate    time.Time     `json:"send_by_date"`
@@ -171,6 +176,37 @@ func (c *Campaign) Validate() error {
 func (c *Campaign) UpdateStatus(s string) error {
 	// This could be made simpler, but I think there's a bug in gorm
 	return db.Table("campaigns").Where("id=?", c.Id).Update("status", s).Error
+}
+
+func generateRid() (string, error) {
+	const alphaNum = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	k := make([]byte, 7)
+	for i := range k {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(alphaNum))))
+		if err != nil {
+			return "", err
+		}
+		k[i] = alphaNum[idx.Int64()]
+	}
+	return string(k), nil
+}
+
+// GenerateRid generates a unique key to represent the campaign
+// in the database
+func (c *Campaign) GenerateRid() error {
+	// Keep trying until we generate a unique key (shouldn't take more than one or two iterations)
+	for {
+		rid, err := generateRid()
+		if err != nil {
+			return err
+		}
+		c.Rid = rid
+		err = db.Table("campaigns").Where("rid=?", c.Rid).First(&Campaign{}).Error
+		if err == gorm.ErrRecordNotFound {
+			break
+		}
+	}
+	return nil
 }
 
 // AddEvent creates a new campaign event in the database
@@ -373,7 +409,7 @@ func GetCampaignSummaries(uid int64, campaignType string) (CampaignSummaries, er
 	if campaignType != "" {
 		query = query.Where("campaigns.campaign_type = ?", campaignType)
 	}
-	query = query.Select("campaigns.id, campaigns.name, campaigns.campaign_type, campaigns.created_date, campaigns.launch_date, campaigns.send_by_date, campaigns.completed_date, campaigns.status, users.username as created_by").Joins("left join users on campaigns.user_id = users.id")
+	query = query.Select("campaigns.id, campaigns.rid, campaigns.name, campaigns.campaign_type, campaigns.created_date, campaigns.launch_date, campaigns.send_by_date, campaigns.completed_date, campaigns.status, users.username as created_by").Joins("left join users on campaigns.user_id = users.id")
 	err := query.Scan(&cs).Error
 	if err != nil {
 		log.Error(err)
@@ -398,7 +434,7 @@ func GetCampaignSummary(id int64, uid int64) (CampaignSummary, error) {
 	if uid != 0 {
 		query = query.Where("user_id = ?", uid)
 	}
-	query = query.Select("id, name, campaign_type, created_date, launch_date, send_by_date, completed_date, status")
+	query = query.Select("id, rid, name, campaign_type, created_date, launch_date, send_by_date, completed_date, status")
 	err := query.Scan(&cs).Error
 	if err != nil {
 		log.Error(err)
@@ -451,6 +487,66 @@ func GetCampaign(id int64, uid int64) (Campaign, error) {
 	}
 	err = c.getDetails()
 	return c, err
+}
+
+// GetCampaignByRid returns the campaign, if it exists, specified by the given rid and user_id.
+func GetCampaignByRid(rid string, uid int64) (Campaign, error) {
+	c := Campaign{}
+	query := db.Where("rid = ?", rid)
+	err := query.Find(&c).Error
+	if err != nil {
+		log.Errorf("%s: campaign not found", err)
+		return c, err
+	}
+	err = c.getDetails()
+	return c, err
+}
+
+// GetCampaignSummaryByRid returns the summary for a given campaign.
+func GetCampaignSummaryByRid(rid string, uid int64) (CampaignSummary, error) {
+	cs := CampaignSummary{}
+	query := db.Table("campaigns").Where("rid = ?", rid)
+	if uid != 0 {
+		query = query.Where("user_id = ?", uid)
+	}
+	query = query.Select("id, rid, name, campaign_type, created_date, launch_date, send_by_date, completed_date, status")
+	err := query.Scan(&cs).Error
+	if err != nil {
+		log.Error(err)
+		return cs, err
+	}
+	s, err := getCampaignStats(cs.Id)
+	if err != nil {
+		log.Error(err)
+		return cs, err
+	}
+	cs.Stats = s
+	return cs, nil
+}
+
+// GetCampaignResultsByRid returns just the campaign results for the given campaign
+func GetCampaignResultsByRid(rid string, uid int64) (CampaignResults, error) {
+	cr := CampaignResults{}
+	query := db.Table("campaigns").Where("rid = ?", rid)
+	err := query.Find(&cr).Error
+	if err != nil {
+		log.WithFields(logrus.Fields{
+			"campaign_rid": rid,
+			"error":        err,
+		}).Error(err)
+		return cr, err
+	}
+	err = db.Table("results").Where("campaign_id=?", cr.Id).Find(&cr.Results).Error
+	if err != nil {
+		log.Errorf("%s: results not found for campaign", err)
+		return cr, err
+	}
+	err = db.Table("events").Where("campaign_id=?", cr.Id).Find(&cr.Events).Error
+	if err != nil {
+		log.Errorf("%s: events not found for campaign", err)
+		return cr, err
+	}
+	return cr, err
 }
 
 // GetCampaignResults returns just the campaign results for the given campaign
@@ -602,6 +698,12 @@ func PostCampaign(c *Campaign, uid int64) error {
 	}
 	c.SMTP = s
 	c.SMTPId = s.Id
+	// Generate Rid
+	err = c.GenerateRid()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 	// Insert into the DB
 	err = db.Save(c).Error
 	if err != nil {
@@ -752,6 +854,12 @@ func PostSMSCampaign(c *Campaign, uid int64) error {
 	}
 	c.SMS = s
 	c.SMSId = s.Id
+	// Generate Rid
+	err = c.GenerateRid()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 	// Insert into the DB
 	err = db.Save(c).Error
 	if err != nil {
@@ -850,41 +958,42 @@ func DeleteCampaign(id int64, uid int64) error {
 	if err != nil {
 		return err
 	}
-	// If the user is not an admin and the campaign belongs to the admin, deny deletion
-	// uid 0 is passed by controllers when the request comes from an Admin
-	if uid != 0 && uid != 1 && c.UserId == 1 {
-		return errors.New("Only administrators can delete this resource. Please contact the admin.")
-	}
-	// Delete all the campaign results
-	err = db.Where("campaign_id=?", id).Delete(&Result{}).Error
+	tx := db.Begin()
+	err = tx.Where("campaign_id=?", c.Id).Delete(Result{}).Error
 	if err != nil {
-		log.Error(err)
+		tx.Rollback()
 		return err
 	}
-	err = db.Where("campaign_id=?", id).Delete(&Event{}).Error
+	err = tx.Where("campaign_id=?", c.Id).Delete(Event{}).Error
 	if err != nil {
-		log.Error(err)
+		tx.Rollback()
 		return err
 	}
-	err = db.Where("campaign_id=?", id).Delete(&MailLog{}).Error
+	err = tx.Where("campaign_id=?", c.Id).Delete(MailLog{}).Error
 	if err != nil {
-		log.Error(err)
+		tx.Rollback()
 		return err
 	}
-	// Delete the campaign
-	err = db.Delete(&Campaign{Id: id}).Error
+	err = tx.Delete(&c).Error
 	if err != nil {
-		log.Error(err)
+		tx.Rollback()
+		return err
 	}
-	return err
+	return tx.Commit().Error
+}
+
+// DeleteCampaignByRid deletes the campaign, if it exists, specified by the given rid and user_id.
+func DeleteCampaignByRid(rid string, uid int64) error {
+	c, err := GetCampaignByRid(rid, uid)
+	if err != nil {
+		return err
+	}
+	return DeleteCampaign(c.Id, uid)
 }
 
 // CompleteCampaign effectively "ends" a campaign.
 // Any future emails clicked will return a simple "404" page.
 func CompleteCampaign(id int64, uid int64) error {
-	log.WithFields(logrus.Fields{
-		"campaign_id": id,
-	}).Info("Marking campaign as complete")
 	c, err := GetCampaign(id, uid)
 	if err != nil {
 		return err
@@ -907,4 +1016,13 @@ func CompleteCampaign(id int64, uid int64) error {
 		log.Error(err)
 	}
 	return err
+}
+
+// CompleteCampaignByRid ends a campaign, changing the status to "Completed"
+func CompleteCampaignByRid(rid string, uid int64) error {
+	c, err := GetCampaignByRid(rid, uid)
+	if err != nil {
+		return err
+	}
+	return CompleteCampaign(c.Id, uid)
 }

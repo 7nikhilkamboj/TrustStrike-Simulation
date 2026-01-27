@@ -253,12 +253,12 @@ function load() {
                 }
 
                 profileRows.push([
-                    "<input type='checkbox' class='profile-checkbox' value='" + profile.id + "' data-type='" + profile.interface_type + "'>",
+                    (window.modifySystem === "true" ? "<input type='checkbox' class='profile-checkbox' value='" + profile.id + "' data-type='" + profile.interface_type + "'>" : ""),
                     escapeHtml(profile.name),
                     "<span class='label " + rowClass + "'>" + (profile.interface_type || "EMAIL").toUpperCase() + "</span>",
                     escapeHtml(profile.created_by || ""),
                     moment(profile.modified_date).format('MMMM Do YYYY, h:mm:ss a'),
-                    "<div style='white-space: nowrap;'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Profile' style='margin-right: 4px;' onclick='edit(" + i + ")'>\
+                    "<div style='white-space: nowrap;'>" + (window.modifySystem === "true" ? "<button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Profile' style='margin-right: 4px;' onclick='edit(" + i + ")'>\
                     <i class='fa fa-pencil'></i>\
                     </button>\
                     <button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Profile' style='margin-right: 4px;' onclick='copy(" + i + ")'>\
@@ -266,7 +266,7 @@ function load() {
                     </button>\
                     <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' title='Delete Profile' onclick='deleteProfile(" + i + ")'>\
                     <i class='fa fa-trash-o'></i>\
-                    </button></div>"
+                    </button>" : "") + "</div>"
                 ])
             })
             profileTable.rows.add(profileRows).draw()

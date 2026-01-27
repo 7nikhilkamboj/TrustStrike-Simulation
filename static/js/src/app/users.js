@@ -204,7 +204,7 @@ const load = () => {
                     escapeHtml(user.username),
                     escapeHtml(user.role.name),
                     lastlogin,
-                    "<div class='pull-right'>\
+                    "<div class='pull-right'>" + (window.modifySystem === "true" ? "\
                     <button class='btn btn-warning impersonate_button' data-user-id='" + user.id + "' data-toggle='tooltip' title='Impersonate User'>\
                     <i class='fa fa-retweet'></i>\
                     </button>\
@@ -213,7 +213,7 @@ const load = () => {
                     </button>\
                     <button class='btn btn-danger delete_button' data-user-id='" + user.id + "' data-toggle='tooltip' title='Delete User'>\
                     <i class='fa fa-trash-o'></i>\
-                    </button></div>"
+                    </button>" : "") + "</div>"
                 ])
             })
             userTable.rows.add(userRows).draw();

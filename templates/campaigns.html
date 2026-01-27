@@ -18,13 +18,12 @@
                 <i class="fa fa-plus"></i> New Campaign
             </button>
             {{end}}
+            {{if .ModifySystem}}
             <div class="btn-group">
-                {{if .ModifySystem}}
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
                     <i class="fa fa-ellipsis-h" style="margin-right: 6px;"></i> Actions <span class="caret"></span>
                 </button>
-                {{end}}
                 <ul class="dropdown-menu">
                     <li><a href="#" onclick="bulkDeleteSelected()"><i class="fa fa-trash-o text-danger"></i> Delete
                             Selected</a></li>
@@ -43,6 +42,7 @@
                                 style="color: #9CA3AF;"></i> Delete All Completed</a></li>
                 </ul>
             </div>
+            {{end}}
         </div>
         <div class="campaigns-action-right">
             <div class="btn-group" data-toggle="buttons" id="campaignTypeFilter">
@@ -93,7 +93,9 @@
                     <thead>
                         <tr>
                             <th class="no-sort" style="width: 40px;">
+                                {{if .ModifySystem}}
                                 <input type="checkbox" id="selectAllActive" onclick="toggleSelectAll('active')">
+                                {{end}}
                             </th>
                             <th class="col-md-3">Name</th>
                             <th>Type</th>
@@ -121,7 +123,9 @@
                     <thead>
                         <tr>
                             <th class="no-sort" style="width: 40px;">
+                                {{if .ModifySystem}}
                                 <input type="checkbox" id="selectAllArchived" onclick="toggleSelectAll('archived')">
+                                {{end}}
                             </th>
                             <th class="col-md-3">Name</th>
                             <th class="col-md-3">Created By</th>

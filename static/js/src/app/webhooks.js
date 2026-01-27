@@ -18,24 +18,24 @@ const saveWebhook = (id) => {
     if (id != -1) {
         wh.id = parseInt(id);
         api.webhookId.put(wh)
-            .success(function(data) {
+            .success(function (data) {
                 dismiss();
                 load();
                 $("#modal").modal("hide");
                 successFlash(`Webhook "${escapeHtml(wh.name)}" has been updated successfully!`);
             })
-            .error(function(data) {
+            .error(function (data) {
                 modalError(data.responseJSON.message)
             })
     } else {
         api.webhooks.post(wh)
-            .success(function(data) {
+            .success(function (data) {
                 load();
                 dismiss();
                 $("#modal").modal("hide");
                 successFlash(`Webhook "${escapeHtml(wh.name)}" has been created successfully!`);
             })
-            .error(function(data) {
+            .error(function (data) {
                 modalError(data.responseJSON.message)
             })
     }
@@ -63,7 +63,7 @@ const load = () => {
                     escapeHtml(webhook.url),
                     escapeHtml(webhook.is_active),
                     `
-                      <div class="pull-right">
+                      <div class="pull-right">${window.modifySystem === "true" ? `
                         <button class="btn btn-primary ping_button" data-webhook-id="${webhook.id}">
                           Ping
                         </button>
@@ -72,7 +72,7 @@ const load = () => {
                         </button>
                         <button class="btn btn-danger delete_button" data-webhook-id="${webhook.id}">
                           <i class="fa fa-trash-o"></i>
-                        </button>
+                        </button>` : ""}
                       </div>
                     `
                 ]).draw()
@@ -90,15 +90,15 @@ const editWebhook = (id) => {
     if (id !== -1) {
         $("#webhookModalLabel").text("Edit Webhook")
         api.webhookId.get(id)
-          .success(function(wh) {
-              $("#name").val(wh.name);
-              $("#url").val(wh.url);
-              $("#secret").val(wh.secret);
-              $("#is_active").prop("checked", wh.is_active);
-          })
-          .error(function () {
-              errorFlash("Error fetching webhook")
-          });
+            .success(function (wh) {
+                $("#name").val(wh.name);
+                $("#url").val(wh.url);
+                $("#secret").val(wh.secret);
+                $("#is_active").prop("checked", wh.is_active);
+            })
+            .error(function () {
+                errorFlash("Error fetching webhook")
+            });
     } else {
         $("#webhookModalLabel").text("New Webhook")
     }
@@ -129,11 +129,11 @@ const deleteWebhook = (id) => {
                         reject(data.responseJSON.message)
                     })
             })
-            .catch(error => {
-                Swal.showValidationMessage(error)
-              })
+                .catch(error => {
+                    Swal.showValidationMessage(error)
+                })
         }
-    }).then(function(result) {
+    }).then(function (result) {
         if (result.value) {
             Swal.fire(
                 "Webhook Deleted!",
@@ -141,7 +141,7 @@ const deleteWebhook = (id) => {
                 "success"
             );
         }
-        $("button:contains('OK')").on("click", function() {
+        $("button:contains('OK')").on("click", function () {
             location.reload();
         })
     })
@@ -151,11 +151,11 @@ const pingUrl = (btn, whId) => {
     dismiss();
     btn.disabled = true;
     api.webhookId.ping(whId)
-        .success(function(wh) {
+        .success(function (wh) {
             btn.disabled = false;
             successFlash(`Ping of "${escapeHtml(wh.name)}" webhook succeeded.`);
         })
-        .error(function(data) {
+        .error(function (data) {
             btn.disabled = false;
             var wh = webhooks.find(x => x.id == whId);
             if (!wh) {
@@ -165,21 +165,21 @@ const pingUrl = (btn, whId) => {
         });
 };
 
-$(document).ready(function() {
+$(document).ready(function () {
     load();
-    $("#modal").on("hide.bs.modal", function() {
+    $("#modal").on("hide.bs.modal", function () {
         dismiss();
     });
-    $("#new_button").on("click", function() {
+    $("#new_button").on("click", function () {
         editWebhook(-1);
     });
-    $("#webhookTable").on("click", ".edit_button", function(e) {
+    $("#webhookTable").on("click", ".edit_button", function (e) {
         editWebhook($(this).attr("data-webhook-id"));
     });
-    $("#webhookTable").on("click", ".delete_button", function(e) {
+    $("#webhookTable").on("click", ".delete_button", function (e) {
         deleteWebhook($(this).attr("data-webhook-id"));
     });
-    $("#webhookTable").on("click", ".ping_button", function(e) {
+    $("#webhookTable").on("click", ".ping_button", function (e) {
         pingUrl(e.currentTarget, e.currentTarget.dataset.webhookId);
     });
 });

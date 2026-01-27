@@ -11,6 +11,7 @@
     <!-- Action Bar -->
     <div class="page-action-bar">
         <div class="page-action-left">
+            {{if .ModifySystem}}
             <a href="/sending_profile" class="btn btn-primary">
                 <i class="fa fa-plus"></i> New Profile
             </a>
@@ -24,6 +25,7 @@
                             Selected</a></li>
                 </ul>
             </div>
+            {{end}}
         </div>
         <div class="page-action-right">
             <div class="btn-group" data-toggle="buttons" id="profileTypeFilter">
@@ -59,7 +61,9 @@
                 <thead>
                     <tr>
                         <th class="no-sort" style="width: 20px;">
+                            {{if .ModifySystem}}
                             <input type="checkbox" id="selectAllProfiles" onclick="toggleSelectAll()">
+                            {{end}}
                         </th>
                         <th>Name</th>
                         <th>Interface Type</th>

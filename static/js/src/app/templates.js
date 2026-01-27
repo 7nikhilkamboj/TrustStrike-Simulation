@@ -128,11 +128,11 @@ function load() {
                     }
 
                     templateRows.push([
-                        "<input type='checkbox' class='template-checkbox' value='" + template.id + "'>",
+                        (window.modifySystem === "true" ? "<input type='checkbox' class='template-checkbox' value='" + template.id + "'>" : ""),
                         escapeHtml(template.name), "<span class='label " + rowClass + "'>" + (template.type || "EMAIL").toUpperCase() + "</span>",
                         escapeHtml(template.created_by || ""),
                         moment(template.modified_date).format('MMMM Do YYYY, h:mm:ss a'),
-                        "<div class='pull-right'><button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Template' onclick='edit(" + i + ")'>\
+                        "<div class='pull-right'>" + (window.modifySystem === "true" ? "<button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Edit Template' onclick='edit(" + i + ")'>\
                     <i class='fa fa-pencil'></i>\
                     </button>\
 		    <button class='btn btn-primary' data-toggle='tooltip' data-placement='left' title='Copy Template' onclick='copy(" + i + ")'>\
@@ -140,7 +140,7 @@ function load() {
                     </button>\
                     <button class='btn btn-danger' data-toggle='tooltip' data-placement='left' title='Delete Template' onclick='deleteTemplate(" + i + ")'>\
                     <i class='fa fa-trash-o'></i>\
-                    </button></div>"
+                    </button>" : "") + "</div>"
                     ])
                 })
                 templateTable.rows.add(templateRows).draw()
