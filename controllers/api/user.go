@@ -129,6 +129,7 @@ func (as *Server) Users(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		log.Debugf("User created successfully with ID: %d", user.Id)
+		user.ApiKey = ""
 		JSONResponse(w, user, http.StatusOK)
 		return
 	}
@@ -231,6 +232,7 @@ func (as *Server) User(w http.ResponseWriter, r *http.Request) {
 		}
 		existingUser.AccountLocked = ur.AccountLocked
 		err = models.PutUser(&existingUser)
+		existingUser.ApiKey = ""
 		if err != nil {
 			JSONResponse(w, models.Response{Success: false, Message: err.Error()}, http.StatusInternalServerError)
 			return
