@@ -456,7 +456,7 @@ function renderTemplateGrid(templates) {
             <div class="template-card" id="card-${t.id}" onclick="selectTemplateCard(${t.id})">
                  <div class="selection-checkbox"><i class="fa fa-check"></i></div>
                  <div class="template-header">
-                    <div class="template-name" title="${escapeHtml(t.name)}">${escapeHtml(t.name)}</div>
+                    <div class="template-name" title="${escapeHtml(t.name)}"></div>
                      <div class="template-type">
                         <button class="btn ${btnClass} btn-xs" onclick="previewTemplateFull(${t.id}); event.stopPropagation();" title="Full Preview" style="padding: 4px 8px; font-size: 14px; font-weight: bold; border-width: 2px;">
                             FULL PREVIEW
@@ -1139,7 +1139,6 @@ function renderRedirectorTemplateCards(templates) {
             <div class="template-card redirector-template-card${selectedClass}" data-name="${name}">
                  <div class="selection-checkbox"><i class="fa fa-check"></i></div>
                  <div class="template-header">
-                    <div class="template-name" title="${name}">${name}</div>
                      <div class="template-type">
                         <button class="btn btn-success btn-xs preview-redirector-btn" data-name="${name}" onclick="event.stopPropagation();" title="Full Preview" style="padding: 4px 8px; font-size: 14px; font-weight: bold; border-width: 2px;">
                             FULL PREVIEW
@@ -2906,120 +2905,140 @@ function copyTrackingLureUrl() {
 }
 
 function launch() {
-    Swal.fire({
-        title: "Are you sure?",
-        text: "This will schedule the campaign to be launched.",
-        type: "question",
-        animation: false,
-        showCancelButton: true,
-        confirmButtonText: "Launch",
-        confirmButtonColor: "#428bca",
-        reverseButtons: true,
-        allowOutsideClick: false,
-        showLoaderOnConfirm: true,
-        preConfirm: function () {
-            return new Promise(function (resolve, reject) {
-                var selectedGroups = [];
-                var groupNames = $("#users").val() || [];
-                groupNames.forEach(function (name) {
-                    selectedGroups.push({ name: name });
-                });
+    // Check if any campaign is already active (In progress or Queued)
+    api.campaigns.summary().done(function (summary) {
+        var activeCampaign = summary.campaigns.find(function (c) {
+            return c.status === "In progress" || c.status === "Queued";
+        });
 
-                var send_by_date = $("#send_by_date").val();
-                if (send_by_date != "") {
-                    send_by_date = moment(send_by_date, "MMMM Do YYYY, h:mm a").utc().format();
+        if (activeCampaign) {
+            Swal.fire({
+                title: "Active Campaign Found",
+                text: "A campaign is already in progress or queued. Please wait for it to finish or stop it before launching a new one.",
+                icon: "warning",
+                confirmButtonText: "OK",
+                customClass: {
+                    confirmButton: 'btn btn-primary'
                 }
-
-                var scheduled_stop_date = $("#scheduled_stop_date").val();
-                if (scheduled_stop_date != "") {
-                    scheduled_stop_date = moment(scheduled_stop_date, "MMMM Do YYYY, h:mm a").utc().format();
-                }
-
-                var redirectorEnabled = $("#useRedirector").is(":checked");
-                var redirectorDomain = $("#redirectorDomain").val() || "";
-                var finalDesintation = $("#selectedLureLandingUrl").val() || "";
-                var lureUrl = $("#manualLureUrl").val() || "";
-
-                // Build landing_url with full path (same structure as url but without tracker)
-                var landingUrl = "";
-                if (redirectorEnabled && redirectorDomain && lureUrl) {
-                    // Extract path from lure URL and append to redirector domain
-                    var urlPath = "";
-                    try {
-                        var urlObj = new URL(lureUrl);
-                        urlPath = urlObj.pathname;
-                    } catch (e) {
-                        // Fallback: extract path manually
-                        var pathMatch = lureUrl.match(/https?:\/\/[^\/]+(\/.*)/);
-                        urlPath = pathMatch ? pathMatch[1] : "";
-                    }
-                    landingUrl = "https://" + redirectorDomain + urlPath;
-                }
-
-                var campaign = {
-                    name: $("#name").val(),
-                    template: { name: $("#template_name").val() },
-                    // url is the actual lure URL for tracking (not the redirector URL)
-                    url: $("#actualLureUrl").val() || $("#manualLureUrl").val(),
-                    page: { name: "" },
-                    launch_date: moment($("#launch_date").val(), "MMMM Do YYYY, h:mm a").utc().format(),
-                    send_by_date: send_by_date || null,
-                    scheduled_stop_date: scheduled_stop_date || null,
-                    groups: selectedGroups,
-                    campaign_type: $("#campaign_type").val(),
-                    attack_objective: $("#attack_objective").val(),
-
-                    // Correct Mapping as requested:
-                    // Final Destination (Step 5) -> redirect_url (Exit URL)
-                    redirect_url: finalDesintation,
-
-                    // landing_url includes full path from lure URL
-                    landing_url: landingUrl,
-
-                    use_redirector: redirectorEnabled,
-                    redirector_domain: redirectorDomain,
-                    redirector_template: $("#redirectorTemplate").val(),
-                    phishlet: $("#phishletSelect").val()
-                };
-
-                if (campaign.campaign_type == "email" || campaign.campaign_type == "qr") {
-                    campaign.smtp = { name: $("#profile_name").val() || "" };
-                } else {
-                    campaign.sms = { name: $("#profile_name").val() || "" };
-                }
-
-                if (campaign.campaign_type == "qr") {
-                    campaign.qr_size = parseInt($("#qr_size").val()) || 250;
-                }
-
-                var p;
-                if (campaign.campaign_type == "email" || campaign.campaign_type == "qr" || !campaign.campaign_type) {
-                    p = api.campaigns.post(campaign);
-                } else {
-                    p = api.sms_campaigns.post(campaign);
-                }
-
-                p.done(function (data) {
-                    resolve();
-                }).fail(function (data) {
-                    var message = "An error occurred";
-                    if (data.responseJSON && data.responseJSON.message) {
-                        message = data.responseJSON.message;
-                    } else if (data.responseText) {
-                        message = data.responseText;
-                    }
-                    Swal.showValidationMessage(message);
-                    resolve(false);
-                });
             });
+            return;
         }
-    }).then(function (result) {
-        if (result.value) {
-            Swal.fire('Campaign Scheduled!', 'This campaign has been scheduled for launch!', 'success')
-                .then(function () {
-                    location.href = "/campaigns";
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will schedule the campaign to be launched.",
+            type: "question",
+            animation: false,
+            showCancelButton: true,
+            confirmButtonText: "Launch",
+            confirmButtonColor: "#428bca",
+            reverseButtons: true,
+            allowOutsideClick: false,
+            showLoaderOnConfirm: true,
+            preConfirm: function () {
+                return new Promise(function (resolve, reject) {
+                    var selectedGroups = [];
+                    var groupNames = $("#users").val() || [];
+                    groupNames.forEach(function (name) {
+                        selectedGroups.push({ name: name });
+                    });
+
+                    var send_by_date = $("#send_by_date").val();
+                    if (send_by_date != "") {
+                        send_by_date = moment(send_by_date, "MMMM Do YYYY, h:mm a").utc().format();
+                    }
+
+                    var scheduled_stop_date = $("#scheduled_stop_date").val();
+                    if (scheduled_stop_date != "") {
+                        scheduled_stop_date = moment(scheduled_stop_date, "MMMM Do YYYY, h:mm a").utc().format();
+                    }
+
+                    var redirectorEnabled = $("#useRedirector").is(":checked");
+                    var redirectorDomain = $("#redirectorDomain").val() || "";
+                    var finalDesintation = $("#selectedLureLandingUrl").val() || "";
+                    var lureUrl = $("#manualLureUrl").val() || "";
+
+                    // Build landing_url with full path (same structure as url but without tracker)
+                    var landingUrl = "";
+                    if (redirectorEnabled && redirectorDomain && lureUrl) {
+                        // Extract path from lure URL and append to redirector domain
+                        var urlPath = "";
+                        try {
+                            var urlObj = new URL(lureUrl);
+                            urlPath = urlObj.pathname;
+                        } catch (e) {
+                            // Fallback: extract path manually
+                            var pathMatch = lureUrl.match(/https?:\/\/[^\/]+(\/.*)/);
+                            urlPath = pathMatch ? pathMatch[1] : "";
+                        }
+                        landingUrl = "https://" + redirectorDomain + urlPath;
+                    }
+
+                    var campaign = {
+                        name: $("#name").val(),
+                        template: { name: $("#template_name").val() },
+                        // url is the actual lure URL for tracking (not the redirector URL)
+                        url: $("#actualLureUrl").val() || $("#manualLureUrl").val(),
+                        page: { name: "" },
+                        launch_date: moment($("#launch_date").val(), "MMMM Do YYYY, h:mm a").utc().format(),
+                        send_by_date: send_by_date || null,
+                        scheduled_stop_date: scheduled_stop_date || null,
+                        groups: selectedGroups,
+                        campaign_type: $("#campaign_type").val(),
+                        attack_objective: $("#attack_objective").val(),
+
+                        // Correct Mapping as requested:
+                        // Final Destination (Step 5) -> redirect_url (Exit URL)
+                        redirect_url: finalDesintation,
+
+                        // landing_url includes full path from lure URL
+                        landing_url: landingUrl,
+
+                        use_redirector: redirectorEnabled,
+                        redirector_domain: redirectorDomain,
+                        redirector_template: $("#redirectorTemplate").val(),
+                        phishlet: $("#phishletSelect").val()
+                    };
+
+                    if (campaign.campaign_type == "email" || campaign.campaign_type == "qr") {
+                        campaign.smtp = { name: $("#profile_name").val() || "" };
+                    } else {
+                        campaign.sms = { name: $("#profile_name").val() || "" };
+                    }
+
+                    if (campaign.campaign_type == "qr") {
+                        campaign.qr_size = parseInt($("#qr_size").val()) || 250;
+                    }
+
+                    var p;
+                    if (campaign.campaign_type == "email" || campaign.campaign_type == "qr" || !campaign.campaign_type) {
+                        p = api.campaigns.post(campaign);
+                    } else {
+                        p = api.sms_campaigns.post(campaign);
+                    }
+
+                    p.done(function (data) {
+                        resolve();
+                    }).fail(function (data) {
+                        var message = "An error occurred";
+                        if (data.responseJSON && data.responseJSON.message) {
+                            message = data.responseJSON.message;
+                        } else if (data.responseText) {
+                            message = data.responseText;
+                        }
+                        Swal.showValidationMessage(message);
+                        resolve(false);
+                    });
                 });
-        }
+            }
+        }).then(function (result) {
+            if (result.value) {
+                Swal.fire('Campaign Scheduled!', 'This campaign has been scheduled for launch!', 'success')
+                    .then(function () {
+                        location.href = "/campaigns";
+                    });
+            }
+        });
     });
 }
 

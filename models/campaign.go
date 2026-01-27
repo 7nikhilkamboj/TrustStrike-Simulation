@@ -522,7 +522,18 @@ func PostCampaign(c *Campaign, uid int64) error {
 		"url":              c.URL,
 	}).Info("DEBUG: Received PostCampaign request")
 
-	err := c.Validate()
+	// Check if any campaign is already active (In progress or Queued) for this user
+	var activeCount int
+	err := db.Model(&Campaign{}).Where("user_id = ? AND (status = ? OR status = ?)", uid, CampaignInProgress, CampaignQueued).Count(&activeCount).Error
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if activeCount > 0 {
+		return errors.New("a campaign is already in progress or queued; only one active campaign is allowed at a time")
+	}
+
+	err = c.Validate()
 	if err != nil {
 		return err
 	}
