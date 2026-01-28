@@ -438,15 +438,7 @@ function startNewCampaign() {
                                 // EC2 is already running - perform cleanup then go to campaign editor
 
                                 deleteAllLures().then(function () {
-                                    Swal.fire({
-                                        title: "Server Ready!",
-                                        text: "Simulation server is ready.",
-                                        icon: "success",
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    }).then(function () {
-                                        location.href = '/campaign';
-                                    });
+                                    location.href = '/campaign';
                                 });
                             } else if (state === "stopping" || state === "shutting-down") {
                                 // EC2 is stopping - wait for it to stop

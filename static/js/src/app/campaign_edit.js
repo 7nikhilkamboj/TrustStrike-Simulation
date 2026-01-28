@@ -617,35 +617,44 @@ function showStep(step) {
 
 // Track what has been loaded to avoid redundant calls
 var loadedData = {
-    templates: false,
+    critical: false,
     domains: false,
     redirectors: false,
     phishlets: false,
-    strikes: false,
-    groups: false,
-    smtp: false,
-    sms: false
+    strikes: false
 };
 
 function lazyLoadData(step) {
-    if (step == 2 && !loadedData.templates) {
-        setupOptions();
-        loadedData.templates = true;
-    }
-    if (step == 3) {
+    // If step 1, background load heavier data
+    if (step == 1) {
         if (!loadedData.domains) { loadCloudflaireDomains(); loadedData.domains = true; }
         if (!loadedData.redirectors) { loadRedirectorTemplates(); loadedData.redirectors = true; }
+        if (!loadedData.phishlets) { loadPhishlets(); loadedData.phishlets = true; }
     }
-    if (step == 4 && !loadedData.phishlets) {
-        loadPhishlets();
-        loadedData.phishlets = true;
-    }
+
     if (step == 5 && !loadedData.strikes) {
-        refreshLures(); // includes getStrikes via refreshLures -> renderLureTable -> cachedModalData check? 
-        // Note: refreshLures calls loadModules and renderLureTable.
-        // Let's ensure refreshLuresForStep5 handles it.
+        refreshLures();
         loadedData.strikes = true;
     }
+}
+
+// Show progress modal matching campaigns.js
+function updateLoaderProgress(percent, text) {
+    var intPercent = Math.round(percent);
+    $("#ec2-progress-bar").css("width", intPercent + "%").text(intPercent + "%");
+    $("#ec2-status-text").text(text);
+}
+
+function startEnvironmentLoader() {
+    Swal.fire({
+        title: "Preparing Simulation Environment",
+        html: '<div class="progress" style="height: 25px; margin-top: 20px;">' +
+            '<div id="ec2-progress-bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width: 0%; font-size: 14px;">0%</div>' +
+            '</div>' +
+            '<p id="ec2-status-text" style="margin-top: 15px; font-size: 14px;">Initializing modules...</p>',
+        allowOutsideClick: false,
+        showConfirmButton: false
+    });
 }
 
 function populateVisualBlueprint() {
@@ -3350,12 +3359,19 @@ $(document).ready(function () {
         // New campaign defaults
     }
 
-    // setupOptions(); // Removed for lazy loading
+    // Start synchronized pre-fetch with original progress bar style
+    startEnvironmentLoader();
+    updateLoaderProgress(10, "Fetching critical data...");
 
-    // Load data for wizard steps - Removed for lazy loading
-    // loadCloudflaireDomains();
-    // loadRedirectorTemplates();
-    // loadPhishlets();
+    setupOptions().then(function () {
+        updateLoaderProgress(100, "Ready!");
+        setTimeout(function () {
+            Swal.close();
+            $("#campaign-wizard-container").fadeIn(400);
+            // Start background load for heavier data while user is on Step 1
+            lazyLoadData(1);
+        }, 500);
+    });
 
     // Bind checkbox toggle event
     $("#useRedirector").on("change", function () {
