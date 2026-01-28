@@ -1,3 +1,5 @@
+const { cache } = require("react");
+
 var campaignId = window.location.pathname.split('/').pop()
 if (campaignId == "campaign") {
     campaignId = null
@@ -1467,6 +1469,7 @@ window.saveRedirectorModal = function () {
     $.ajax({
         url: url,
         method: method,
+        cache: false,
         contentType: 'application/json',
         data: JSON.stringify({
             name: name,
@@ -1657,6 +1660,7 @@ function autoEnablePhishlet(phishletName, callback) {
     $.ajax({
         url: "/api/simulationserver/modules?ref=wizard",
         method: "GET",
+        cache: false,
         success: function (data) {
             var modules = data.modules || data;
             if (!Array.isArray(modules)) return;
@@ -1738,6 +1742,7 @@ function loadPhishletConfig(name) {
     $.ajax({
         url: "/api/simulationserver/modules?ref=wizard",
         method: "GET",
+        cache: false,
         success: function (data) {
             var modules = data.modules || data;
             if (Array.isArray(modules)) {
@@ -3766,6 +3771,7 @@ function loadModules() {
     $.ajax({
         url: '/api/simulationserver/modules?ref=wizard',
         method: 'GET',
+        cache: false,
         success: function (data) {
             currentModules = data || [];
         }
@@ -4660,10 +4666,6 @@ function provisionSSLCertificate(domain, zoneId, phishlet) {
             $loader.hide();
             if (response.success) {
                 $text.text("SSL Ready ✅").css("color", "green");
-                Toast.fire({
-                    icon: 'success',
-                    title: 'SSL Certificate provisioned successfully'
-                });
             } else {
                 $text.text("SSL Failed ❌").css("color", "red");
                 console.error("SSL Provisioning failed:", response.message);

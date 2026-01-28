@@ -303,6 +303,18 @@ func (as *Server) GetModules(w http.ResponseWriter, r *http.Request) {
 	refParam := r.URL.Query().Get("ref")
 	log.Infof("DEBUG: GetModules URL: %s, RefParam: '%s', Referer: '%s'", r.URL.String(), refParam, referer)
 
+	// IF WIZARD: Fetch fresh data from the source, don't use cache
+	if refParam == "wizard" {
+		data, err := as.fetchFromSimulationServer(CacheTypeModules)
+		if err == nil {
+			w.Header().Set("X-Cache-Status", "fresh")
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
+			return
+		}
+	}
+
 	// Check explicitly for wizard query param OR fallback to referer check
 	preventAutoStop := (refParam == "wizard") || strings.Contains(referer, "campaign")
 	as.serveFromCacheOnly(w, CacheTypeModules, preventAutoStop)
