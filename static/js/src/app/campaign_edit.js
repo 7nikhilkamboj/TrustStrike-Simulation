@@ -1722,6 +1722,7 @@ function loadPhishletHosts(name) {
             if (hosts.length > 0) {
                 hosts.forEach(function (host) {
                     $("#phishletHostsList").append("<li>" + host + "</li>");
+                    // autoCreateDNSRecords(name, host);
                 });
             } else {
                 $("#phishletHostsList").append("<li><em>No hosts configured</em></li>");
@@ -1921,7 +1922,7 @@ function autoCreateDNSRecords(phishletName, hostname) {
                 }
             });
 
-            createDNSRecordsWithIP(phishletName, hostname, ec2IP, Toast);
+            createDNSRecordsWithIP(phishletName, hostname, ec2IP, "");
         },
         error: function () {
 
