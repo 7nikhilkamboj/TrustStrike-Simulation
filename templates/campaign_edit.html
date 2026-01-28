@@ -372,7 +372,7 @@
 
 
             <!-- Campaign Flow Preview (Persistent) -->
-            <div class="panel panel-default" id="campaignFlowPreview" style="margin-top: 25px;">
+            <div class="panel panel-default" id="campaignFlowPreview" style="margin-top: 25px; display: none;">
                 <div class="panel-body"
                     style="padding: 20px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); overflow-x: auto;">
                     <p
@@ -393,32 +393,32 @@
 
                         <!-- EXPANDED VIEW: Individual Steps 1-5 -->
                         <!-- Stage 1: Campaign -->
-                        <div class="flow-box campaign-type active" id="flow_box_campaign">
+                        <div class="flow-box campaign-type active" id="flow_box_campaign" style="display: none;">
                             <i class="fa fa-bullhorn"></i>
                             <span class="flow-label">Campaign</span>
                             <span class="flow-value">EMAIL</span>
                         </div>
                         <!-- Arrow -->
-                        <div class="flow-arrow" id="flow_arrow_1">
+                        <div class="flow-arrow" id="flow_arrow_1" style="display: none;">
                             <div class="flow-dot"></div>
                         </div>
                         <!-- Stage 2: Template -->
-                        <div class="flow-box email-template" id="flow_box_template">
+                        <div class="flow-box email-template" id="flow_box_template" style="display: none;">
                             <i class="fa fa-envelope"></i>
                             <span class="flow-label">Template</span>
                             <span class="flow-value">Email</span>
                         </div>
 
                         <!-- Stage 3: Redirector (Static in Step 1) -->
-                        <div class="flow-arrow" id="flow_arrow_2">
+                        <div class="flow-arrow" id="flow_arrow_2" style="display: none;">
                             <div class="flow-dot" style="animation-delay: 0.2s;"></div>
                         </div>
-                        <div class="flow-box redirector" id="flow_box_redirector">
+                        <div class="flow-box redirector" id="flow_box_redirector" style="display: none;">
                             <i class="fa fa-random"></i>
                             <span class="flow-label">Redirector</span>
                             <span class="flow-value">Page</span>
                         </div>
-                        <div class="flow-arrow" id="flow_arrow_3">
+                        <div class="flow-arrow" id="flow_arrow_3" style="display: none;">
                             <div class="flow-dot" style="animation-delay: 0.4s;"></div>
                         </div>
 

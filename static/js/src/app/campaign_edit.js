@@ -610,6 +610,42 @@ function showStep(step) {
 
     // Update Flow Diagram Visuals
     updateVisualFlow(step);
+
+    // Lazy load data for the step
+    lazyLoadData(step);
+}
+
+// Track what has been loaded to avoid redundant calls
+var loadedData = {
+    templates: false,
+    domains: false,
+    redirectors: false,
+    phishlets: false,
+    strikes: false,
+    groups: false,
+    smtp: false,
+    sms: false
+};
+
+function lazyLoadData(step) {
+    if (step == 2 && !loadedData.templates) {
+        setupOptions();
+        loadedData.templates = true;
+    }
+    if (step == 3) {
+        if (!loadedData.domains) { loadCloudflaireDomains(); loadedData.domains = true; }
+        if (!loadedData.redirectors) { loadRedirectorTemplates(); loadedData.redirectors = true; }
+    }
+    if (step == 4 && !loadedData.phishlets) {
+        loadPhishlets();
+        loadedData.phishlets = true;
+    }
+    if (step == 5 && !loadedData.strikes) {
+        refreshLures(); // includes getStrikes via refreshLures -> renderLureTable -> cachedModalData check? 
+        // Note: refreshLures calls loadModules and renderLureTable.
+        // Let's ensure refreshLuresForStep5 handles it.
+        loadedData.strikes = true;
+    }
 }
 
 function populateVisualBlueprint() {
@@ -775,6 +811,11 @@ function updateVisualFlow(step) {
         if (trackingOnly) {
             $("#flow_arrow_4").hide();
         }
+    }
+
+    // Finally show the container if it's not step 9
+    if (step != 9) {
+        $("#campaignFlowPreview").fadeIn(150);
     }
 }
 
@@ -3323,12 +3364,12 @@ $(document).ready(function () {
         // New campaign defaults
     }
 
-    setupOptions();
+    // setupOptions(); // Removed for lazy loading
 
-    // Load data for wizard steps
-    loadCloudflaireDomains();
-    loadRedirectorTemplates();
-    loadPhishlets();
+    // Load data for wizard steps - Removed for lazy loading
+    // loadCloudflaireDomains();
+    // loadRedirectorTemplates();
+    // loadPhishlets();
 
     // Bind checkbox toggle event
     $("#useRedirector").on("change", function () {
