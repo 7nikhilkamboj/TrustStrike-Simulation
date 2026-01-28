@@ -1,5 +1,3 @@
-const { cache } = require("react");
-
 var campaignId = window.location.pathname.split('/').pop()
 if (campaignId == "campaign") {
     campaignId = null
